@@ -1,37 +1,21 @@
 # -*- coding: utf-8 -*-
 """
 ===========================================================================
- pylib.py — MaxExecutor Ana-Thread Komut Kutuphanesi (v1.0)
+ pylib.py — MaxExecutor Ana-Thread Komut Kutuphanesi (v2.0)
 ===========================================================================
- YUKLEME (DLL konsolunda BIR KEZ):
-   load C:\MaxExec\pylib.py
-   (cikti: WndProc komutu olarak kuyruga yazilir -> ANA THREAD'de exec olur)
-
- NEDEN GUVENLI:
-   * Bu kutuphanedeki her fonksiyon MaxExecutor tarafindan ANA THREAD'de
-     calistirilir (WndProc + PyRun_SimpleString). Metin2 client GIL'i ana
-     thread'de tutar -> biz ana thread'deyken Python C-API'lerine dokunmak
-     dogal olarak yaris-sizdir. (DEV_GIL_ANALYSIS.md RC1/RC9 kok-why)
-   * Monkey-patch YOK, gc.get_objects() YOK, arka plan thread YOK.
-   * mainStream yalniz YUKLEME ANINDA yakalanir (yukleme de ana thread'de).
-
- KOMUTLAR (DLL konsolundan cagrilan kisaltilmis arayuzler):
-   login <id> <pwd>          maxlib.login(id,pwd)
-   charlist                  maxlib.charlist()
-   empire <1-3>              maxlib.empire(n)
-   create <slot> <ad> <race> <shape>   maxlib.create(slot,ad,race,shape)
-   enter <slot>              maxlib.enter(slot)
-   status                    maxlib.status()
-   raw <kod>                 serbest
-
- SONUC DOSYALARI: C:\MaxExec\results\last_*.txt
- LEGENDYSF KARSILIKLARI (detay: reports/DEV_LOGIN_FLOW.md):
-   net.SetLoginInfo                PythonNetworkStream.cpp:512
-   net.ConnectToAccountServer      PythonNetworkStreamModule.cpp:346
-   net.GetAccountCharacterSlotData* PythonNetworkStreamModule.cpp:164/179
-   net.SendSelectEmpirePacket      PythonNetworkStreamPhaseSelect.cpp:149
-   net.SendCreateCharacterPacket   PythonNetworkStreamPhaseSelect.cpp:198
-   net.DirectEnter                 PythonNetworkStream.cpp:499 (tek giris!)
+ v2.0 DEGISIKLIKLER (saha testi 25.10 sonrasi):
+   * mainStream artik FRAME YURUYUSU ile bulunur (sys._current_frames).
+     __main__.mainStream bu client'ta YOK — calisan script
+     (MaximumPyScript_Merged_calisan) bunu kanitladi; ayni teknik.
+   * SAHNE: LoginWindow + serverBoard -> 'LoginWindow+ServerList'
+     (server isimleri listbox + CH listesi + OK butonu ekran!)
+   * YENI selserver(srv, ch): serverList.SelectItem + channelList.SelectItem
+     + serverSelectButton.CallEvent  (calisan scriptin birebir yolu)
+   * login: UI YOLU ONCELIKLI (idEditLine/pwdEditLine/loginButton.CallEvent),
+     yoksa paket yolu (net.SetLoginInfo + baglanti)
+   * enter: UI senkron (SelectSlot) + TEK DirectEnter (RC12 yasagi)
+ GIL NOTU: butun fonksiyonlar ana thread'de (drain icinde) calisir;
+   sadece dict/attr okumalari + dosya yazimi var; gc.get_objects YOK.
 ===========================================================================
 """
 
@@ -41,21 +25,23 @@ import os
 
 RESULT_DIR = r'C:\MaxExec\results'
 
-# MAIN_RACE degerleri (LegendySF: CLI/PythonPlayer.cpp:10-24)
 RACE_TABLE = {
     0: ('Warrior', 'E'), 1: ('Ninja', 'K'), 2: ('Sura', 'E'), 3: ('Shaman', 'K'),
     4: ('Warrior', 'K'), 5: ('Ninja', 'E'), 6: ('Sura', 'K'), 7: ('Shaman', 'E'),
     8: ('Wolfman', 'E'),
 }
 JOB_NAMES = {0: 'Warrior', 1: 'Ninja', 2: 'Sura', 3: 'Shaman', 4: 'Wolfman'}
-SLOT_COUNT = 5   # ENABLE_PLAYER_PER_ACCOUNT5 (LegendySF: CommonDefines.h:33)
+SLOT_COUNT = 5
 
 # ---------------------------------------------------------------------------
-# iceri-yardimcilar
+# yardimcilar
 # ---------------------------------------------------------------------------
 def _res_name(name):
     if not os.path.isdir(RESULT_DIR):
-        os.makedirs(RESULT_DIR)
+        try:
+            os.makedirs(RESULT_DIR)
+        except:
+            pass
     return os.path.join(RESULT_DIR, 'last_%s.txt' % name)
 
 def _write(name, text):
@@ -63,109 +49,236 @@ def _write(name, text):
         f = open(_res_name(name), 'w')
         f.write(text)
         f.close()
+        return True
     except:
-        pass
+        return False
 
 def _fmt_error(e):
     return '%s: %s' % (type(e).__name__, str(e))
 
 # ---------------------------------------------------------------------------
-# mainStream yakalama (yalniz YUKLEME ANINDA — ana thread'deyiz)
+# mainStream — FRAME YURUYUSU (calisan script teknigi, hooksuz)
 # ---------------------------------------------------------------------------
-_MS = None          # MainStream ornegi (varsa)
-_LOAD_NOTES = []
+_MS_CACHE = None
 
-def _try_capture_mainstream():
-    """__main__ globali -> sys.modules taramasi. (frame yuruyusu gerekmez:
-    biz yuklemeyi ana thread'de yapiyoruz ve exec frame'i taze.)"""
-    global _MS
-    # 1) __main__ globali — bazi paketlerde prototype.py mainStream'i module
-    #    globali olarak birakir
+def _find_ms_from_frames():
+    """sys._current_frames() ile mainStream local'ini tara (~0.05ms GIL)."""
+    global _MS_CACHE
+    if _MS_CACHE is not None:
+        return _MS_CACHE
     try:
-        import __main__
-        ms = getattr(__main__, 'mainStream', None)
-        if ms is not None:
-            _MS = ms
-            _LOAD_NOTES.append('mainStream: __main__ globalinden yakalandi')
-            return
-    except:
-        pass
-    # 2) sys.modules icinde networkmodule/MainStream ornegi taramasi
-    #    (bu tarama gc DEGIL — sys.modules anahtar bakisi, ucuz ve guvenli)
-    try:
-        import networkmodule
-        for attr in ('mainStream', 'stream', 'curStream'):
-            ms = getattr(networkmodule, attr, None)
-            if ms is not None:
-                _MS = ms
-                _LOAD_NOTES.append('mainStream: networkmodule.%s' % attr)
-                return
-    except:
-        pass
-    _LOAD_NOTES.append('mainStream: BULUNAMADI (net.* komutlari yine calisir)')
-
-_try_capture_mainstream()
+        frames = sys._current_frames()
+    except AttributeError:
+        return None
+    for tid in frames:
+        f = frames[tid]
+        depth = 0
+        while f is not None and depth < 30:
+            try:
+                fl = f.f_locals
+            except:
+                break
+            for nm in ('mainStream', 'stream', 'main_stream', 'appStream'):
+                ms = fl.get(nm)
+                if ms is not None and hasattr(ms, 'curPhaseWindow'):
+                    _MS_CACHE = ms
+                    return ms
+            try:
+                f = f.f_back
+            except:
+                break
+            depth += 1
+    return None
 
 def _get_ms():
-    return _MS
+    return _find_ms_from_frames()
 
 # ---------------------------------------------------------------------------
-# SAHNE OKUMA (hooksuz) — pencere tip adindan
+# sahne cozumleme (hooksuz — tip adi + attr okumasi)
 # ---------------------------------------------------------------------------
-def _scene_name():
-    """Donus: 'LoginWindow' / 'SelectCharacterWindow' / 'CreateCharacterWindow'
-    / 'SelectEmpireWindow' / 'ReselectEmpireWindow' / 'LoadingWindow'
-    / 'GameWindow' / '?'"""
+def _phase_window():
     ms = _get_ms()
-    if ms is not None:
-        for attr in ('curPhaseWindow', 'phaseWindow', 'curWindow'):
-            try:
-                pw = getattr(ms, attr, None)
-            except:
-                pw = None
-            if pw is not None:
-                return type(pw).__name__
-    # yedek: import edilmis intro modullerinden sekmeye calisma — YOK
-    # (hooksuz, gc'siz); bunun yerine baglanti durumuyla yetin
-    return '?'
+    if ms is None:
+        return None, None
+    for attr in ('curPhaseWindow', 'phaseWindow', 'curWindow'):
+        try:
+            pw = getattr(ms, attr, None)
+        except:
+            pw = None
+        if pw is not None and pw != 0:
+            return ms, pw
+    return ms, None
+
+def _scene_name():
+    """'LoginWindow+ServerList' / 'LoginWindow' / 'SelectCharacterWindow' /
+    'CreateCharacterWindow' / 'SelectEmpireWindow' / 'LoadingWindow' /
+    'GameWindow' / '?'"""
+    ms, pw = _phase_window()
+    if pw is None:
+        # yedek: baglanti varsa loading/game varsay
+        try:
+            import net
+            if net.IsConnect():
+                if sys.modules.get('game') is not None:
+                    return 'GameWindow'
+                return 'LoadingWindow'
+        except:
+            pass
+        return '?'
+    try:
+        tn = type(pw).__name__
+    except:
+        return '?'
+    if tn == 'LoginWindow':
+        # serverBoard/serverList varsa BU EKRAN server listesi (kullanici: listbox+OK)
+        for sb in ('serverBoard', 'serverList', 'channelList'):
+            if getattr(pw, sb, None) is not None:
+                return 'LoginWindow+ServerList'
+        return 'LoginWindow'
+    if tn == 'LogoWindow':
+        return 'LoginWindow'
+    return tn
+
+def _pw_by_type(*tnames):
+    """sahne penceresini tip adiyla getir (None olabilir)."""
+    ms, pw = _phase_window()
+    if pw is None:
+        return None
+    try:
+        if type(pw).__name__ in tnames:
+            return pw
+    except:
+        pass
+    return None
 
 # ---------------------------------------------------------------------------
-# 1) LOGIN  (LegendySF §3: auth->key->game-login; client otomatik zincir)
+# 1) SERVERLIST — sunucu listesi oku (kullanici: "ilk listbox server isimleri")
+# ---------------------------------------------------------------------------
+def serverlist():
+    try:
+        pw = _pw_by_type('LoginWindow')
+        if pw is None:
+            _write('server', 'HATA: LoginWindow sahnesinde degil (SCENE=%s)\n' % _scene_name())
+            return
+        lines = ['SCENE=%s' % _scene_name()]
+        sl = getattr(pw, 'serverList', None)
+        if sl is None:
+            lines.append('serverList attr YOK! LoginWindow attr listesi asagida:')
+            for a in dir(pw):
+                if 'erver' in a or 'hannel' in a:
+                    lines.append('  aday attr: %s = %s' % (a, type(getattr(pw, a)).__name__))
+        else:
+            n = -1
+            try:
+                n = sl.GetItemCount()
+            except:
+                try:
+                    n = len(sl.itemList)
+                except:
+                    pass
+            lines.append('server adedi: %s' % str(n))
+            if n and n > 0:
+                for i in range(min(n, 32)):
+                    try:
+                        lines.append('  [%d] %s' % (i, sl.GetItemText(i)))
+                    except:
+                        lines.append('  [%d] (isim okunamadi - GetItemText yok)' % i)
+                        break
+        _write('server', '\n'.join(lines) + '\n')
+    except Exception, e:
+        _write('server', 'HATA ' + _fmt_error(e) + '\n')
+
+# ---------------------------------------------------------------------------
+# 2) SELSERVER — server+CH sec, OK butonuna bas (calisan scriptin yolu)
+# ---------------------------------------------------------------------------
+def selserver(srv, ch):
+    try:
+        pw = _pw_by_type('LoginWindow')
+        if pw is None:
+            _write('server', 'HATA: LoginWindow sahnesinde degil (SCENE=%s)\n' % _scene_name())
+            return
+        log = ['SCENE=%s' % _scene_name()]
+        sl = getattr(pw, 'serverList', None)
+        if sl is None or not hasattr(sl, 'SelectItem'):
+            _write('server', '\n'.join(log + ['HATA: serverList.SelectItem YOK! (once `serverlist` yaz)']) + '\n')
+            return
+        sl.SelectItem(srv)
+        log.append('OK: serverList.SelectItem(%d)' % srv)
+        time.sleep(0.3)
+        cl = getattr(pw, 'channelList', None)
+        if cl is not None and hasattr(cl, 'SelectItem'):
+            try:
+                cl.SelectItem(ch)
+                log.append('OK: channelList.SelectItem(%d)' % ch)
+                time.sleep(0.3)
+            except Exception, e2:
+                log.append('UYARI: channel secilemedi (%s)' % _fmt_error(e2))
+        else:
+            log.append('UYARI: channelList yok (bazi clientlarda server secince dolar)')
+        btn = getattr(pw, 'serverSelectButton', None)
+        if btn is None:
+            # aday tara
+            for a in dir(pw):
+                if 'elect' in a and 'utton' in a:
+                    btn = getattr(pw, a)
+                    log.append('aday buton attr: %s' % a)
+                    break
+        if btn is not None and hasattr(btn, 'CallEvent'):
+            btn.CallEvent()
+            log.append('OK: serverSelectButton.CallEvent() -> login ekranina gecmeli')
+        else:
+            _write('server', '\n'.join(log + ['HATA: OK butonu bulunamadi!']) + '\n')
+            return
+        _write('server', '\n'.join(log) + '\n')
+    except Exception, e:
+        _write('server', 'HATA ' + _fmt_error(e) + '\n')
+
+# ---------------------------------------------------------------------------
+# 3) LOGIN — UI yolu once (calisan script), paket yolu yedek
 # ---------------------------------------------------------------------------
 def login(user, pwd):
     try:
-        import net
-        # mainStream bulunursa UI-yoluna en yakın doğru zincir:
-        # SetLoginInfo + Connect (KEEP_ACCOUNT_CONNETION_ENABLE=1 -> auth'a baglanir)
-        ms = _get_ms()
-        net.SetLoginInfo(user, pwd)
-        sent = None
-        if ms is not None and hasattr(ms, 'Connect'):
-            try:
-                ms.Connect()
-                sent = 'stream.Connect()'
-            except:
-                sent = None
-        if sent is None:
-            if hasattr(net, 'ConnectToAccountServer'):
-                net.ConnectToAccountServer()
-                sent = 'net.ConnectToAccountServer()'
-            elif hasattr(net, 'Connect'):
-                net.Connect()
-                sent = 'net.Connect()'
-            else:
-                _write('login', 'HATA: baglanti glue bulunamadi\n')
-                return
-        _write('login', 'OK: SetLoginInfo + %s (id=%s)\n'
-                        'Beklenen zincir: auth Login3 -> key -> game Login2 ->\n'
-                        'TPacketGCEmpire(90) + LoginSuccess4(32) -> SelectCharacterWindow\n'
-                        % (sent, user))
+        log = ['SCENE=%s' % _scene_name()]
+        pw = _pw_by_type('LoginWindow')
+        ui_ok = False
+        if pw is not None:
+            ide = getattr(pw, 'idEditLine', None)
+            pwe = getattr(pw, 'pwdEditLine', None)
+            lbtn = getattr(pw, 'loginButton', None)
+            if ide is not None and pwe is not None and lbtn is not None and hasattr(lbtn, 'CallEvent'):
+                ide.SetText(user)
+                pwe.SetText(pwd)
+                time.sleep(0.3)
+                lbtn.CallEvent()
+                ui_ok = True
+                log.append('OK: UI yolu (idEditLine+pwdEditLine+loginButton.CallEvent)')
+        if not ui_ok:
+            import net
+            net.SetLoginInfo(user, pwd)
+            sent = None
+            ms = _get_ms()
+            if ms is not None and hasattr(ms, 'Connect'):
+                try:
+                    ms.Connect()
+                    sent = 'stream.Connect()'
+                except:
+                    sent = None
+            if sent is None and hasattr(net, 'ConnectToAccountServer'):
+                try:
+                    net.ConnectToAccountServer()
+                    sent = 'net.ConnectToAccountServer()'
+                except Exception, e2:
+                    _write('login', '\n'.join(log + ['HATA Connect: ' + _fmt_error(e2)]) + '\n')
+                    return
+            log.append('OK: paket yolu (SetLoginInfo + %s)' % (sent or 'baglanti yok!'))
+        log.append('Beklenen: waitfor SelectCharacterWindow 30')
+        _write('login', '\n'.join(log) + '\n')
         _write('status', status_text())
     except Exception, e:
         _write('login', 'HATA ' + _fmt_error(e) + '\n')
 
 # ---------------------------------------------------------------------------
-# 2) CHARLIST — 5 slot: isim/level/sinif/cinsiyet/guild (LegendySF §4b)
+# 4) CHARLIST — 5 slot tablosu (net slot data)
 # ---------------------------------------------------------------------------
 def charlist():
     try:
@@ -184,7 +297,7 @@ def charlist():
                 continue
             count += 1
             try:
-                name  = net.GetAccountCharacterSlotDataString(i, net.ACCOUNT_CHARACTER_SLOT_NAME)
+                name = net.GetAccountCharacterSlotDataString(i, net.ACCOUNT_CHARACTER_SLOT_NAME)
             except:
                 name = '?'
             try:
@@ -192,87 +305,86 @@ def charlist():
             except:
                 level = -1
             try:
-                race  = net.GetAccountCharacterSlotDataInteger(i, net.ACCOUNT_CHARACTER_SLOT_RACE)
+                race = net.GetAccountCharacterSlotDataInteger(i, net.ACCOUNT_CHARACTER_SLOT_RACE)
             except:
                 race = -1
             job = JOB_NAMES.get(race % 4, '?') if race >= 0 else '?'
             sex = RACE_TABLE.get(race, ('?', '?'))[1]
-            try:
-                guild = net.GetAccountCharacterSlotDataString(i, net.ACCOUNT_CHARACTER_SLOT_GUILD_NAME)
-            except:
-                guild = ''
-            lines.append('[slot %d] %s  Lv.%d  %s(%s)  race=%d  guild=%s' %
-                         (i, name, level, job, sex, race, guild))
+            lines.append('[slot %d] %s  Lv.%d  %s(%s)  race=%d' % (i, name, level, job, sex, race))
         lines.append('---')
-        lines.append('TOPLAM KARAKTER: %d / %d' % (count, SLOT_COUNT))
-        lines.append('BOS SLOT(LAR): %s' % (str(empty_slots)))
+        lines.append('TOPLAM: %d / %d | BOS: %s' % (count, SLOT_COUNT, str(empty_slots)))
         _write('charlist', '\n'.join(lines) + '\n')
     except Exception, e:
         _write('charlist', 'HATA ' + _fmt_error(e) + '\n')
 
 # ---------------------------------------------------------------------------
-# 3) EMPIRE / BAYRAK (LegendySF §5) — yalniz 0 karakterken anlamlidir
+# 5) EMPIRE (ilk karakter icin) — paket yolu
 # ---------------------------------------------------------------------------
 def empire(n):
     try:
         if n not in (1, 2, 3):
-            _write('empire', 'HATA: empire 1(A Shinsoo) 2(B Chunjo) 3(C Jinno) olmali, gelen=%s\n' % n)
+            _write('empire', 'HATA: empire 1/2/3 olmali\n')
             return
         import net
         net.SendSelectEmpirePacket(n)
-        _write('empire', 'OK: TPacketCGEmpire(90) gonderildi empire=%d\n'
-                         'Server cevabi: TPacketGCEmpire + LoginSuccess4 tazeleme ->\n'
-                         'SelectCharacterWindow geri doner\n' % n)
+        _write('empire', 'OK: empire=%d gonderildi (cevap: SelectCharacterWindow tazelenir)\n' % n)
     except Exception, e:
         _write('empire', 'HATA ' + _fmt_error(e) + '\n')
 
 # ---------------------------------------------------------------------------
-# 4) CREATE (LegendySF §6) — statlar server'da JobInitialPoints'tan gelir,
-#    client statlari ihmal edilir -> 0,0,0,0 gondermek zararsizdir.
-#    HATA AYRIMI (hooksuz): create sonrasi slotu yokla:
-#      charlist() -> slot doluysa OK; 30sn sonra hala bos -> failure(bType).
-#      bType 1=isim alinmis, 0=genel ("karakteri yaratamazsin"); ayrica
-#      DB'de hesap basina 30 sn create cooldown VARDIR (ClientManagerPlayer.cpp:839).
+# 6) CREATE — paket yolu (statlar server'da; 30 sn cooldown var)
 # ---------------------------------------------------------------------------
 def create(slot, name, race, shape):
     try:
         if slot < 0 or slot >= SLOT_COUNT:
-            _write('create', 'HATA: slot 0..%d olmali\n' % (SLOT_COUNT - 1))
+            _write('create', 'HATA: slot 0..%d\n' % (SLOT_COUNT - 1))
             return
         if race not in RACE_TABLE:
-            _write('create', 'HATA: race 0..8 olmali (0=ErWarr 1=KaNinja 2=ErSura 3=KaShaman '
-                             '4=KaWarr 5=ErNinja 6=KaSura 7=ErShaman 8=Wolfman)\n')
+            _write('create', 'HATA: race 0..8\n')
             return
         if len(name) > 12:
-            _write('create', 'HATA: isim > 12 karakter (server siniri: input_login.cpp:499-503)\n')
+            _write('create', 'HATA: isim > 12 karakter\n')
             return
         import net
         net.SendCreateCharacterPacket(slot, name, race, shape, 0, 0, 0, 0)
         job, sex = RACE_TABLE[race]
-        _write('create', 'OK: TPacketCGCreateCharacter(4) gonderildi slot=%d ad=%s race=%d(%s-%s) shape=%d\n'
-                         'Sonuc kontrolu: 30 sn sonra `charlist` — slot doluysa OK.\n'
-                         'Dikkat: 30 sn create cooldown (anti-flood).\n'
+        _write('create', 'OK: slot=%d ad=%s race=%d(%s-%s) shape=%d\n'
+                         'Kontrol: 30 sn sonra charlist (create cooldown 30sn)\n'
                          % (slot, name, race, job, sex, shape))
     except Exception, e:
         _write('create', 'HATA ' + _fmt_error(e) + '\n')
 
 # ---------------------------------------------------------------------------
-# 5) ENTER — TEK DirectEnter (LegendySF §7 + RC12 YASAGI)
+# 7) ENTER — UI senkron + TEK DirectEnter (RC12: cift giris NPC'leri oldurur)
 # ---------------------------------------------------------------------------
 def enter(slot):
     try:
-        import net
-        # UYARI: UI StartGame + DirectEnter CIFT GIRIS yapar -> NPC'ler yuklenmez.
-        # YALNIZ DirectEnter: client kendi zincirini yürütür
-        #   (2. login -> SetLoadingPhase -> SendSelectCharacterPacket -> LoadData
-        #    -> StartGame -> SendEnterGamePacket -> PHASE_GAME)
-        net.DirectEnter(slot)
-        _write('enter', 'OK: DirectEnter(%d) gonderildi (TEK giris — UI StartGame CAGRILMADI)\n' % slot)
+        log = []
+        sw = _pw_by_type('SelectCharacterWindow')
+        if sw is not None:
+            try:
+                if hasattr(sw, 'SelectSlot'):
+                    sw.SelectSlot(slot)
+                    log.append('OK: SelectSlot(%d)' % slot)
+            except:
+                pass
+            try:
+                sw.slot = slot
+            except:
+                pass
+        try:
+            import net
+            net.DirectEnter(slot)
+            log.append('OK: DirectEnter(%d) — TEK giris (UI StartGame CAGRILMADI)' % slot)
+            log.append('Beklenen: waitfor GameWindow 60')
+            _write('enter', '\n'.join(log) + '\n')
+        except Exception, e:
+            _write('enter', 'HATA DirectEnter: ' + _fmt_error(e) + '\n')
     except Exception, e:
         _write('enter', 'HATA ' + _fmt_error(e) + '\n')
 
 # ---------------------------------------------------------------------------
-# 6) STATUS — sahne + baglanti + slot ozeti (hooksuz)
+# 8) STATUS — sahne + baglanti + stream bilgisi
 # ---------------------------------------------------------------------------
 def status_text():
     try:
@@ -284,36 +396,32 @@ def status_text():
     except:
         conn = -2
     scene = _scene_name()
-    ms_state = 'yakalandi' if _MS is not None else 'yok'
-    return 'SCENE=%s | CONN=%d | mainStream=%s | t=%s\n' % (
-        scene, conn, ms_state, time.strftime('%H:%M:%S'))
+    ms = _get_ms()
+    return 'SCENE=%s | CONN=%d | stream=%s | t=%s\n' % (
+        scene, conn,
+        'yakalandi' if ms is not None else 'YOK',
+        time.strftime('%H:%M:%S'))
 
 def status():
     _write('status', status_text())
 
 # ---------------------------------------------------------------------------
-# modul kaydi — DLL snippet'leri `import maxlib; maxlib.login(...)` der;
-# import makinesi sys.modules'a once bakar, buradaki nesneyi bulur.
+# modul kaydi — DLL snippet'leri `import maxlib; maxlib.xxx()` der
 # ---------------------------------------------------------------------------
-import sys as _sys
 import types as _types
-try:
-    _maxlib = _sys.modules.get('maxlib', None)
-    if _maxlib is None:
-        _maxlib = _types.ModuleType('maxlib')
-    for _k, _v in globals().items():
-        if _k.startswith('__'):
-            continue
-        setattr(_maxlib, _k, _v)
-    _sys.modules['maxlib'] = _maxlib
-except Exception, e:
-    print '[maxlib] modul kaydi hatasi:', e
+import sys as _sys
+_maxlib = _sys.modules.get('maxlib', None)
+if _maxlib is None:
+    _maxlib = _types.ModuleType('maxlib')
+for _k, _v in globals().items():
+    if _k.startswith('__'):
+        continue
+    setattr(_maxlib, _k, _v)
+_sys.modules['maxlib'] = _maxlib
 
 # ---------------------------------------------------------------------------
 # yukleme raporu
 # ---------------------------------------------------------------------------
 _write('pylib_load',
-       'pylib yuklendi (ANA THREAD)\n' +
-       '\n'.join('- ' + n for n in _LOAD_NOTES) + '\n' +
-       status_text())
-print '[maxlib] yuklendi — komutlar: login/charlist/empire/create/enter/status'
+       'pylib v2.0 yuklendi (ANA THREAD)\n' + status_text())
+print '[maxlib] v2.0 yuklendi — selserver/login/charlist/empire/create/enter/status/serverlist'

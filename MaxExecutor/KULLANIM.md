@@ -2,7 +2,7 @@
 
 > Paket içeriği, kurulum, komutlar, giriş akışı, sorun giderme — hepsi bu dosyada.
 > Mimari gerekçe için: `reports/DEV_REAL_BINARY_TEST.md` (RC18/RC19) + `reports/DEV_GIL_ANALYSIS.md` (RC1-RC17).
-> Son güncelleme: **Oturum 7 — v1.1** (konsol-yok hatası düzeltildi, otomatik kuyruk drenajı, pyerr.log)
+> Son güncelleme: **Oturum 7b — v1.2** (SetTimer drenajı, zincir sayaçları, probe, selserver/serverlist, basedir.txt)
 
 ---
 
@@ -58,20 +58,37 @@
 
 ## 3. İLK GİRİŞ AKIŞI (komut sırası birebir)
 
+> ⚠️ **Bu client'ta login'den ÖNCE server listesi ekranı var** (server isimleri + CH listbox + OK butonu).
+> O yüzden akış `selserver` ile başlar.
+
 MaxExecutor konsolunda sırayla:
 
 ```
-status                                  (1) ana thread nabzı + sahne — "SCENE=..." dönmeli
-load C:/MaxExec/pylib.py                (2) maxlib'i ANA THREAD'de yükle
-login kullaniciadim sifrem              (3) auth'a bağlan + giriş
-waitfor SelectCharacterWindow 30        (4) karakter seçme ekranına düşene kadar bekle
-charlist                                (5) 5 slot tablosunu yazdır
-enter 0                                 (6) 1. slottaki karakterle oyuna gir (slot = 0-4)
-waitfor GameWindow 60                   (7) oyun ekranı + NPC spawn tamamlanması
-status                                  (8) son durum
+status                                  (0) SCENE= ne diyor bak (LoginWindow+ServerList ise dogru ekrandasin)
+load C:/MaxExec/pylib.py                (1) maxlib'i ANA THREAD'de yükle
+selserver 0 0                           (2) listedeki 0. sunucu + 0. CH'yi seç, OK'a bas
+serverlist                              (*)  isimleri/listbox içeriğini görmek istersen
+waitfor LoginWindow 15                  (3) login (id/şifre) ekranına düşünceye kadar
+login kullaniciadim sifrem              (4) id+şifre doldur + giriş
+waitfor SelectCharacterWindow 30        (5) karakter seçme ekranı
+charlist                                (6) 5 slot tablosu
+enter 0                                 (7) 1. slotla oyuna gir (TEK DirectEnter)
+waitfor GameWindow 60                   (8) oyun + NPC spawn
+status                                  (9) son durum
 ```
 
-Sonuç dosyaları `C:\MaxExec\results\` altında yazılır: `last_status.txt`, `last_charlist.txt`, `last_login.txt`, `last_enter.txt`, `last_error.txt`.
+Sonuç dosyaları `C:\MaxExec\results\` altında: `py_probe.txt` (zincir kanıtı), `last_status.txt`, `last_server.txt`, `last_login.txt`, `last_charlist.txt`, `last_enter.txt`, `last_error.txt`, `last_pylib_load.txt`.
+
+### ZİNCİR KOPTU MU? (bir şey olmuyorsa 30 sn bekle, sonra bak)
+
+| Kontrol | Ne demek |
+|---|---|
+| `results\py_probe.txt` VAR | Ana thread Python'u çalışıyor — zincir TAMAM. Sorun Python/pylib tarafında → `pyerr.log` |
+| `results\py_probe.txt` YOK + `alive.txt`'de `exec=0` | Komutlar kuyruğa giriyor ama çalıştırılmıyor |
+| `alive.txt`'de `timer>0` artıyor | Oyun mesaj pompası TimerProc'u çağırıyor — drenaj yaşıyor (v1.2 ana yol) |
+| `alive.txt`'de `msg>0` artıyor | WndProc subclass da yaşıyor |
+| `alive.txt` HİÇ yok / 2 sn'de bir güncellenmiyor | Drain hiç çağrılmıyor — `maxexec.log`'a bak (SetTimer satırı var mı?) |
+| `alive.txt` içeriği örnek: `tick=110017796 drain=412 exec=8 timer=409 msg=3 py=1` | `drain` akıyor ama `exec` 0 ise python27 çözülememiş → `maxexec.log` |
 
 ### create ile yeni karakter (karakter yoksa)
 ```
@@ -128,21 +145,24 @@ eski Controller (win32apiMetin2Py / cppcmpr) zincirini kullanacaksan çalıştı
 
 | Belirti | Sebep | Çözüm |
 |---|---|---|
-| **Konsol açılıyor AMA hiç yazı yazmıyor** (v1.0 hatası) | GUI process'in CRT stdout'u geçersiz handle ile başlar; `AllocConsole` sonrası CRT konsola yeniden bağlanmamıştı | **v1.1'e güncelle** (freopen CONIN$/CONOUT$ + unbuffered fix). v1.1'de bu sorun yapısal olarak imkânsız — her adım ayrıca `maxexec.log`'a yazılır |
-| `VirtualAllocEx basarisiz: 8` (NOT_ENOUGH_MEMORY) | Oyun 32-bit adres alanı (2GB) pack dosyalarıyla dolu/parçalı; oyundan SONRA inject etmeye çalışınca bölge bulunamıyor | Oyunu ilk açtığın anda (login ekranı çıkınca hemen) inject et; oyunu -windowed modda başlat; cmd'yi Yönetici yap; hâlâ olmazsa oyunu yeniden başlatıp tekrar dene (PID değişir, MaxInject otomatik bulur) |
-| Konsol penceresi görünmüyor | Oyun tam ekran, konsol arkada | v1.1 konsolu TOPMOST yapar. Eski v1.0'daysa Alt+Tab ile "MaxExecutor" penceresini ara |
-| **Konsol hiç açılmadı (headless mod)** | AllocConsole bazı koruma/ortamlarda başarısız olur | Sorun değil: `C:\MaxExec\queue\` klasörüne komutu elle `.cmd` dosyası olarak bırak — v1.1'in otomatik drenajı (2 sn) işler. Örn. Not Defteri ile `c_test.cmd` içine `import maxlib\nmaxlib.status()` yaz. Sonuç: `results/`, sağlık: `alive.txt` (2 sn'de bir güncellenir) |
-| Python kodum hata verdi, nerede göreceğim? | Python traceback'leri oyun içine gider | v1.1: `load` komutu `sys.stderr`'i `C:\MaxExec\pyerr.log`'a yönlendirir — `load` sonrası tüm Python hataları o dosyada |
+| **Komutlar kuyruğa yazılıyor ama hiçbir sonuç dosyası oluşmuyor** (v1.1 saha bulgusu) | v1.1 drenajı yalnız WndProc subclass + PostMessage'a dayanıyordu; subclass etkisizse zincir ölür | **v1.2 kullan** — SetTimer yolu WndProc'tan bağımsız. Test: `results\py_probe.txt` oluşmalı (30 sn bekle) |
+| **C:\MaxExec'te dosya oluşumu şüpheli** (sanallaştırma/izin) | Oyun süreci C:\ yazamıyor olabilir | `C:\MaxExec\basedir.txt` içine tek satır `D:\MaxExec` yaz → tüm queue/results/log oraya taşınır |
+| `SCENE=?` dönüyor | mainStream frame-walk ile bulunamadı | `status` tekrar dene (frame yürüyüşü her çağrıda çalışır); oyunun intro ekranı değişmişse `raw` ile `import sys; print(sys.modules.keys())` incele |
+| `selserver` "serverList.SelectItem YOK" | Bu ekranda değil ya da attr adı farklı | Önce `serverlist` yaz — aday attr'ları raporlar |
+| **Konsol açılıyor AMA hiç yazı yazmıyor** (v1.0 hatası) | GUI process'in CRT stdout'u geçersiz handle ile başlar; `AllocConsole` sonrası CRT konsola yeniden bağlanmamıştı | **v1.2'ye güncelle** (freopen CONIN$/CONOUT$ + unbuffered fix). Her adım ayrıca `maxexec.log`'a yazılır |
+| `VirtualAllocEx basarisiz: 8` (NOT_ENOUGH_MEMORY) | Oyun 32-bit adres alanı (2GB) pack dosyalarıyla dolu/parçalı | Oyunu ilk açtığın anda (login ekranı çıkınca hemen) inject et; cmd'yi Yönetici yap; olmazsa oyunu yeniden başlat |
+| Konsol penceresi görünmüyor | Oyun tam ekran, konsol arkada | v1.1+ konsolu TOPMOST yapar. Alt+Tab ile "MaxExecutor" penceresini ara |
+| **Konsol hiç açılmadı (headless mod)** | AllocConsole bazı koruma/ortamlarda başarısız olur | Sorun değil: `C:\MaxExec\queue\` klasörüne komutu elle `.cmd` dosyası olarak bırak — otomatik drenaj işler |
+| Python kodum hata verdi, nerede göreceğim? | Python traceback'leri oyun içine gider | `load` sonrası tüm Python hataları `C:\MaxExec\pyerr.log`'da |
 | `MaxInject.exe` "sureci bulunamadi" | Oyun kapalı ya da exe adı farklı | Oyunu aç; `MaxInject.exe <gercek-exe-adı>` |
 | "OpenProcess basarisiz (5)" | Yönetici değil | cmd'yi Yönetici olarak aç |
-| `python27.dll : YOK` | Oyun Python'u başlatmamış | Login ekranına kadar bekle; DLL 20 sn boyunca otomatik tekrar dener; o da yetmezse oyunu login ekranına getirip DLL'i TEKRAR enjekte et |
-| `oyun penceresi: BULUNAMADI` | Pencere henüz yok | DLL 20 sn yeniden dener; hâlâ yoksa `status` yaz (komut Pencere yoksa da kuyruğa gider, pencere gelince işlenir) |
+| `python27.dll : YOK` | Oyun Python'u başlatmamış | Login ekranına kadar bekle; DLL 20 sn boyunca otomatik tekrar dener |
+| `oyun penceresi: BULUNAMADI` | Pencere henüz yok | DLL 20 sn yeniden dener |
 | `status` → "sonuc dosyasi yok" | pylib yüklü değil | `load C:/MaxExec/pylib.py` çalıştırmayı unutma |
-| `login` sonrası hiçbir şey olmuyor | Hatalı ID/şifre veya sunucu seçilmemiş | `results/last_error.txt` + oyun penceresinde hata popup'ına bak (`OnLoginFailure` kodları: NOID/WRONGPWD/ALREADY...) |
-| NPC'ler gelmiyor | Eski script alışkanlığı: çift giriş | `enter` komutunu TEK SEFER kullan; tekrar denemeden önce `waitfor GameWindow 60` ile bekle |
-| Oyunda lag/kasma | Çok sık komut | Drain zaten 4 komut/mesaj sınırlı; arka arkaya `raw` spamı yapma |
-| GIL hatası hâlâ geliyor | Başka bir eski DLL de enjekte (Kaynak.cpp v1/v2/pythonSenderv1) | O DLL'leri KALDIRIR — MaxExecutor tek başına yeterli |
-| DLL iki kez enjekte edildi | çift konsol | İkinci konsolu kapat; oyunu yeniden başlatıp tek enjeksiyon yap |
+| `login` sonrası hiçbir şey olmuyor | Hatalı ID/şifre veya serverlist ekranı atlanmış | Önce `selserver` yap; sonra `last_login.txt` + `pyerr.log` + oyun popup'ı (OnLoginFailure: NOID/WRONGPWD/ALREADY...) |
+| NPC'ler gelmiyor | Eski script alışkanlığı: çift giriş | `enter` TEK SEFER; `waitfor GameWindow 60` ile bekle |
+| Oyunda lag/kasma | Çok sık komut | Drain 4 komut/mesaj sınırlı; `raw` spamı yapma |
+| GIL hatası hâlâ geliyor | Başka eski DLL enjekte (Kaynak.cpp v1/v2/pythonSenderv1) | O DLL'leri KALDIRIR — MaxExecutor tek başına yeterli |
 
 ---
 

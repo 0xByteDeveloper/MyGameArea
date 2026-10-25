@@ -12,8 +12,19 @@
 //    FIX-5: Otomatik dreneaj thread'i (2 sn): konsol olmasa bile kuyruk
 //           islenir — .cmd dosyasini elle birak, 2 sn icinde calisir.
 //    FIX-6: Her adim maxexec.log'a yaziliyor (konsolsuz debug kanali).
-//    FIX-7: load komutu sys.stderr'i C:\MaxExec\pyerr.log'a yonlendirir
-//           (Python traceback'leri artik gorunur).
+//  v1.2 DUZELTMELER (kuyruk yaziliyor ama hicbir sey calismiyor sorunu):
+//    FIX-8:  SetTimer TABANLI DRENAJ — TimerProc oyunun kendi mesaj pompasinda
+//            ana thread'de calisir; WndProc subclass'a HICBIR bagimlilik yok.
+//            Subclass geri alinirsa/emilirse bile kuyruk islenir.
+//    FIX-9:  SAYACLAR + alive.txt zenginlesti:
+//            tick=<ms> drain=<n> exec=<n> timer=<n> msg=<n> py=<0/1>
+//            tek dosya okumasi tum zincirin nerede kirildigini soyler.
+//    FIX-10: PROBE — python27 bulununca kuyruga otomatik probe komutu konur;
+//            results\py_probe.txt olusursa zincir UST-UCE KANITLANMIS olur.
+//    FIX-11: Py_IsInitialized artik loglanir.
+//    FIX-12: basedir.txt destegi (C:\MaxExec\basedir.txt icine "D:\MaxExec"
+//            yazarsan tum dosyalar oraya tasinir; C:\ sorunu yasayanlar icin).
+//    FIX-13: 30 sn'de bir maxexec.log'a sayaç ozeti yazilir.
 // ============================================================================
 //  xgodmod4 gereksinimleri:
 //    * Python fonksiyon hook'u  YOK  (monkey-patch yok)
@@ -57,13 +68,15 @@
 // Sabitler
 // ---------------------------------------------------------------------------
 static const UINT    WM_APP_MAXEXEC   = WM_APP + 0x7A1;   // 0x87A1
-static const char*   BASE_DIR         = "C:\\MaxExec";
-static const char*   QUEUE_DIR        = "C:\\MaxExec\\queue";
-static const char*   RESULT_DIR       = "C:\\MaxExec\\results";
-static const char*   ALIVE_FILE       = "C:\\MaxExec\\alive.txt";
-static const char*   EXEC_LOG         = "C:\\MaxExec\\maxexec.log";
+static const UINT_PTR TIMER_ID_MAXEXEC = 0x7A1;          // SetTimer kimligi
+// v1.2: yollar artik calisma-zamani — basedir.txt ile tasinabilir (FIX-12)
+static char BASE_DIR[MAX_PATH]   = "C:\\MaxExec";
+static char QUEUE_DIR[MAX_PATH]  = "C:\\MaxExec\\queue";
+static char RESULT_DIR[MAX_PATH] = "C:\\MaxExec\\results";
+static char ALIVE_FILE[MAX_PATH] = "C:\\MaxExec\\alive.txt";
+static char EXEC_LOG[MAX_PATH]   = "C:\\MaxExec\\maxexec.log";
+static char PYERR_LOG[MAX_PATH]  = "C:\\MaxExec\\pyerr.log";
 static const int     MAX_CMDS_PER_DRAIN = 4;              // tek mesajda maks. komut (render'i sisirmemek icin)
-static const char*   PYERR_LOG        = "C:\\MaxExec\\pyerr.log";
 
 // ---------------------------------------------------------------------------
 // Python27 sembolleri (yalniz ANA THREAD'den kullanilir!)
@@ -146,15 +159,49 @@ static bool EnqueueCommand(const std::string& code, std::string& outFile)
 static WNDPROC g_oldWndProc = 0;
 static HWND    g_hGameWnd   = 0;
 
+// ---------------------------------------------------------------------------
+// Sayaclar (FIX-9) — zincirin nerede kirildigini tek bakista soyler
+// ---------------------------------------------------------------------------
+static volatile LONG g_nMsg = 0;     // WndProc'un aldigi WM_APP_MAXEXEC sayisi
+static volatile LONG g_nTimer = 0;   // TimerProc cagrilari (oyun pompasi kaniti)
+static volatile LONG g_nDrain = 0;   // DrainQueue cagrilari
+static volatile LONG g_nExec = 0;    // gercekten PyRun edilen komutlar
+
+static void InitPaths(void)
+{
+    // FIX-12: C:\MaxExec\basedir.txt ilk satiri = yeni ana klasor (orn: D:\MaxExec)
+    std::string bd;
+    if (ReadFileAll("C:\\MaxExec\\basedir.txt", bd))
+    {
+        while (!bd.empty() && (bd[bd.size()-1]=='\n' || bd[bd.size()-1]=='\r' || bd[bd.size()-1]==' ' || bd[bd.size()-1]=='\t'))
+            bd.erase(bd.size()-1);
+        if (bd.size() >= 3 && bd[1]==':' && (bd[2]=='\\' || bd[2]=='/'))
+        {
+            for (size_t i = 0; i < bd.size(); ++i) if (bd[i] == '/') bd[i] = '\\';
+            _snprintf(BASE_DIR, MAX_PATH, "%s", bd.c_str());
+            BASE_DIR[MAX_PATH-1] = 0;
+        }
+    }
+    _snprintf(QUEUE_DIR,  MAX_PATH, "%s\\queue",     BASE_DIR);  QUEUE_DIR[MAX_PATH-1]=0;
+    _snprintf(RESULT_DIR, MAX_PATH, "%s\\results",   BASE_DIR);  RESULT_DIR[MAX_PATH-1]=0;
+    _snprintf(ALIVE_FILE, MAX_PATH, "%s\\alive.txt", BASE_DIR);  ALIVE_FILE[MAX_PATH-1]=0;
+    _snprintf(EXEC_LOG,   MAX_PATH, "%s\\maxexec.log", BASE_DIR); EXEC_LOG[MAX_PATH-1]=0;
+    _snprintf(PYERR_LOG,  MAX_PATH, "%s\\pyerr.log",  BASE_DIR);  PYERR_LOG[MAX_PATH-1]=0;
+}
+
 static void Heartbeat(void)
 {
-    char buf[64];
-    sprintf(buf, "%lu", GetTickCount());
+    char buf[160];
+    sprintf(buf, "tick=%lu drain=%ld exec=%ld timer=%ld msg=%ld py=%d",
+            (unsigned long)GetTickCount(),
+            (long)g_nDrain, (long)g_nExec, (long)g_nTimer, (long)g_nMsg,
+            pfn_PyRun_SimpleString ? 1 : 0);
     WriteFileAll(ALIVE_FILE, buf);
 }
 
 static void DrainQueue(void)
 {
+    InterlockedIncrement(&g_nDrain);
     if (!pfn_PyRun_SimpleString) { Heartbeat(); return; }  // python27 yoksa da nabiz yaz
 
     WIN32_FIND_DATAA fd;
@@ -180,6 +227,7 @@ static void DrainQueue(void)
             LogLine("EXEC %s (%u byte)", fd.cFileName, (unsigned)code.size());
             // >>> ANA THREAD'DE PYTHON CALISTIRMA (GIL zaten ana thread'de) <<<
             pfn_PyRun_SimpleString(code.c_str());
+            InterlockedIncrement(&g_nExec);
             ++done;
         }
         DeleteFileA(full.c_str());
@@ -193,10 +241,30 @@ static LRESULT CALLBACK MaxExecWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp
 {
     if (msg == WM_APP_MAXEXEC)
     {
+        InterlockedIncrement(&g_nMsg);
         DrainQueue();
         return 0;
     }
     return CallWindowProc(g_oldWndProc, hwnd, msg, wp, lp);
+}
+
+// ---------------------------------------------------------------------------
+// TIMER YOLU (FIX-8) — WM_TIMER oyunun kendi mesaj pompasiyla TimerProc'a
+// ulasir; WndProc subclass'i geri alinsa bile CALISIR. Ana thread garanti
+// (pencerenin sahibi thread = oyun ana thread'i).
+// ---------------------------------------------------------------------------
+static VOID CALLBACK MaxExecTimerProc(HWND hwnd, UINT, UINT_PTR, DWORD)
+{
+    InterlockedIncrement(&g_nTimer);
+    DrainQueue();
+}
+
+static void InstallTimer(void)
+{
+    if (!g_hGameWnd) return;
+    UINT_PTR id = SetTimer(g_hGameWnd, TIMER_ID_MAXEXEC, 1500, MaxExecTimerProc);
+    LogLine("SetTimer: %s (id=%lu, 1500ms)", id ? "KURULDU" : "BASARISIZ", (unsigned long)id);
+    printf("ana-thread timer: %s\n", id ? "KURULDU (WndProc'tan bagimsiz drenaj)" : "BASARISIZ");
 }
 
 // Oyunun ana gorunur penceresini bul (bu surece ait, sahibi olmayan, en buyuk)
@@ -267,6 +335,14 @@ static void CmdLogin(const std::string& id, const std::string& pwd)
     _snprintf(buf, sizeof(buf),
         "import maxlib\n"
         "maxlib.login(r'%s', r'%s')\n", id.c_str(), pwd.c_str());
+    buf[sizeof(buf)-1] = 0;
+    QRaw(buf);
+}
+
+static void CmdSelServer(int srv, int ch)
+{
+    char buf[256];
+    _snprintf(buf, sizeof(buf), "import maxlib\nmaxlib.selserver(%d, %d)\n", srv, ch);
     buf[sizeof(buf)-1] = 0;
     QRaw(buf);
 }
@@ -367,7 +443,7 @@ static bool InitConsole(void)
         LogLine("CONOUT$ (stderr) yeniden acilamadi");
     setvbuf(stdout, NULL, _IONBF, 0);   // buffer'siz: crash olsa bile yazar
     setvbuf(stderr, NULL, _IONBF, 0);
-    SetConsoleTitleA("MaxExecutor v1.1");
+    SetConsoleTitleA("MaxExecutor v1.2");
     HWND cw = GetConsoleWindow();
     if (cw)
     {
@@ -387,10 +463,15 @@ static DWORD WINAPI AutoDrainThread(LPVOID)
 {
     while (!g_hGameWnd) Sleep(500);
     LogLine("otomatik dreneaj aktif (2 sn periyot)");
+    int ticks = 0;
     while (true)
     {
         PostMessage(g_hGameWnd, WM_APP_MAXEXEC, 1, 0);
         Sleep(2000);
+        // FIX-13: 30 sn'de bir sayaç ozeti (zincir izi)
+        if ((++ticks % 15) == 0)
+            LogLine("ozet30s: timer=%ld msg=%ld drain=%ld exec=%ld",
+                    (long)g_nTimer, (long)g_nMsg, (long)g_nDrain, (long)g_nExec);
     }
     return 0;
 }
@@ -415,45 +496,65 @@ static std::vector<std::string> SplitArgs(const std::string& line)
 
 static void PrintHelp(void)
 {
-    printf("\n=== MaxExecutor v1.0 (ana-thread WndProc + dosya kuyruk) ===\n");
+    printf("\n=== MaxExecutor v1.2 (timer+wndproc ana-thread drenaj) ===\n");
     printf("  help                        : bu yardim\n");
     printf("  status                      : anlik sahne/baglanti snapshot\n");
     printf("  load <py-dosya>             : pylib.py'yi ANA THREAD'de yukle (ILK KOMUT BU OLSUN)\n");
-    printf("  login <id> <pwd>            : auth'a baglan + giris (paket yolu)\n");
+    printf("  selserver <srv> <ch>        : SERVER LISTESI ekraninda sunucu+CH sec (OK'a basar)\n");
+    printf("  login <id> <pwd>            : login ekraninda UI doldurur + giris\n");
     printf("  charlist                    : 5 slot tablosunu doken rapor\n");
     printf("  empire <1-3>                : bayrak/imparatorluk secimi\n");
     printf("  create <slot> <ad> <race> <shape> : karakter olustur (race 0-8, shape 0/1)\n");
-    printf("  enter <slot>                : oyuna giris — TEK DirectEnter (cift giris yok!)\n");
+    printf("  enter <slot>                : oyuna giris - TEK DirectEnter (cift giris yok!)\n");
     printf("  raw <python kodu>           : serbest Python (ana thread'de)\n");
     printf("  waitfor <Scene> <sn>        : orn. waitfor GameWindow 60\n");
     printf("  log                         : maxexec.log son satirlar\n");
     printf("  exit                        : cikis\n");
-    printf("Kurulum sirasi: status -> load C:/MaxExec/pylib.py -> login <id> <pwd>\n");
-    printf("  -> waitfor SelectCharacterWindow 30 -> charlist -> (empire/create)\n");
-    printf("  -> enter 0 -> waitfor GameWindow 60\n\n");
+    printf("Akis: status -> load C:/MaxExec/pylib.py -> selserver 0 0 ->\n");
+    printf("  waitfor LoginWindow 15 -> login <id> <pwd> -> waitfor SelectCharacterWindow 30\n");
+    printf("  -> charlist -> enter 0 -> waitfor GameWindow 60\n");
+    printf("Saglik: %s (tick/drain/exec/timer/msg/py) | zincir kaniti: results\\py_probe.txt\n\n", ALIVE_FILE);
 }
 
 static DWORD WINAPI WorkerThread(LPVOID)
 {
-    LogLine("worker thread basladi");
+    InitPaths();                                  // FIX-12: basedir.txt (D:\ destegi)
+    LogLine("worker thread basladi (base=%s)", BASE_DIR);
     EnsureDirs();
     const bool con = InitConsole();
 
     printf("\n=============================================\n");
-    printf("  MaxExecutor v1.1 — ana-thread executor\n");
+    printf("  MaxExecutor v1.2 - ana-thread executor\n");
     printf("  hook yok | SHM yok | arka-plan PyRun yok\n");
     printf("=============================================\n");
     if (!con)
-        printf("[!] KONSOL ACILAMADI (headless). Komutlari C:\\MaxExec\\queue klasorune\n"
-               "    elle .cmd dosyasi olarak birak — 2 sn icinde otomatik islenir.\n");
+        printf("[!] KONSOL ACILAMADI (headless). Komutlari %s\\queue klasorune\n"
+               "    elle .cmd dosyasi olarak birak - 2 sn icinde otomatik islenir.\n", BASE_DIR);
     for (int i = 0; i < 40 && !ResolvePython(); ++i) Sleep(500);
-    LogLine("python27: %s", pfn_PyRun_SimpleString ? "BULUNDU" : "YOK");
-    printf("python27.dll : %s\n", pfn_PyRun_SimpleString ? "BULUNDU" : "YOK (oyun python'u daha baslamamis olabilir)");
+    LogLine("python27: %s (Py_IsInitialized=%d)",
+            pfn_PyRun_SimpleString ? "BULUNDU" : "YOK",
+            pfn_PyIsInitialized ? pfn_PyIsInitialized() : -1);   // FIX-11
+    printf("python27.dll : %s%s\n", pfn_PyRun_SimpleString ? "BULUNDU" : "YOK (oyun python'u daha baslamamis olabilir)",
+           (pfn_PyIsInitialized && pfn_PyIsInitialized()) ? " [initialized]" : "");
+    if (pfn_PyRun_SimpleString)
+    {
+        // FIX-10: PROBE - ilk drenajda ana thread'in gercekten calistigini kanitlar
+        char probe[512];
+        _snprintf(probe, sizeof(probe),
+            "import sys, time\n"
+            "_pf = open(r'%s\\py_probe.txt', 'w')\n"
+            "_pf.write('PYOK t=' + time.strftime('%%H:%%M:%%S') + ' ver=' + str(sys.version)[:12] + '\\n')\n"
+            "_pf.close()\n", RESULT_DIR);
+        probe[sizeof(probe)-1] = 0;
+        std::string pf;
+        if (EnqueueCommand(probe, pf)) LogLine("probe kuyruga yazildi: %s", pf.c_str());
+    }
     for (int i = 0; i < 40 && !HookGameWindow(); ++i) Sleep(500);
     if (!g_hGameWnd) LogLine("oyun penceresi 20 sn icinde bulunamadi");
     printf("oyun penceresi: %s (hwnd=%p)\n", g_hGameWnd ? "SUBCLASS EDILDI" : "BULUNAMADI",
            (void*)g_hGameWnd);
     printf("kuyruk: %s | sonuc: %s\n", QUEUE_DIR, RESULT_DIR);
+    InstallTimer();                               // FIX-8: WndProc'tan bagimsiz ana yol
     CreateThread(NULL, 0, AutoDrainThread, NULL, 0, NULL);
     PrintHelp();
 
@@ -475,6 +576,7 @@ static DWORD WINAPI WorkerThread(LPVOID)
         else if (cmd == "status") CmdStatus();
         else if (cmd == "charlist") CmdCharlist();
         else if (cmd == "login" && a.size() >= 3) CmdLogin(a[1], a[2]);
+        else if (cmd == "selserver" && a.size() >= 3) CmdSelServer(atoi(a[1].c_str()), atoi(a[2].c_str()));
         else if (cmd == "empire" && a.size() >= 2) CmdEmpire(atoi(a[1].c_str()));
         else if (cmd == "create" && a.size() >= 5) CmdCreate(atoi(a[1].c_str()), a[2], atoi(a[3].c_str()), atoi(a[4].c_str()));
         else if (cmd == "enter" && a.size() >= 2) CmdEnter(atoi(a[1].c_str()));
@@ -512,7 +614,7 @@ BOOL APIENTRY DllMain(HMODULE hMod, DWORD reason, LPVOID)
         DisableThreadLibraryCalls(hMod);
         EnsureDirs();
         CreateThread(NULL, 0, WorkerThread, NULL, 0, NULL);
-        LogLine("MaxExecutor v1.1 yuklendi (pid=%lu) — worker baslatiliyor",
+        LogLine("MaxExecutor v1.2 yuklendi (pid=%lu) — worker baslatiliyor",
                 GetCurrentProcessId());
     }
     return TRUE;
