@@ -125,3 +125,45 @@
   create/empire, race tablosu, hata takibi, eski SHM yolu (STABLE), sorun giderme tablosu,
   yeniden derleme, test kontrol listesi
 - MaxExecutor_bundle_v1.zip (278KB): dll + exe + pylib + STABLE + kilavuz + kaynaklar
+
+---
+
+## Oturum 7 — Saha Testi + v1.1 Konsol Fix (2026-10-26)
+
+### Adım 7.1 — Kullanici saha testi (gercek Windows 10 1909)
+- Test 1: `MaxInject.exe` -> `VirtualAllocEx basarisiz: 8` (NOT_ENOUGH_MEMORY)
+  (32-bit oyun adres alani dolu/parcali; tekrar denemede gecti — sorun giderme tablosuna eklendi)
+- Test 2: enjeksiyon BASARILI (module=0x7A8C0000) AMA konsola hic yazi yazilmiyordu
+
+### Adım 7.2 — Kök neden analizi (konsol bos)
+- NEDEN: metin2client.exe GUI-subsystem process. CRT baslangicinda stdio FILE tablosu
+  GetStdHandle ile GECERSIZ handle'i one baglar. AllocConsole() Windows tarafinda yeni
+  konsol acar ama CRT'nin cache'ledigi stdout handle'ini GUNCELLEMEZ -> printf sessizce
+  olen handle'a yazar. v1.0'da freopen(CONIN$/CONOUT$) EKSIKTII.
+- Ikincil: konsol kurulumu DllMain icindeydi (loader-lock riski), cikis buffer'liydi,
+  konsol oyun arkasinda kaliyordu, hatalar gorunmezdi.
+
+### Adım 7.3 — MaxExecutor v1.1 (7 fix)
+- FIX-1: freopen CONIN$/CONOUT$ (stdin/stdout/stderr) — konsol cikisinin asil fix'i
+- FIX-2: setvbuf _IONBF (buffer'siz; crash olsa bile yazar)
+- FIX-3: konsol kurulumu DllMain -> WorkerThread (loader-lock hijyeni)
+- FIX-4: konsol HWND_TOPMOST + SetForegroundWindow (oyun arkasında kalmaz)
+- FIX-5: AutoDrainThread — 2 sn'de bir PostMessage(WM_APP_MAXEXEC): konsol olmasa bile
+  kuyruk islenir (headless mod: queue/*.cmd dosyasini elle birak, 2 sn'de calisir)
+- FIX-6: maxexec.log tam iz (worker baslangici, AllocConsole sonucu, python27, pencere)
+- FIX-7: load komutu sys.stderr -> C:\MaxExec\pyerr.log ('a',1) — Python traceback gorunur
+- MaxInject: ASCII banner (CP857 bozulmasi "ÔÇ" fix), 3 ipucu satiri (Alt+Tab/maxexec.log/pyerr.log)
+- DrainQueue: python27 yokken de heartbeat yazar
+
+### Adım 7.4 — Derleme (GCC 14.2 mingw-w64, root'suz kurulum)
+- sudo YOK -> apt-get download (5 deb: g++/gcc-win32, base, binutils, i686-dev, common)
+  + dpkg -x /tools/mingw altina; dikkat: windows.h mingw-w64-common'daki symlink'le gelir
+  (i686-dev tek basina BROKEN SYMLINK verir — common'suz "windows.h not found")
+- bin/MaxExecutor.dll 579KB + bin/MaxInject.exe 235KB — objdump: pei-i386 (dogrulandi)
+- strings dogrulamasi: CONIN$/CONOUT$/v1.1 stringleri DLL'de mevcut
+
+### Adım 7.5 — Dokuman + dagitim
+- KULLANIM.md: sorun giderme tablosuna 5 yeni satir (bos konsol / err8 / TOPMOST /
+  headless mod / pyerr.log), derleme bolumu GCC 14'e guncellendi
+- MaxExecutor_bundle_v1.zip yenilendi (337KB)
+- commit b080176 -> main push OK
