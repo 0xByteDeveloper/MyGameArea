@@ -167,3 +167,53 @@
   headless mod / pyerr.log), derleme bolumu GCC 14'e guncellendi
 - MaxExecutor_bundle_v1.zip yenilendi (337KB)
 - commit b080176 -> main push OK
+
+---
+
+## Oturum 7b — Saha Testi 2: Kuyruk Islenmiyor + Serverlist Ekrani (2026-10-26)
+
+### Adım 7b.1 — Kullanici saha testi 2
+- v1.1 konsol fix CALISTI (banner + subclass EDILDI hwnd=001b14ec)
+- AMA: kuyruk dosyalari yaziliyor (c_*.cmd seq 1-135) -> hicbir sonuc dosyasi yok,
+  pyerr.log yok, pylib load görünmüyor -> ANA THREAD DRENAJI HIC CALISMAMIS
+- Kullanici notu: client'ta login'den ONCE server listesi ekrani VAR
+  (server isimleri listbox + CH listesi + OK butonu) — pylib v1.0 bunu bilmiyordu
+- Kullanici sorusu: "C:\ korumali alan mi?" -> HAYIR: oyun süreci zaten queue'ya yazdi
+
+### Adım 7b.2 — Kullanici yükledigi materyal analizi (uploads/)
+- MaximumPyScript1.rar extract (76 dosya): MaximumPyScript_Merged_calisan.py
+  (KANITLANMIS çalışan script) + SceneTracker_GILSafe + recorder_v20 + ui_scan serisi
+- KRITIK BULGULAR (calisan script'ten):
+  * mainStream __main__'den ERISILEMIYOR -> sys._current_frames() frame yürüyüşü
+  * Sahne: type(curPhaseWindow).__name__ + LoginWindow.serverBoard -> ServerList
+  * Server seçim: lw.serverList.SelectItem + lw.channelList.SelectItem +
+    lw.serverSelectButton.CallEvent
+  * Login: lw.idEditLine/pwdEditLine.SetText + lw.loginButton.CallEvent
+  * Enter: sw.SelectSlot + sw.slot=s + TEK net.DirectEnter (RC12 uyumlu)
+- Prestige Silver doc: atilma azaltma varyasyonlari (bot davranis ayari — sonra)
+- Hooking doc (49k satir): SetTimer(hWnd, id, 300, NULL) polling deseni — v1.2 fikri
+
+### Adım 7b.3 — v1.2 (drenaj mimarisi degisti)
+- FIX-8 SETTIMER YOLU: SetTimer(hwnd, 0x7A1, 1500, TimerProc) — WM_TIMER oyunun kendi
+  mesaj pompasiyla TimerProc'a gider; WndProc subclass'a bagimlilik SIFIR.
+  Subclass koruma tarafindan geri alinirsa/emilirse bile kuyruk islenir.
+- FIX-9 sayaclar: alive.txt = tick/drain/exec/timer/msg/py — zincir nerede koptu tek bakista
+- FIX-10 probe: python27 bulununca otomatik probe komutu -> results/py_probe.txt
+  olusursa ana-thread Python calismasi UST-UCE KANIT
+- FIX-11 Py_IsInitialized logu, FIX-13 30sn'lik maxexec.log ozetleri
+- FIX-12 basedir.txt: C:\MaxExec\basedir.txt -> "D:\MaxExec" yazilirsa tum yollar tasinir
+- MaxInject dokunulmadi (235KB), DLL 585KB pei-i386 dogrulandi
+
+### Adım 7b.4 — pylib v2.0 (serverlist akisi)
+- _find_ms_from_frames() port (mainStream/stream/main_stream/appStream, curPhaseWindow attr)
+- _scene_name(): LoginWindow+serverBoard/serverList -> 'LoginWindow+ServerList'
+- serverlist(): listbox icerigi raporu (GetItemCount/GetItemText + aday attr taramasi)
+- selserver(srv,ch): SelectItem x2 + serverSelectButton.CallEvent (aday buton taramasi dahil)
+- login(): UI yolu ONCELIKLI (idEditLine/pwdEditLine/loginButton), paket yolu yedek
+- enter(): SelectSlot/slot senkron + TEK DirectEnter
+- py2 sozdizimi lib2to3 python_grammar ile DOGRULANDI
+
+### Adım 7b.5 — Dagitim
+- KULLANIM.md: akis yeniden yazildi (selserver baslangicli, 10 adim) + ZINCIR KOPTU MU
+  tablosu (probe/alive.txt alanlari) + 5 yeni sorun giderme satiri
+- bundle yenilendi (341KB); commit 4f38865 push OK
