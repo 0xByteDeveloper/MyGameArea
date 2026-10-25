@@ -66,7 +66,9 @@ Tüm fonksiyonlar dosya:satır + parametre + packet struct + server handler + ha
 - Analiz → `reports/DEV_GIL_ANALYSIS.md`
 - Stabilize çıktı → `MaxExecutor/MaximumPyScript_STABLE.py` (v17 üzerinden cerrahi düzeltmeler)
 
-## XGODMOD4 — YENİ EXECUTOR (HOOK YOK, SHM YOK, ANA THREAD DOSTU)
+## XGODMOD4 — YENİ EXECUTOR (TAMAMLANDI)
+
+Üretildi: `MaxExecutor/MaxExecutor.cpp` + `MaxExecutor/pylib.py` + `MaxExecutor/README.md` + `MaxExecutor/MaximumPyScript_STABLE.py`
 
 Yöntem: **WndProc subclass + dosya-kuyruk + ana-thread PyRun.**
 - C++ DLL oyun penceresini subclass eder (`SetWindowLongPtr(GWLP_WNDPROC)`); komutlar DOSYA kuyruğuna yazılır (`C:\MaxExec\queue\`), worker thread sadece `PostMessage(WM_APP+0x7A1)` atar.
@@ -79,8 +81,9 @@ Yöntem: **WndProc subclass + dosya-kuyruk + ana-thread PyRun.**
 
 ## BEKLEYEN / SONRAKİ ADIMLAR
 
-- [ ] Oyun indirilince `metin2client.exe` çıkarılıp kontrol (paket yapısı, python27.dll sürümü)
+- [ ] Oyun indirilince `metin2client.exe` çıkarılıp kontrol (paket yapısı, python27.dll sürümü) — DURUM: Google Drive rate-limit ("many accesses"), arka planda 8dk'da bir retry dönüyor; 199MB/1.2GB .part dosyası saklandı. Kullanıcı isterse dosyayı kendi tarafında da indirebilir (bizim analiz kaynak-kodtan tamamlandı, oyun dosyası yalnız kullanıcı-tarafı test için gerekli).
 - [ ] MaxExecutor derleme talimatları + gerçek client'ta test yönergesi (kullanıcı tarafında)
+- [x] xgodmod3 stabilize: `MaxExecutor/MaximumPyScript_STABLE.py` (v17 + RC12/RC13/RC14 cerrahi yamalar — patch_stable.py ile, anchor doğrulamalı)
 - [ ] FULL_MEGA_System birleştirmesi (kullanıcı isterse)
 - [ ] Sohbet dökümü MD'lerinin (Hooking/Prestige) içinden ek talepler varsa çıkarılacak
 

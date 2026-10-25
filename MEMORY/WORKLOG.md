@@ -39,3 +39,12 @@
 ### Durum
 - Oyun indirmesi devam ediyor (arka plan)
 - Push'lar: her büyük adımda bir commit
+
+### Adım 3.5 — Üretilen teslimatlar (devam)
+- reports/DEV_LOGIN_FLOW.md push (commit 72ddff7): 691 satır, §0-§11 — faz sistemi, handshake, auth+game login, slot tablosu API, empire, create hata dalları, enter-game, anti-cheat, durum makinesi, e2e diyagram, fonksiyon indeksi
+- reports/DEV_GIL_ANALYSIS.md push (commit 8b4c27b): 23 sürüm kronolojisi, RC1-RC17 kök nedenler (satır kanıtlı), C++ injection mekanizmaları, log kanıtları
+- MaxExecutor/MaxExecutor.cpp: WndProc subclass + dosya kuyruk + ana-thread PyRun_SimpleString; worker Python'a hiç dokunmaz; drain'de max 4 komut + heartbeat
+- MaxExecutor/pylib.py: maxlib modülü (login/charlist/empire/create/enter/status) — hooksuz, gc'siz, mainStream yalnız yükleme anında yakalanır
+- MaxExecutor/README.md: derleme + kurulum + xGODMOD2 akış komut eşlemesi
+- MaxExecutor/MaximumPyScript_STABLE.py: v17 + 3 cerrahi yama (RC12 tek-giriş, RC13 recovery kilidi, RC14 GameWindow kanıtı) — scripts/patch_stable.py anchor-doğrulamalı uyguladı, tüm kontroller OK
+- Google Drive indirme: rate-limit; yavaş retry döngüsü arka planda (scripts/download_retry_slow.sh)
