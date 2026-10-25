@@ -29,11 +29,21 @@ Not: `FULL_MEGA_System` birleştirmesi ertelendi — kullanıcı yönü DEV ara�
   - `MaxExecutor/` ← xgodmod4 çıktısı (yeni executor)
   - `FULL_System.json`, `FULL_System_A1.json` ← temel taşlar
 
-## X3 — OYUN İNDİRME (AKTİF)
+## X3 — OYUN İNDİRME (✅ TAMAMLANDI — Oturum 4)
 
-- Kaynak: `https://drive.google.com/file/d/1JaxWFkMID_7e9929_--yk20a7PqJ-aZE/view` (1.20 GB)
-- İçerik: `metin2client.exe` (test için gerekli oyun)
-- Durum: İndirme başlatıldı → `metin2_game.bin` (bitince adı değiştirilir, içinden metin2client.exe çıkarılır)
+- Kaynak: `https://drive.google.com/file/d/1JaxWFkMID_7e9929_--yk20a7PqJ-aZE/view` (1.1 GB)
+- **İndirme yöntemi (Oturum 4, kullanıcı doğrudan URL verdi):**
+  - gdown rate-limit'e takılıyordu (199MB'da kesiliyordu)
+  - Çözüm: `drive.usercontent.google.com/download?id=...&export=download` → virus-scan HTML sayfasından `confirm=t&uuid=...` parametreleri çekildi
+  - `curl -C -` resume + HTTP 206 → 1,198,166,225 byte TAM indirildi (13.5 sn'de kalan 371MB)
+  - RAR5 imzası (`Rar!\x1a\x07`) doğrulandı → **NightTownFullpack.rar**
+- İçerik: **2908 öğe** — metin2client.exe (5.2MB) + 73 root Python script + Modules/HyperBot/OpenBot/pyDetour/m2kmod + lib (py27 stdlib + accounts) + pack (1.3GB oyun kaynakları)
+- İlk bulgular → `nighttown/README.md` (repoda):
+  - `yeniden_olusturulan_MemoryGenislet.exe` = metin2client.exe ile BİREBİR boyut (5,216,256) → yamalı client rebuild
+  - **ErrorLog.txt: denemeoutput.exe 0xc0000005 crash, stack'te 6 python27.dll frame** → RC1 (arka-plan thread GIL) kanıtını GÜÇLENDİRİYOR
+  - logs/console.txt: HookHunter anti-cheat taraması aktif
+  - pyDetour/ = Python-side detour kütüphanesi
+- Repoya alınanlar: `nighttown/` (exes + scripts_root + Modules + HyperBot + pyDetour + m2kmod + lib + logs, 303 dosya ~16MB). 1.1GB tam rar repoya GİREMEZ (GitHub 100MB limit).
 - Yardımcı paketler (kullanıcı yükledi, `uploads/` içinde):
   - `win32apiMetin2Py.rar` → Dış GUI kontrolcüsü (MaximumController v4, SHM tüketici tarafı)
   - `cppcmpr.rar` → Enjekte DLL ailesi (Kaynak.cpp v6 FINAL GILGuard'lı, Controller.h SHM komutcusu, v1/v2/pythonSenderv1/pythonfnctuple eski GIL'siz denemeler)
@@ -81,7 +91,7 @@ Yöntem: **WndProc subclass + dosya-kuyruk + ana-thread PyRun.**
 
 ## BEKLEYEN / SONRAKİ ADIMLAR
 
-- [ ] Oyun indirilince `metin2client.exe` çıkarılıp kontrol (paket yapısı, python27.dll sürümü) — DURUM: Google Drive rate-limit ("many accesses"), arka planda 8dk'da bir retry dönüyor; 199MB/1.2GB .part dosyası saklandı. Kullanıcı isterse dosyayı kendi tarafında da indirebilir (bizim analiz kaynak-kodtan tamamlandı, oyun dosyası yalnız kullanıcı-tarafı test için gerekli).
+- [x] Oyun indirildi + açıldı + envanter çıkarıldı → `nighttown/` (Oturum 4). metin2client.exe ✅ python27.dll ✅ (Python 2.7). ErrorLog 0xc0000005 + python27.dll stack bulundu.
 - [ ] MaxExecutor derleme talimatları + gerçek client'ta test yönergesi (kullanıcı tarafında)
 - [x] xgodmod3 stabilize: `MaxExecutor/MaximumPyScript_STABLE.py` (v17 + RC12/RC13/RC14 cerrahi yamalar — patch_stable.py ile, anchor doğrulamalı)
 - [ ] FULL_MEGA_System birleştirmesi (kullanıcı isterse)

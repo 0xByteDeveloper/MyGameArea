@@ -1,0 +1,74 @@
+Module Name: C:\Users\Admin\Desktop\NightTownFullpack\denemeoutput.exe
+Time Stamp: 0x64856730 - (null)
+
+Exception Type: 0xc0000005
+
+eax: 0x00000008	ebx: 0x232e1658
+ecx: 0x00000002	edx: 0x647a0002
+esi: 0x0019eb48	edi: 0x598f510c
+ebp: 0x0019eb1c	esp: 0x0019eafc
+
+0x006da149	C:\Users\Admin\Desktop\NightTownFullpack\denemeoutput.exe
+0x004d769c	C:\Users\Admin\Desktop\NightTownFullpack\denemeoutput.exe
+0x004d7647	C:\Users\Admin\Desktop\NightTownFullpack\denemeoutput.exe
+0x005b494b	C:\Users\Admin\Desktop\NightTownFullpack\denemeoutput.exe
+0x005b4606	C:\Users\Admin\Desktop\NightTownFullpack\denemeoutput.exe
+0x005b9f9f	C:\Users\Admin\Desktop\NightTownFullpack\denemeoutput.exe
+0x005b8409	C:\Users\Admin\Desktop\NightTownFullpack\denemeoutput.exe
+0x00472520	C:\Users\Admin\Desktop\NightTownFullpack\denemeoutput.exe
+0x004720d3	C:\Users\Admin\Desktop\NightTownFullpack\denemeoutput.exe
+0x0046d866	C:\Users\Admin\Desktop\NightTownFullpack\denemeoutput.exe
+0x00493f92	C:\Users\Admin\Desktop\NightTownFullpack\denemeoutput.exe
+0x00485576	C:\Users\Admin\Desktop\NightTownFullpack\denemeoutput.exe
+0x00489f7b	C:\Users\Admin\Desktop\NightTownFullpack\denemeoutput.exe
+0x1e0eb707	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e0ed98e	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e0ee8fa	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e09c601	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e07a7dc	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e086420	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e07a7dc	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e0ea04c	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e07a782	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x0060c583	C:\Users\Admin\Desktop\NightTownFullpack\denemeoutput.exe
+0x0060be96	C:\Users\Admin\Desktop\NightTownFullpack\denemeoutput.exe
+0x005a823f	C:\Users\Admin\Desktop\NightTownFullpack\denemeoutput.exe
+0x00486150	C:\Users\Admin\Desktop\NightTownFullpack\denemeoutput.exe
+0x1e0eb707	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e0ed98e	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e0ea211	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e0eb784	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e0ed98e	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e0ee8fa	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e0ee952	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e0eeb36	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e0ecb94	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e0ee8fa	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e0ea273	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e0eb784	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e0ed98e	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e0ea211	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e0eb784	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e0ed98e	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e0ea211	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e0eb784	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e0ed98e	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e0ee8fa	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e0ee952	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e0eeb36	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e0ecb94	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e0ee8fa	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e0ee952	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e1151cb	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x1e11621c	C:\Users\Admin\Desktop\NightTownFullpack\python27.dll
+0x0060cfb8	C:\Users\Admin\Desktop\NightTownFullpack\denemeoutput.exe
+0x0060d244	C:\Users\Admin\Desktop\NightTownFullpack\denemeoutput.exe
+0x0060cf6b	C:\Users\Admin\Desktop\NightTownFullpack\denemeoutput.exe
+0x00526b96	C:\Users\Admin\Desktop\NightTownFullpack\denemeoutput.exe
+0x00526fd9	C:\Users\Admin\Desktop\NightTownFullpack\denemeoutput.exe
+0x005273d6	C:\Users\Admin\Desktop\NightTownFullpack\denemeoutput.exe
+0x00639ab9	C:\Users\Admin\Desktop\NightTownFullpack\denemeoutput.exe
+0x76586359	C:\Windows\System32\KERNEL32.DLL
+0x77297b74	C:\Windows\SYSTEM32\ntdll.dll
+0x77297b44	C:\Windows\SYSTEM32\ntdll.dll
+

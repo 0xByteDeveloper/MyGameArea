@@ -1,0 +1,1446 @@
+[ 101 ]	Name: Caine Salbatic	Rank: 0	Lvl: 1	Type: 0	Gold range: 0 - 0	Exp: 12	HP: 126	Empire: 0
+[ 102 ]	Name: Lup	Rank: 0	Lvl: 3	Type: 0	Gold range: 0 - 0	Exp: 30	HP: 162	Empire: 0
+[ 103 ]	Name: Lup Alpha	Rank: 0	Lvl: 4	Type: 0	Gold range: 0 - 0	Exp: 39	HP: 182	Empire: 0
+[ 104 ]	Name: Lup Albastru	Rank: 0	Lvl: 6	Type: 0	Gold range: 0 - 0	Exp: 57	HP: 225	Empire: 0
+[ 105 ]	Name: Lup Alpha Albastru	Rank: 0	Lvl: 9	Type: 0	Gold range: 0 - 0	Exp: 84	HP: 297	Empire: 0
+[ 106 ]	Name: Lup Gri	Rank: 0	Lvl: 13	Type: 0	Gold range: 0 - 0	Exp: 120	HP: 412	Empire: 0
+[ 107 ]	Name: Lup Alpha Gri	Rank: 1	Lvl: 16	Type: 0	Gold range: 0 - 0	Exp: 176	HP: 614	Empire: 0
+[ 108 ]	Name: Mistret	Rank: 0	Lvl: 7	Type: 0	Gold range: 0 - 0	Exp: 66	HP: 248	Empire: 0
+[ 109 ]	Name: Mistret Rosu	Rank: 1	Lvl: 10	Type: 0	Gold range: 0 - 0	Exp: 111	HP: 389	Empire: 0
+[ 110 ]	Name: Urs	Rank: 0	Lvl: 12	Type: 0	Gold range: 0 - 0	Exp: 111	HP: 381	Empire: 0
+[ 111 ]	Name: Urs Grizzly	Rank: 1	Lvl: 15	Type: 0	Gold range: 0 - 0	Exp: 165	HP: 572	Empire: 0
+[ 112 ]	Name: Urs Negru	Rank: 0	Lvl: 19	Type: 0	Gold range: 0 - 0	Exp: 289	HP: 624	Empire: 0
+[ 113 ]	Name: Urs Brun	Rank: 1	Lvl: 21	Type: 0	Gold range: 0 - 0	Exp: 383	HP: 845	Empire: 0
+[ 114 ]	Name: Tigru	Rank: 0	Lvl: 18	Type: 0	Gold range: 0 - 0	Exp: 274	HP: 585	Empire: 0
+[ 115 ]	Name: Tigru Alb	Rank: 1	Lvl: 24	Type: 0	Gold range: 0 - 0	Exp: 437	HP: 1007	Empire: 0
+[ 131 ]	Name: Lup Blestemat	Rank: 2	Lvl: 8	Type: 0	Gold range: 0 - 0	Exp: 149	HP: 435	Empire: 0
+[ 132 ]	Name: Lup Blestemat Alpha	Rank: 3	Lvl: 9	Type: 0	Gold range: 0 - 0	Exp: 333	HP: 743	Empire: 0
+[ 133 ]	Name: Lup Blestemat Albastru	Rank: 2	Lvl: 11	Type: 0	Gold range: 0 - 0	Exp: 203	HP: 564	Empire: 0
+[ 134 ]	Name: Lup Alpha Albastru Blest	Rank: 3	Lvl: 14	Type: 0	Gold range: 0 - 0	Exp: 513	HP: 1110	Empire: 0
+[ 135 ]	Name: Lup Blestemat Gri	Rank: 2	Lvl: 18	Type: 0	Gold range: 0 - 0	Exp: 329	HP: 936	Empire: 0
+[ 136 ]	Name: Lup Blest Alpha Gri	Rank: 3	Lvl: 21	Type: 0	Gold range: 0 - 0	Exp: 765	HP: 1761	Empire: 0
+[ 137 ]	Name: Mistret Blestemat	Rank: 2	Lvl: 12	Type: 0	Gold range: 0 - 0	Exp: 221	HP: 610	Empire: 0
+[ 138 ]	Name: Mistret Blestemat Rosu	Rank: 3	Lvl: 15	Type: 0	Gold range: 0 - 0	Exp: 549	HP: 1192	Empire: 0
+[ 139 ]	Name: Urs Blestemat	Rank: 2	Lvl: 17	Type: 0	Gold range: 0 - 0	Exp: 311	HP: 875	Empire: 0
+[ 140 ]	Name: Urs Blestemat Grizzly	Rank: 3	Lvl: 20	Type: 0	Gold range: 0 - 0	Exp: 729	HP: 1659	Empire: 0
+[ 141 ]	Name: Urs Blestemat Negru	Rank: 2	Lvl: 24	Type: 0	Gold range: 0 - 0	Exp: 437	HP: 1342	Empire: 0
+[ 142 ]	Name: Urs Blestemat Brun	Rank: 3	Lvl: 26	Type: 0	Gold range: 0 - 0	Exp: 945	HP: 2342	Empire: 0
+[ 143 ]	Name: Tigru Blestemat	Rank: 2	Lvl: 24	Type: 0	Gold range: 0 - 0	Exp: 437	HP: 1342	Empire: 0
+[ 144 ]	Name: Tigru Blestemat Alb	Rank: 3	Lvl: 29	Type: 0	Gold range: 0 - 0	Exp: 1053	HP: 2685	Empire: 0
+[ 151 ]	Name: Cung-Mok	Rank: 3	Lvl: 9	Type: 0	Gold range: 0 - 0	Exp: 75	HP: 450	Empire: 0
+[ 152 ]	Name: Mu-Rang	Rank: 3	Lvl: 16	Type: 0	Gold range: 0 - 0	Exp: 150	HP: 800	Empire: 0
+[ 153 ]	Name: Jug-Hyul	Rank: 3	Lvl: 10	Type: 0	Gold range: 0 - 0	Exp: 90	HP: 600	Empire: 0
+[ 154 ]	Name: Young-Ji	Rank: 3	Lvl: 21	Type: 0	Gold range: 0 - 0	Exp: 165	HP: 1000	Empire: 0
+[ 155 ]	Name: Li-An	Rank: 3	Lvl: 24	Type: 0	Gold range: 0 - 0	Exp: 188	HP: 1200	Empire: 0
+[ 171 ]	Name: Caine salbatic flamand	Rank: 0	Lvl: 1	Type: 0	Gold range: 0 - 0	Exp: 9	HP: 101	Empire: 0
+[ 172 ]	Name: Lup Flamand	Rank: 0	Lvl: 3	Type: 0	Gold range: 0 - 0	Exp: 21	HP: 129	Empire: 0
+[ 173 ]	Name: Lup Flamand Alpha	Rank: 0	Lvl: 4	Type: 0	Gold range: 0 - 0	Exp: 27	HP: 145	Empire: 0
+[ 174 ]	Name: Lup Flamand Albastru	Rank: 0	Lvl: 6	Type: 0	Gold range: 0 - 0	Exp: 40	HP: 180	Empire: 0
+[ 175 ]	Name: Lup Flamand Alpha Albast	Rank: 0	Lvl: 9	Type: 0	Gold range: 0 - 0	Exp: 59	HP: 238	Empire: 0
+[ 176 ]	Name: Lup Flamand Gri	Rank: 0	Lvl: 13	Type: 0	Gold range: 0 - 0	Exp: 84	HP: 329	Empire: 0
+[ 177 ]	Name: Lup Flamand Alpha Gri	Rank: 1	Lvl: 16	Type: 0	Gold range: 0 - 0	Exp: 123	HP: 491	Empire: 0
+[ 178 ]	Name: Mistret Flamand	Rank: 0	Lvl: 7	Type: 0	Gold range: 0 - 0	Exp: 46	HP: 198	Empire: 0
+[ 179 ]	Name: Mistret Flamand Rosu	Rank: 1	Lvl: 10	Type: 0	Gold range: 0 - 0	Exp: 78	HP: 311	Empire: 0
+[ 180 ]	Name: Urs Flamand	Rank: 0	Lvl: 12	Type: 0	Gold range: 0 - 0	Exp: 78	HP: 305	Empire: 0
+[ 181 ]	Name: Urs Flamand Grizzly	Rank: 1	Lvl: 15	Type: 0	Gold range: 0 - 0	Exp: 116	HP: 458	Empire: 0
+[ 182 ]	Name: Urs Flamand Negru	Rank: 0	Lvl: 19	Type: 0	Gold range: 0 - 0	Exp: 203	HP: 499	Empire: 0
+[ 183 ]	Name: Urs Flamand Brun	Rank: 1	Lvl: 21	Type: 0	Gold range: 0 - 0	Exp: 268	HP: 676	Empire: 0
+[ 184 ]	Name: Tigru Flamand	Rank: 0	Lvl: 18	Type: 0	Gold range: 0 - 0	Exp: 192	HP: 468	Empire: 0
+[ 185 ]	Name: Tigru Flamand Alb	Rank: 1	Lvl: 24	Type: 0	Gold range: 0 - 0	Exp: 306	HP: 805	Empire: 0
+[ 191 ]	Name: Lykos	Rank: 3	Lvl: 30	Type: 0	Gold range: 0 - 0	Exp: 1815	HP: 2940	Empire: 0
+[ 192 ]	Name: Scrofa	Rank: 3	Lvl: 31	Type: 0	Gold range: 0 - 0	Exp: 1875	HP: 3069	Empire: 0
+[ 193 ]	Name: Bera	Rank: 3	Lvl: 33	Type: 0	Gold range: 0 - 0	Exp: 1995	HP: 3385	Empire: 0
+[ 194 ]	Name: Tigris	Rank: 3	Lvl: 35	Type: 0	Gold range: 0 - 0	Exp: 2115	HP: 3616	Empire: 0
+[ 301 ]	Name: Amazoana Soldat	Rank: 0	Lvl: 18	Type: 0	Gold range: 0 - 0	Exp: 274	HP: 613	Empire: 0
+[ 302 ]	Name: Amazoana Arcas	Rank: 0	Lvl: 20	Type: 0	Gold range: 0 - 0	Exp: 304	HP: 506	Empire: 0
+[ 303 ]	Name: Amazoana General	Rank: 1	Lvl: 25	Type: 0	Gold range: 0 - 0	Exp: 636	HP: 1115	Empire: 0
+[ 304 ]	Name: Amazoana Comandant	Rank: 1	Lvl: 25	Type: 0	Gold range: 0 - 0	Exp: 636	HP: 1115	Empire: 0
+[ 331 ]	Name: Amazoana Soldat	Rank: 1	Lvl: 18	Type: 0	Gold range: 0 - 0	Exp: 419	HP: 1450	Empire: 0
+[ 332 ]	Name: Amazoana Arcas	Rank: 1	Lvl: 20	Type: 0	Gold range: 0 - 0	Exp: 455	HP: 1622	Empire: 0
+[ 333 ]	Name: Amazoana General	Rank: 2	Lvl: 25	Type: 0	Gold range: 0 - 0	Exp: 1089	HP: 3207	Empire: 0
+[ 334 ]	Name: Amazoana Comandant	Rank: 2	Lvl: 25	Type: 0	Gold range: 0 - 0	Exp: 1089	HP: 3207	Empire: 0
+[ 351 ]	Name: Amazoana Soldat Lasa	Rank: 1	Lvl: 18	Type: 0	Gold range: 0 - 0	Exp: 192	HP: 490	Empire: 0
+[ 352 ]	Name: Amazoana Arcas Lasa	Rank: 1	Lvl: 20	Type: 0	Gold range: 0 - 0	Exp: 213	HP: 404	Empire: 0
+[ 353 ]	Name: Amazoana General Lasa	Rank: 2	Lvl: 25	Type: 0	Gold range: 0 - 0	Exp: 446	HP: 892	Empire: 0
+[ 354 ]	Name: Amazoana Comandant Lasa	Rank: 2	Lvl: 25	Type: 0	Gold range: 0 - 0	Exp: 446	HP: 892	Empire: 0
+[ 391 ]	Name: Mi-Jung	Rank: 3	Lvl: 23	Type: 0	Gold range: 0 - 0	Exp: 1953	HP: 2076	Empire: 0
+[ 392 ]	Name: Eun-Jung	Rank: 3	Lvl: 26	Type: 0	Gold range: 0 - 0	Exp: 2205	HP: 2453	Empire: 0
+[ 393 ]	Name: Se-Rang	Rank: 3	Lvl: 28	Type: 0	Gold range: 0 - 0	Exp: 2373	HP: 2692	Empire: 0
+[ 394 ]	Name: Jin-Hee	Rank: 3	Lvl: 31	Type: 0	Gold range: 0 - 0	Exp: 2625	HP: 3069	Empire: 0
+[ 395 ]	Name: Tristul de Mi-Jung	Rank: 3	Lvl: 23	Type: 0	Gold range: 0 - 0	Exp: 1368	HP: 392	Empire: 0
+[ 396 ]	Name: Tristul de Eun-Jung	Rank: 3	Lvl: 26	Type: 0	Gold range: 0 - 0	Exp: 1544	HP: 324	Empire: 0
+[ 397 ]	Name: Tristul Se-Rang	Rank: 3	Lvl: 28	Type: 0	Gold range: 0 - 0	Exp: 1662	HP: 714	Empire: 0
+[ 398 ]	Name: Tristul Jin-Hee	Rank: 3	Lvl: 31	Type: 0	Gold range: 0 - 0	Exp: 1838	HP: 714	Empire: 0
+[ 401 ]	Name: Soldat vant negru	Rank: 0	Lvl: 26	Type: 0	Gold range: 0 - 0	Exp: 552	HP: 981	Empire: 0
+[ 402 ]	Name: Posedat de vant negru	Rank: 0	Lvl: 27	Type: 0	Gold range: 0 - 0	Exp: 573	HP: 1027	Empire: 0
+[ 403 ]	Name: Arcas vant negru	Rank: 0	Lvl: 29	Type: 0	Gold range: 0 - 0	Exp: 615	HP: 818	Empire: 0
+[ 404 ]	Name: Vant negru Jak-To	Rank: 1	Lvl: 30	Type: 0	Gold range: 0 - 0	Exp: 762	HP: 1411	Empire: 0
+[ 405 ]	Name: Vant negru To-Su	Rank: 1	Lvl: 33	Type: 0	Gold range: 0 - 0	Exp: 838	HP: 1625	Empire: 0
+[ 406 ]	Name: Vant negru Gu-Ryung	Rank: 1	Lvl: 35	Type: 0	Gold range: 0 - 0	Exp: 888	HP: 1736	Empire: 0
+[ 431 ]	Name: Soldat de atac negru	Rank: 2	Lvl: 31	Type: 0	Gold range: 0 - 0	Exp: 563	HP: 1571	Empire: 0
+[ 432 ]	Name: Posedat de atac negru	Rank: 2	Lvl: 33	Type: 0	Gold range: 0 - 0	Exp: 599	HP: 1733	Empire: 0
+[ 433 ]	Name: Arcas negru	Rank: 2	Lvl: 35	Type: 0	Gold range: 0 - 0	Exp: 635	HP: 1852	Empire: 0
+[ 434 ]	Name: Joh-Hwan de atac negru	Rank: 3	Lvl: 36	Type: 0	Gold range: 0 - 0	Exp: 1305	HP: 3010	Empire: 0
+[ 435 ]	Name: Kyuk-Jan de atac negru	Rank: 3	Lvl: 38	Type: 0	Gold range: 0 - 0	Exp: 1377	HP: 3249	Empire: 0
+[ 436 ]	Name: Pho-Hwan de atac negru	Rank: 3	Lvl: 40	Type: 0	Gold range: 0 - 0	Exp: 1449	HP: 3500	Empire: 0
+[ 451 ]	Name: Soldat de atac negru rau	Rank: 0	Lvl: 26	Type: 0	Gold range: 0 - 0	Exp: 387	HP: 785	Empire: 0
+[ 452 ]	Name: Posedat de atac rau	Rank: 0	Lvl: 27	Type: 0	Gold range: 0 - 0	Exp: 401	HP: 822	Empire: 0
+[ 453 ]	Name: Arcas de atac rau	Rank: 0	Lvl: 29	Type: 0	Gold range: 0 - 0	Exp: 430	HP: 655	Empire: 0
+[ 454 ]	Name: Joh-Hwan de atac rau	Rank: 1	Lvl: 30	Type: 0	Gold range: 0 - 0	Exp: 534	HP: 1129	Empire: 0
+[ 455 ]	Name: Kyuk-Jang de atac rau	Rank: 1	Lvl: 33	Type: 0	Gold range: 0 - 0	Exp: 587	HP: 1300	Empire: 0
+[ 456 ]	Name: Pho-Hwan de atac rau	Rank: 1	Lvl: 35	Type: 0	Gold range: 0 - 0	Exp: 622	HP: 1389	Empire: 0
+[ 491 ]	Name: Mahon	Rank: 3	Lvl: 32	Type: 0	Gold range: 0 - 0	Exp: 2709	HP: 3201	Empire: 0
+[ 492 ]	Name: Bo	Rank: 3	Lvl: 37	Type: 0	Gold range: 0 - 0	Exp: 3129	HP: 3911	Empire: 0
+[ 493 ]	Name: Goo-Pae	Rank: 3	Lvl: 39	Type: 0	Gold range: 0 - 0	Exp: 3297	HP: 4219	Empire: 0
+[ 494 ]	Name: Chuong	Rank: 3	Lvl: 45	Type: 0	Gold range: 0 - 0	Exp: 3801	HP: 5220	Empire: 0
+[ 501 ]	Name: Infanterist Salbatic	Rank: 0	Lvl: 29	Type: 0	Gold range: 0 - 0	Exp: 615	HP: 1404	Empire: 0
+[ 502 ]	Name: Salbatic Devotat	Rank: 0	Lvl: 32	Type: 0	Gold range: 0 - 0	Exp: 678	HP: 1625	Empire: 0
+[ 503 ]	Name: Arcas salbatic	Rank: 1	Lvl: 35	Type: 0	Gold range: 0 - 0	Exp: 888	HP: 1262	Empire: 0
+[ 504 ]	Name: General Salbatic	Rank: 2	Lvl: 36	Type: 0	Gold range: 0 - 0	Exp: 1523	HP: 2240	Empire: 0
+[ 531 ]	Name: Soldat brutal	Rank: 2	Lvl: 35	Type: 0	Gold range: 0 - 0	Exp: 385	HP: 1852	Empire: 0
+[ 532 ]	Name: Posedat brutal	Rank: 2	Lvl: 37	Type: 0	Gold range: 0 - 0	Exp: 407	HP: 2002	Empire: 0
+[ 533 ]	Name: Arcas brutal	Rank: 3	Lvl: 40	Type: 0	Gold range: 0 - 0	Exp: 879	HP: 3500	Empire: 0
+[ 534 ]	Name: Specialist brutal	Rank: 3	Lvl: 42	Type: 0	Gold range: 0 - 0	Exp: 923	HP: 3762	Empire: 0
+[ 551 ]	Name: Infanterist Salbatic Dur	Rank: 0	Lvl: 29	Type: 0	Gold range: 0 - 0	Exp: 615	HP: 1123	Empire: 0
+[ 552 ]	Name: Locotenent Salbatic Dur	Rank: 0	Lvl: 32	Type: 0	Gold range: 0 - 0	Exp: 678	HP: 1300	Empire: 0
+[ 553 ]	Name: Arcas Salbatic Dur	Rank: 1	Lvl: 35	Type: 0	Gold range: 0 - 0	Exp: 888	HP: 1010	Empire: 0
+[ 554 ]	Name: General Salbatic Dur	Rank: 2	Lvl: 36	Type: 0	Gold range: 0 - 0	Exp: 1523	HP: 1792	Empire: 0
+[ 591 ]	Name: Capitanul Bestie	Rank: 4	Lvl: 42	Type: 0	Gold range: 0 - 0	Exp: 15210	HP: 18810	Empire: 0
+[ 595 ]	Name: Geum-Chul brutal	Rank: 2	Lvl: 42	Type: 0	Gold range: 0 - 0	Exp: 4817	HP: 4703	Empire: 0
+[ 601 ]	Name: Ork	Rank: 0	Lvl: 26	Type: 0	Gold range: 0 - 0	Exp: 779	HP: 2268	Empire: 0
+[ 602 ]	Name: Spion ork	Rank: 1	Lvl: 29	Type: 0	Gold range: 0 - 0	Exp: 797	HP: 2348	Empire: 0
+[ 603 ]	Name: Orc Luptator	Rank: 1	Lvl: 31	Type: 0	Gold range: 0 - 0	Exp: 815	HP: 2429	Empire: 0
+[ 604 ]	Name: Orc Vrajitor	Rank: 2	Lvl: 33	Type: 0	Gold range: 0 - 0	Exp: 833	HP: 2514	Empire: 0
+[ 631 ]	Name: Orc Elite	Rank: 0	Lvl: 34	Type: 0	Gold range: 0 - 0	Exp: 720	HP: 1390	Empire: 0
+[ 632 ]	Name: Orc Elite Cercetas	Rank: 1	Lvl: 36	Type: 0	Gold range: 0 - 0	Exp: 914	HP: 1806	Empire: 0
+[ 633 ]	Name: Orc Elite Luptator	Rank: 1	Lvl: 39	Type: 0	Gold range: 0 - 0	Exp: 990	HP: 2025	Empire: 0
+[ 634 ]	Name: Orc Elite Vrajitor	Rank: 2	Lvl: 40	Type: 0	Gold range: 0 - 0	Exp: 1691	HP: 2800	Empire: 0
+[ 635 ]	Name: Orc Elite General	Rank: 2	Lvl: 44	Type: 0	Gold range: 0 - 0	Exp: 1859	HP: 3228	Empire: 0
+[ 636 ]	Name: Orc Negru	Rank: 3	Lvl: 46	Type: 0	Gold range: 0 - 0	Exp: 3885	HP: 5401	Empire: 0
+[ 637 ]	Name: Orc Negru Urias	Rank: 3	Lvl: 49	Type: 0	Gold range: 0 - 0	Exp: 4137	HP: 5959	Empire: 0
+[ 651 ]	Name: Orc Mare Curajos	Rank: 0	Lvl: 34	Type: 0	Gold range: 0 - 0	Exp: 504	HP: 1112	Empire: 0
+[ 652 ]	Name: Orc Mare Cercetas	Rank: 1	Lvl: 36	Type: 0	Gold range: 0 - 0	Exp: 640	HP: 1445	Empire: 0
+[ 653 ]	Name: Orc Mare Luptator	Rank: 1	Lvl: 39	Type: 0	Gold range: 0 - 0	Exp: 693	HP: 1620	Empire: 0
+[ 654 ]	Name: Orc Mare Vrajitor	Rank: 2	Lvl: 40	Type: 0	Gold range: 0 - 0	Exp: 1184	HP: 2240	Empire: 0
+[ 655 ]	Name: Orc Mare General	Rank: 2	Lvl: 44	Type: 0	Gold range: 0 - 0	Exp: 1302	HP: 2582	Empire: 0
+[ 656 ]	Name: Orc Negru Curajos	Rank: 3	Lvl: 46	Type: 0	Gold range: 0 - 0	Exp: 2720	HP: 4321	Empire: 0
+[ 657 ]	Name: Orc Negru Gigant	Rank: 3	Lvl: 49	Type: 0	Gold range: 0 - 0	Exp: 2896	HP: 4767	Empire: 0
+[ 691 ]	Name: Orc Sef	Rank: 4	Lvl: 50	Type: 0	Gold range: 0 - 0	Exp: 15317	HP: 24618	Empire: 0
+[ 692 ]	Name: Orc Elite Sef	Rank: 4	Lvl: 50	Type: 0	Gold range: 0 - 0	Exp: 5669	HP: 24618	Empire: 0
+[ 693 ]	Name: Orc Sef Spirit	Rank: 5	Lvl: 97	Type: 0	Gold range: 0 - 0	Exp: 267300	HP: 2568600	Empire: 0
+[ 701 ]	Name: Fanatic Intunecat	Rank: 0	Lvl: 35	Type: 0	Gold range: 0 - 0	Exp: 741	HP: 1447	Empire: 0
+[ 702 ]	Name: Arahan intunecat	Rank: 1	Lvl: 38	Type: 0	Gold range: 0 - 0	Exp: 827	HP: 1950	Empire: 0
+[ 703 ]	Name: Luptator Intunecat	Rank: 1	Lvl: 41	Type: 0	Gold range: 0 - 0	Exp: 891	HP: 2178	Empire: 0
+[ 704 ]	Name: Arahan intunecat super.	Rank: 2	Lvl: 44	Type: 0	Gold range: 0 - 0	Exp: 1328	HP: 3228	Empire: 0
+[ 705 ]	Name: Calau intunecat	Rank: 1	Lvl: 48	Type: 0	Gold range: 0 - 0	Exp: 869	HP: 2769	Empire: 0
+[ 706 ]	Name: Despot intunecat	Rank: 3	Lvl: 49	Type: 0	Gold range: 0 - 0	Exp: 2955	HP: 5959	Empire: 0
+[ 707 ]	Name: Incantator Intunecat	Rank: 3	Lvl: 51	Type: 0	Gold range: 0 - 0	Exp: 3075	HP: 6353	Empire: 0
+[ 731 ]	Name: Fanatic Mandru Intunecat	Rank: 0	Lvl: 52	Type: 0	Gold range: 0 - 0	Exp: 784	HP: 2621	Empire: 0
+[ 732 ]	Name: Arahan intunecat mandru	Rank: 1	Lvl: 53	Type: 0	Gold range: 0 - 0	Exp: 959	HP: 3245	Empire: 0
+[ 733 ]	Name: Luptator intunecat mandr	Rank: 1	Lvl: 54	Type: 0	Gold range: 0 - 0	Exp: 977	HP: 3345	Empire: 0
+[ 734 ]	Name: Colonel intunecat mandru	Rank: 2	Lvl: 54	Type: 0	Gold range: 0 - 0	Exp: 1628	HP: 4460	Empire: 0
+[ 735 ]	Name: Puscas Malefic Mandru	Rank: 1	Lvl: 55	Type: 0	Gold range: 0 - 0	Exp: 995	HP: 3448	Empire: 0
+[ 736 ]	Name: Despot intunecat mandru	Rank: 3	Lvl: 56	Type: 0	Gold range: 0 - 0	Exp: 3375	HP: 7400	Empire: 0
+[ 737 ]	Name: Vrajitor intunecat mandr	Rank: 3	Lvl: 57	Type: 0	Gold range: 0 - 0	Exp: 3435	HP: 7620	Empire: 0
+[ 751 ]	Name: Fanatic inalt	Rank: 0	Lvl: 35	Type: 0	Gold range: 0 - 0	Exp: 519	HP: 1157	Empire: 0
+[ 752 ]	Name: Arahan inalt	Rank: 1	Lvl: 38	Type: 0	Gold range: 0 - 0	Exp: 579	HP: 1560	Empire: 0
+[ 753 ]	Name: Luptator Arahan inalt	Rank: 1	Lvl: 41	Type: 0	Gold range: 0 - 0	Exp: 624	HP: 1742	Empire: 0
+[ 754 ]	Name: Superior Arahan inalt	Rank: 2	Lvl: 44	Type: 0	Gold range: 0 - 0	Exp: 930	HP: 2582	Empire: 0
+[ 755 ]	Name: Calau inalt	Rank: 1	Lvl: 48	Type: 0	Gold range: 0 - 0	Exp: 609	HP: 2215	Empire: 0
+[ 756 ]	Name: Despot inalt	Rank: 3	Lvl: 49	Type: 0	Gold range: 0 - 0	Exp: 2069	HP: 4767	Empire: 0
+[ 757 ]	Name: Incantator inalt	Rank: 3	Lvl: 51	Type: 0	Gold range: 0 - 0	Exp: 2153	HP: 5082	Empire: 0
+[ 771 ]	Name: Fanatic brutal	Rank: 0	Lvl: 52	Type: 0	Gold range: 0 - 0	Exp: 549	HP: 2621	Empire: 0
+[ 772 ]	Name: Arahan brutal	Rank: 1	Lvl: 53	Type: 0	Gold range: 0 - 0	Exp: 672	HP: 3245	Empire: 0
+[ 773 ]	Name: Luptator Arahan brutal	Rank: 1	Lvl: 54	Type: 0	Gold range: 0 - 0	Exp: 684	HP: 3345	Empire: 0
+[ 774 ]	Name: Arahan superior brutal	Rank: 2	Lvl: 54	Type: 0	Gold range: 0 - 0	Exp: 1140	HP: 4460	Empire: 0
+[ 775 ]	Name: Calau brutal	Rank: 1	Lvl: 55	Type: 0	Gold range: 0 - 0	Exp: 696	HP: 3448	Empire: 0
+[ 776 ]	Name: Despot brutal	Rank: 3	Lvl: 56	Type: 0	Gold range: 0 - 0	Exp: 2363	HP: 7400	Empire: 0
+[ 777 ]	Name: Incantator brutal	Rank: 3	Lvl: 57	Type: 0	Gold range: 0 - 0	Exp: 2405	HP: 7620	Empire: 0
+[ 791 ]	Name: Conducator intunecat	Rank: 4	Lvl: 54	Type: 0	Gold range: 0 - 0	Exp: 13020	HP: 101360	Empire: 0
+[ 792 ]	Name: Conducator Spirit Negru	Rank: 5	Lvl: 62	Type: 0	Gold range: 0 - 0	Exp: 112050	HP: 319600	Empire: 0
+[ 793 ]	Name: Conducator intun. elita	Rank: 4	Lvl: 54	Type: 0	Gold range: 0 - 0	Exp: 6510	HP: 101360	Empire: 0
+[ 794 ]	Name: Strigoi Intunecat	Rank: 5	Lvl: 62	Type: 0	Gold range: 0 - 0	Exp: 56025	HP: 319600	Empire: 0
+[ 795 ]	Name: Luptator de elita	Rank: 5	Lvl: 97	Type: 0	Gold range: 0 - 0	Exp: 267300	HP: 2568600	Empire: 0
+[ 796 ]	Name: Lupt. intunec. de elita	Rank: 5	Lvl: 97	Type: 0	Gold range: 0 - 0	Exp: 267300	HP: 2568600	Empire: 0
+[ 901 ]	Name: Spiritul Cadavrului	Rank: 1	Lvl: 49	Type: 0	Gold range: 0 - 0	Exp: 710	HP: 2860	Empire: 0
+[ 902 ]	Name: Caine al ciumei	Rank: 1	Lvl: 51	Type: 0	Gold range: 0 - 0	Exp: 738	HP: 3049	Empire: 0
+[ 903 ]	Name: Om al ciumei	Rank: 1	Lvl: 53	Type: 0	Gold range: 0 - 0	Exp: 767	HP: 3245	Empire: 0
+[ 904 ]	Name: Luptator sabie al ciumei	Rank: 2	Lvl: 55	Type: 0	Gold range: 0 - 0	Exp: 1326	HP: 4597	Empire: 0
+[ 905 ]	Name: Luptator suliTa al ciume	Rank: 2	Lvl: 58	Type: 0	Gold range: 0 - 0	Exp: 1398	HP: 5021	Empire: 0
+[ 906 ]	Name: Arcas al ciumei	Rank: 2	Lvl: 58	Type: 0	Gold range: 0 - 0	Exp: 1748	HP: 3652	Empire: 0
+[ 907 ]	Name: Comandant al ciumei	Rank: 3	Lvl: 59	Type: 0	Gold range: 0 - 0	Exp: 2844	HP: 8077	Empire: 0
+[ 931 ]	Name: Spirit Cadavru Furios	Rank: 1	Lvl: 49	Type: 0	Gold range: 0 - 0	Exp: 497	HP: 2288	Empire: 0
+[ 932 ]	Name: Caine al ciumei salbatic	Rank: 1	Lvl: 51	Type: 0	Gold range: 0 - 0	Exp: 517	HP: 2439	Empire: 0
+[ 933 ]	Name: Om al ciumei salbatic	Rank: 1	Lvl: 53	Type: 0	Gold range: 0 - 0	Exp: 537	HP: 2596	Empire: 0
+[ 934 ]	Name: Luptator al ciumei salb.	Rank: 2	Lvl: 55	Type: 0	Gold range: 0 - 0	Exp: 929	HP: 3678	Empire: 0
+[ 935 ]	Name: Lupt. suliTa al cium. s.	Rank: 2	Lvl: 58	Type: 0	Gold range: 0 - 0	Exp: 979	HP: 4017	Empire: 0
+[ 936 ]	Name: Arcas al ciumei salbatic	Rank: 2	Lvl: 58	Type: 0	Gold range: 0 - 0	Exp: 1224	HP: 2921	Empire: 0
+[ 937 ]	Name: Com. al ciumei furios	Rank: 3	Lvl: 59	Type: 0	Gold range: 0 - 0	Exp: 1991	HP: 6461	Empire: 0
+[ 991 ]	Name: Ou al ciumei	Rank: 3	Lvl: 59	Type: 0	Gold range: 0 - 0	Exp: 14220	HP: 32307	Empire: 0
+[ 992 ]	Name: Purtator de ciuma	Rank: 3	Lvl: 60	Type: 0	Gold range: 0 - 0	Exp: 14460	HP: 33242	Empire: 0
+[ 993 ]	Name: Purtator de ciuma urias	Rank: 5	Lvl: 61	Type: 0	Gold range: 0 - 0	Exp: 110250	HP: 341880	Empire: 0
+[ 1001 ]	Name: Soldat Demon	Rank: 1	Lvl: 57	Type: 0	Gold range: 0 - 0	Exp: 721	HP: 2025	Empire: 0
+[ 1002 ]	Name: Arcas Demon	Rank: 1	Lvl: 58	Type: 0	Gold range: 0 - 0	Exp: 813	HP: 1761	Empire: 0
+[ 1003 ]	Name: Demon Sulitas	Rank: 1	Lvl: 59	Type: 0	Gold range: 0 - 0	Exp: 887	HP: 2860	Empire: 0
+[ 1004 ]	Name: Demon Saman	Rank: 2	Lvl: 60	Type: 0	Gold range: 0 - 0	Exp: 1230	HP: 4066	Empire: 0
+[ 1031 ]	Name: Soldat comun	Rank: 2	Lvl: 67	Type: 0	Gold range: 0 - 0	Exp: 1614	HP: 6438	Empire: 0
+[ 1032 ]	Name: Arcas comun	Rank: 2	Lvl: 69	Type: 0	Gold range: 0 - 0	Exp: 2078	HP: 4933	Empire: 0
+[ 1033 ]	Name: Luptator Sulita Comun	Rank: 2	Lvl: 70	Type: 0	Gold range: 0 - 0	Exp: 1686	HP: 6959	Empire: 0
+[ 1034 ]	Name: aaman comun	Rank: 2	Lvl: 71	Type: 0	Gold range: 0 - 0	Exp: 1710	HP: 7133	Empire: 0
+[ 1035 ]	Name: Spiritul maniei	Rank: 2	Lvl: 72	Type: 0	Gold range: 0 - 0	Exp: 1734	HP: 7309	Empire: 0
+[ 1036 ]	Name: Spiritul haosului	Rank: 2	Lvl: 73	Type: 0	Gold range: 0 - 0	Exp: 1758	HP: 7484	Empire: 0
+[ 1037 ]	Name: Demon comandant comun	Rank: 3	Lvl: 71	Type: 0	Gold range: 0 - 0	Exp: 3420	HP: 11146	Empire: 0
+[ 1038 ]	Name: Maestru craniu sabie	Rank: 3	Lvl: 72	Type: 0	Gold range: 0 - 0	Exp: 3468	HP: 11421	Empire: 0
+[ 1039 ]	Name: Craniu zburator	Rank: 3	Lvl: 73	Type: 0	Gold range: 0 - 0	Exp: 3516	HP: 11693	Empire: 0
+[ 1040 ]	Name: Spirit nemuritor	Rank: 3	Lvl: 74	Type: 0	Gold range: 0 - 0	Exp: 3564	HP: 11968	Empire: 0
+[ 1041 ]	Name: Animal demonic	Rank: 3	Lvl: 75	Type: 0	Gold range: 0 - 0	Exp: 3612	HP: 12240	Empire: 0
+[ 1061 ]	Name: Spirit soldat comun	Rank: 2	Lvl: 67	Type: 0	Gold range: 0 - 0	Exp: 1614	HP: 6438	Empire: 0
+[ 1062 ]	Name: Spirit arcas comun	Rank: 2	Lvl: 69	Type: 0	Gold range: 0 - 0	Exp: 2078	HP: 4933	Empire: 0
+[ 1063 ]	Name: Spirit luptator comun	Rank: 2	Lvl: 70	Type: 0	Gold range: 0 - 0	Exp: 1686	HP: 6959	Empire: 0
+[ 1064 ]	Name: Spirit Saman Comun	Rank: 2	Lvl: 71	Type: 0	Gold range: 0 - 0	Exp: 1710	HP: 7133	Empire: 0
+[ 1065 ]	Name: Spirit al maniei comun	Rank: 2	Lvl: 72	Type: 0	Gold range: 0 - 0	Exp: 1734	HP: 7309	Empire: 0
+[ 1066 ]	Name: Spirit al haosului comun	Rank: 2	Lvl: 73	Type: 0	Gold range: 0 - 0	Exp: 1758	HP: 7484	Empire: 0
+[ 1067 ]	Name: Spirit comandant comun	Rank: 3	Lvl: 71	Type: 0	Gold range: 0 - 0	Exp: 3420	HP: 11146	Empire: 0
+[ 1068 ]	Name: Samurai Fantoma	Rank: 3	Lvl: 72	Type: 0	Gold range: 0 - 0	Exp: 3468	HP: 11421	Empire: 0
+[ 1069 ]	Name: Craniu zburator comun	Rank: 3	Lvl: 73	Type: 0	Gold range: 0 - 0	Exp: 3516	HP: 11693	Empire: 0
+[ 1070 ]	Name: Spirit nemuritor	Rank: 3	Lvl: 74	Type: 0	Gold range: 0 - 0	Exp: 3564	HP: 11968	Empire: 0
+[ 1071 ]	Name: Animal demonic	Rank: 3	Lvl: 75	Type: 0	Gold range: 0 - 0	Exp: 3612	HP: 12240	Empire: 0
+[ 1091 ]	Name: Demon rege	Rank: 4	Lvl: 75	Type: 0	Gold range: 0 - 0	Exp: 9030	HP: 24481	Empire: 0
+[ 1092 ]	Name: Demon rege mandru	Rank: 4	Lvl: 75	Type: 0	Gold range: 0 - 0	Exp: 18060	HP: 48961	Empire: 0
+[ 1093 ]	Name: Ingerul cu Coasa	Rank: 5	Lvl: 78	Type: 0	Gold range: 0 - 0	Exp: 140850	HP: 522500	Empire: 0
+[ 1094 ]	Name: Demon rege comun	Rank: 5	Lvl: 97	Type: 0	Gold range: 0 - 0	Exp: 267300	HP: 2568600	Empire: 0
+[ 1095 ]	Name: Moarte albastra	Rank: 5	Lvl: 97	Type: 0	Gold range: 0 - 0	Exp: 267300	HP: 2568600	Empire: 0
+[ 1096 ]	Name: ????	Rank: 4	Lvl: 75	Type: 0	Gold range: 0 - 0	Exp: 18060	HP: 48961	Empire: 0
+[ 1101 ]	Name: Gheata Fermecata	Rank: 1	Lvl: 62	Type: 0	Gold range: 0 - 0	Exp: 987	HP: 4602	Empire: 0
+[ 1102 ]	Name: Balena Ucigasa de Gheata	Rank: 1	Lvl: 63	Type: 0	Gold range: 0 - 0	Exp: 1002	HP: 4730	Empire: 0
+[ 1103 ]	Name: Insecta de gheaTa	Rank: 1	Lvl: 64	Type: 0	Gold range: 0 - 0	Exp: 1018	HP: 4861	Empire: 0
+[ 1104 ]	Name: Leu de gheaTa	Rank: 2	Lvl: 64	Type: 0	Gold range: 0 - 0	Exp: 1697	HP: 6482	Empire: 0
+[ 1105 ]	Name: Om ingheTat	Rank: 2	Lvl: 65	Type: 0	Gold range: 0 - 0	Exp: 1723	HP: 6660	Empire: 0
+[ 1106 ]	Name: Yeti	Rank: 2	Lvl: 66	Type: 0	Gold range: 0 - 0	Exp: 1749	HP: 6839	Empire: 0
+[ 1107 ]	Name: Golem de Gheata	Rank: 3	Lvl: 66	Type: 0	Gold range: 0 - 0	Exp: 3498	HP: 10686	Empire: 0
+[ 1131 ]	Name: Aschii Gheata Lumea Jos	Rank: 1	Lvl: 81	Type: 0	Gold range: 0 - 0	Exp: 3945	HP: 8285	Empire: 0
+[ 1132 ]	Name: Balena ucigasa gheaTa	Rank: 1	Lvl: 81	Type: 0	Gold range: 0 - 0	Exp: 4008	HP: 8514	Empire: 0
+[ 1133 ]	Name: Insecta Inghetata	Rank: 1	Lvl: 82	Type: 0	Gold range: 0 - 0	Exp: 4071	HP: 8751	Empire: 0
+[ 1134 ]	Name: Leu gheaTa lumea de jos	Rank: 2	Lvl: 83	Type: 0	Gold range: 0 - 0	Exp: 6786	HP: 13167	Empire: 0
+[ 1135 ]	Name: Omul gheTii lumii de jos	Rank: 2	Lvl: 83	Type: 0	Gold range: 0 - 0	Exp: 6891	HP: 11990	Empire: 0
+[ 1136 ]	Name: Yeti Salbatic	Rank: 2	Lvl: 84	Type: 0	Gold range: 0 - 0	Exp: 6996	HP: 12311	Empire: 0
+[ 1137 ]	Name: Golem de Gheata Subteran	Rank: 3	Lvl: 85	Type: 0	Gold range: 0 - 0	Exp: 13992	HP: 25646	Empire: 0
+[ 1151 ]	Name: Diavol de gheaTa	Rank: 1	Lvl: 52	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 5523	Empire: 0
+[ 1152 ]	Name: Balena cu corn de gheaTa	Rank: 1	Lvl: 53	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 5676	Empire: 0
+[ 1153 ]	Name: Insecta de gheaTa	Rank: 1	Lvl: 54	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 5834	Empire: 0
+[ 1154 ]	Name: Seol-Gu	Rank: 2	Lvl: 54	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 7778	Empire: 0
+[ 1155 ]	Name: Omul gheTii	Rank: 2	Lvl: 55	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 7993	Empire: 0
+[ 1156 ]	Name: Gigant de gheaTa	Rank: 2	Lvl: 56	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 8207	Empire: 0
+[ 1157 ]	Name: Golem de Gheata	Rank: 3	Lvl: 56	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 12823	Empire: 0
+[ 1171 ]	Name: GheaTa fermecata rea	Rank: 1	Lvl: 62	Type: 0	Gold range: 0 - 0	Exp: 690	HP: 3682	Empire: 0
+[ 1172 ]	Name: Balena cu corn d gh. rea	Rank: 1	Lvl: 63	Type: 0	Gold range: 0 - 0	Exp: 702	HP: 3784	Empire: 0
+[ 1173 ]	Name: Insecta de gh. rea	Rank: 1	Lvl: 64	Type: 0	Gold range: 0 - 0	Exp: 713	HP: 3889	Empire: 0
+[ 1174 ]	Name: Leu de gheaTa rau	Rank: 2	Lvl: 64	Type: 0	Gold range: 0 - 0	Exp: 1188	HP: 5186	Empire: 0
+[ 1175 ]	Name: Om Rau de Gheata	Rank: 2	Lvl: 65	Type: 0	Gold range: 0 - 0	Exp: 1206	HP: 5328	Empire: 0
+[ 1176 ]	Name: Yeti rau	Rank: 2	Lvl: 66	Type: 0	Gold range: 0 - 0	Exp: 1224	HP: 5471	Empire: 0
+[ 1177 ]	Name: Golem de Gheata Puternic	Rank: 3	Lvl: 66	Type: 0	Gold range: 0 - 0	Exp: 2449	HP: 8549	Empire: 0
+[ 1191 ]	Name: Vrajitoare de gheaTa	Rank: 4	Lvl: 74	Type: 0	Gold range: 0 - 0	Exp: 16860	HP: 130482	Empire: 0
+[ 1192 ]	Name: Vrajitoare de gheaTa mar	Rank: 4	Lvl: 89	Type: 0	Gold range: 0 - 0	Exp: 243600	HP: 352410	Empire: 0
+[ 1301 ]	Name: Soldat Brotac	Rank: 1	Lvl: 57	Type: 0	Gold range: 0 - 0	Exp: 825	HP: 3990	Empire: 0
+[ 1302 ]	Name: General Brotac	Rank: 3	Lvl: 59	Type: 0	Gold range: 0 - 0	Exp: 2844	HP: 8811	Empire: 0
+[ 1303 ]	Name: Capcaun	Rank: 1	Lvl: 58	Type: 0	Gold range: 0 - 0	Exp: 839	HP: 4108	Empire: 0
+[ 1304 ]	Name: Fantoma Tigrului Galben	Rank: 4	Lvl: 75	Type: 0	Gold range: 0 - 0	Exp: 18060	HP: 178040	Empire: 0
+[ 1305 ]	Name: General Broasca Taur	Rank: 3	Lvl: 61	Type: 0	Gold range: 0 - 0	Exp: 2940	HP: 9324	Empire: 0
+[ 1306 ]	Name: Naluca Tigrului Galben	Rank: 4	Lvl: 75	Type: 0	Gold range: 0 - 0	Exp: 18060	HP: 178040	Empire: 0
+[ 1307 ]	Name: Naluca Tigrului Galben	Rank: 5	Lvl: 97	Type: 0	Gold range: 0 - 0	Exp: 267300	HP: 2568600	Empire: 0
+[ 1308 ]	Name: NoNAme	Rank: 4	Lvl: 40	Type: 0	Gold range: 0 - 0	Exp: 18060	HP: 143232	Empire: 0
+[ 1309 ]	Name: NoNAme	Rank: 4	Lvl: 65	Type: 0	Gold range: 0 - 0	Exp: 18060	HP: 255680	Empire: 0
+[ 1310 ]	Name: NoNAme	Rank: 4	Lvl: 95	Type: 0	Gold range: 0 - 0	Exp: 18060	HP: 284864	Empire: 0
+[ 1331 ]	Name: Soldat Brotac Mare	Rank: 1	Lvl: 57	Type: 0	Gold range: 0 - 0	Exp: 577	HP: 3192	Empire: 0
+[ 1332 ]	Name: Liderul General Brotac	Rank: 3	Lvl: 59	Type: 0	Gold range: 0 - 0	Exp: 1991	HP: 7049	Empire: 0
+[ 1333 ]	Name: Capcaun mare	Rank: 1	Lvl: 58	Type: 0	Gold range: 0 - 0	Exp: 588	HP: 3287	Empire: 0
+[ 1334 ]	Name: Duhul Tigrului Galben	Rank: 4	Lvl: 75	Type: 0	Gold range: 0 - 0	Exp: 12642	HP: 142432	Empire: 0
+[ 1335 ]	Name: Gen. broasca-bou mare	Rank: 3	Lvl: 61	Type: 0	Gold range: 0 - 0	Exp: 2058	HP: 7459	Empire: 0
+[ 1401 ]	Name: Distrugator	Rank: 1	Lvl: 66	Type: 0	Gold range: 0 - 0	Exp: 3226	HP: 72346	Empire: 0
+[ 1402 ]	Name: Luptator cu securea	Rank: 2	Lvl: 73	Type: 0	Gold range: 0 - 0	Exp: 6017	HP: 108134	Empire: 0
+[ 1403 ]	Name: Miria-Luptator	Rank: 3	Lvl: 77	Type: 0	Gold range: 0 - 0	Exp: 12978	HP: 178080	Empire: 0
+[ 1501 ]	Name: Golem de Piatra	Rank: 1	Lvl: 69	Type: 0	Gold range: 0 - 0	Exp: 3491	HP: 73997	Empire: 0
+[ 1502 ]	Name: Golem de Piatra	Rank: 1	Lvl: 72	Type: 0	Gold range: 0 - 0	Exp: 3642	HP: 79738	Empire: 0
+[ 1503 ]	Name: Golem de Stanca	Rank: 2	Lvl: 76	Type: 0	Gold range: 0 - 0	Exp: 6405	HP: 111053	Empire: 0
+[ 1601 ]	Name: Capcaun razboinic	Rank: 0	Lvl: 68	Type: 0	Gold range: 0 - 0	Exp: 2809	HP: 63024	Empire: 0
+[ 1602 ]	Name: Capcaun Macelar	Rank: 2	Lvl: 70	Type: 0	Gold range: 0 - 0	Exp: 5901	HP: 101222	Empire: 0
+[ 1603 ]	Name: Berserker capcaun	Rank: 2	Lvl: 75	Type: 0	Gold range: 0 - 0	Exp: 6174	HP: 111053	Empire: 0
+[ 1901 ]	Name: Noua Cozi	Rank: 4	Lvl: 72	Type: 0	Gold range: 0 - 0	Exp: 17340	HP: 166120	Empire: 0
+[ 1902 ]	Name: Noua cozi de elita	Rank: 4	Lvl: 72	Type: 0	Gold range: 0 - 0	Exp: 17340	HP: 178040	Empire: 0
+[ 1903 ]	Name: Noua cozi de elita	Rank: 5	Lvl: 97	Type: 0	Gold range: 0 - 0	Exp: 267300	HP: 2568600	Empire: 0
+[ 1904 ]	Name: NoNAme	Rank: 4	Lvl: 40	Type: 0	Gold range: 0 - 0	Exp: 18060	HP: 143232	Empire: 0
+[ 1905 ]	Name: NoNAme	Rank: 4	Lvl: 65	Type: 0	Gold range: 0 - 0	Exp: 18060	HP: 255680	Empire: 0
+[ 1906 ]	Name: NoNAme	Rank: 4	Lvl: 95	Type: 0	Gold range: 0 - 0	Exp: 18060	HP: 284864	Empire: 0
+[ 2001 ]	Name: Pui de Paianjen	Rank: 0	Lvl: 43	Type: 0	Gold range: 0 - 0	Exp: 909	HP: 1949	Empire: 0
+[ 2002 ]	Name: Paianjen Otravitor	Rank: 0	Lvl: 45	Type: 0	Gold range: 0 - 0	Exp: 951	HP: 2088	Empire: 0
+[ 2003 ]	Name: Paianjen Otravitor Rosu	Rank: 1	Lvl: 48	Type: 0	Gold range: 0 - 0	Exp: 1216	HP: 2769	Empire: 0
+[ 2004 ]	Name: Paianjen Gheara Toxic	Rank: 1	Lvl: 50	Type: 0	Gold range: 0 - 0	Exp: 1266	HP: 2954	Empire: 0
+[ 2005 ]	Name: Paianjen Soldat	Rank: 1	Lvl: 52	Type: 0	Gold range: 0 - 0	Exp: 1317	HP: 3146	Empire: 0
+[ 2031 ]	Name: Pui de Paianjen Otravit	Rank: 2	Lvl: 50	Type: 0	Gold range: 0 - 0	Exp: 1665	HP: 3457	Empire: 0
+[ 2032 ]	Name: Paianjen OtravitorMortal	Rank: 2	Lvl: 52	Type: 0	Gold range: 0 - 0	Exp: 1737	HP: 3692	Empire: 0
+[ 2033 ]	Name: Paianj.Otravit Mort Rosu	Rank: 3	Lvl: 54	Type: 0	Gold range: 0 - 0	Exp: 3618	HP: 6155	Empire: 0
+[ 2034 ]	Name: Paianjen Gheara Toxica	Rank: 3	Lvl: 56	Type: 0	Gold range: 0 - 0	Exp: 3762	HP: 6553	Empire: 0
+[ 2035 ]	Name: Paianjen Soldat Toxic	Rank: 3	Lvl: 58	Type: 0	Gold range: 0 - 0	Exp: 3906	HP: 6969	Empire: 0
+[ 2036 ]	Name: Paianjen Soldat Mandru	Rank: 3	Lvl: 58	Type: 0	Gold range: 0 - 0	Exp: 3906	HP: 6969	Empire: 0
+[ 2051 ]	Name: Pui Paianjen Toxic Rau	Rank: 0	Lvl: 43	Type: 0	Gold range: 0 - 0	Exp: 636	HP: 1559	Empire: 0
+[ 2052 ]	Name: Paianjen Otravitor Rau	Rank: 0	Lvl: 45	Type: 0	Gold range: 0 - 0	Exp: 666	HP: 1670	Empire: 0
+[ 2053 ]	Name: Paianjen Rosu Toxic Rau	Rank: 1	Lvl: 48	Type: 0	Gold range: 0 - 0	Exp: 852	HP: 2215	Empire: 0
+[ 2054 ]	Name: PaianjenGhearaToxicRau	Rank: 1	Lvl: 50	Type: 0	Gold range: 0 - 0	Exp: 887	HP: 2363	Empire: 0
+[ 2055 ]	Name: Paianjen Soldat ToxicRau	Rank: 1	Lvl: 52	Type: 0	Gold range: 0 - 0	Exp: 922	HP: 2516	Empire: 0
+[ 2061 ]	Name: Paianjen Otravitor Mic	Rank: 0	Lvl: 60	Type: 0	Gold range: 0 - 0	Exp: 3330	HP: 3771	Empire: 0
+[ 2062 ]	Name: Paianjen Toxic Mortal	Rank: 1	Lvl: 62	Type: 0	Gold range: 0 - 0	Exp: 3474	HP: 4028	Empire: 0
+[ 2063 ]	Name: Paianjen Toxic Rosu	Rank: 2	Lvl: 64	Type: 0	Gold range: 0 - 0	Exp: 7236	HP: 6714	Empire: 0
+[ 2064 ]	Name: Paianjen Gheara Otravit	Rank: 2	Lvl: 66	Type: 0	Gold range: 0 - 0	Exp: 7524	HP: 7149	Empire: 0
+[ 2065 ]	Name: Paianjen Soldat Otravit	Rank: 3	Lvl: 68	Type: 0	Gold range: 0 - 0	Exp: 7812	HP: 7602	Empire: 0
+[ 2071 ]	Name: Paianjen Pui Mortal	Rank: 2	Lvl: 60	Type: 0	Gold range: 0 - 0	Exp: 3579	HP: 9063	Empire: 0
+[ 2072 ]	Name: Pai. otr. mort. brutal	Rank: 2	Lvl: 62	Type: 0	Gold range: 0 - 0	Exp: 3697	HP: 9585	Empire: 0
+[ 2073 ]	Name: Pai. otr. rosu brutal	Rank: 3	Lvl: 64	Type: 0	Gold range: 0 - 0	Exp: 7372	HP: 13504	Empire: 0
+[ 2074 ]	Name: Pai. otr. cu gheara brut	Rank: 3	Lvl: 66	Type: 0	Gold range: 0 - 0	Exp: 7602	HP: 14248	Empire: 0
+[ 2075 ]	Name: Paianjen Soldat Mortal	Rank: 3	Lvl: 68	Type: 0	Gold range: 0 - 0	Exp: 7831	HP: 15020	Empire: 0
+[ 2076 ]	Name: Paianjen Otravitor Dur	Rank: 3	Lvl: 68	Type: 0	Gold range: 0 - 0	Exp: 7831	HP: 15020	Empire: 0
+[ 2091 ]	Name: Regina Paianjenilor	Rank: 4	Lvl: 60	Type: 0	Gold range: 0 - 0	Exp: 14460	HP: 193408	Empire: 0
+[ 2092 ]	Name: Regina Paianjen	Rank: 5	Lvl: 75	Type: 0	Gold range: 0 - 0	Exp: 267300	HP: 2568600	Empire: 0
+[ 2093 ]	Name: Vaduva Neagra	Rank: 5	Lvl: 97	Type: 0	Gold range: 0 - 0	Exp: 267300	HP: 2568600	Empire: 0
+[ 2094 ]	Name: Rege Paianjen	Rank: 5	Lvl: 72	Type: 0	Gold range: 0 - 0	Exp: 156600	HP: 1277520	Empire: 0
+[ 2095 ]	Name: Ou de Paianjen	Rank: 5	Lvl: 70	Type: 0	Gold range: 0 - 0	Exp: 3750	HP: 193408	Empire: 0
+[ 2101 ]	Name: Vulpe de Desert	Rank: 1	Lvl: 19	Type: 0	Gold range: 0 - 0	Exp: 416	HP: 784	Empire: 0
+[ 2102 ]	Name: Ochi zburator de desert	Rank: 1	Lvl: 37	Type: 0	Gold range: 0 - 0	Exp: 939	HP: 1877	Empire: 0
+[ 2103 ]	Name: Scorpion Regal	Rank: 1	Lvl: 39	Type: 0	Gold range: 0 - 0	Exp: 990	HP: 2025	Empire: 0
+[ 2104 ]	Name: Om Scorpion Mic	Rank: 2	Lvl: 44	Type: 0	Gold range: 0 - 0	Exp: 1859	HP: 3228	Empire: 0
+[ 2105 ]	Name: Arcas Scorpion	Rank: 2	Lvl: 47	Type: 0	Gold range: 0 - 0	Exp: 1985	HP: 2598	Empire: 0
+[ 2106 ]	Name: Sarpe Spadasin	Rank: 2	Lvl: 48	Type: 0	Gold range: 0 - 0	Exp: 2027	HP: 3692	Empire: 0
+[ 2107 ]	Name: Sarpe Arcas	Rank: 2	Lvl: 51	Type: 0	Gold range: 0 - 0	Exp: 2153	HP: 2957	Empire: 0
+[ 2108 ]	Name: Beduin	Rank: 3	Lvl: 54	Type: 0	Gold range: 0 - 0	Exp: 4557	HP: 6969	Empire: 0
+[ 2131 ]	Name: Om Scorpion	Rank: 0	Lvl: 60	Type: 0	Gold range: 0 - 0	Exp: 3717	HP: 3771	Empire: 0
+[ 2132 ]	Name: Arcas scorpion	Rank: 1	Lvl: 62	Type: 0	Gold range: 0 - 0	Exp: 3969	HP: 4028	Empire: 0
+[ 2133 ]	Name: Luptator sabie sarpe	Rank: 2	Lvl: 64	Type: 0	Gold range: 0 - 0	Exp: 4053	HP: 6714	Empire: 0
+[ 2134 ]	Name: Arcas sarpe	Rank: 2	Lvl: 66	Type: 0	Gold range: 0 - 0	Exp: 4305	HP: 7149	Empire: 0
+[ 2135 ]	Name: Talhar de desert	Rank: 3	Lvl: 68	Type: 0	Gold range: 0 - 0	Exp: 9114	HP: 7602	Empire: 0
+[ 2141 ]	Name: Vizto	Rank: 4	Lvl: 68	Type: 0	Gold range: 0 - 0	Exp: 43050	HP: 89560	Empire: 0
+[ 2142 ]	Name: Kenki	Rank: 4	Lvl: 71	Type: 0	Gold range: 0 - 0	Exp: 37170	HP: 102280	Empire: 0
+[ 2151 ]	Name: Vulpe Salbatica de Deser	Rank: 1	Lvl: 19	Type: 0	Gold range: 0 - 0	Exp: 291	HP: 627	Empire: 0
+[ 2152 ]	Name: Calugar Puternic	Rank: 1	Lvl: 37	Type: 0	Gold range: 0 - 0	Exp: 657	HP: 1502	Empire: 0
+[ 2153 ]	Name: Scorpion Regal Dur	Rank: 1	Lvl: 39	Type: 0	Gold range: 0 - 0	Exp: 693	HP: 1620	Empire: 0
+[ 2154 ]	Name: Om Scorpion Dur	Rank: 2	Lvl: 44	Type: 0	Gold range: 0 - 0	Exp: 1302	HP: 2582	Empire: 0
+[ 2155 ]	Name: Scorpion Arcas Dur	Rank: 1	Lvl: 47	Type: 0	Gold range: 0 - 0	Exp: 1389	HP: 2079	Empire: 0
+[ 2156 ]	Name: Sarpe Spadasin Dur	Rank: 2	Lvl: 48	Type: 0	Gold range: 0 - 0	Exp: 1419	HP: 2954	Empire: 0
+[ 2157 ]	Name: Sarpe Arcas Dur	Rank: 2	Lvl: 51	Type: 0	Gold range: 0 - 0	Exp: 1507	HP: 2365	Empire: 0
+[ 2158 ]	Name: Beduin Puternic	Rank: 3	Lvl: 54	Type: 0	Gold range: 0 - 0	Exp: 3190	HP: 5575	Empire: 0
+[ 2191 ]	Name: Testoasa Gigant	Rank: 4	Lvl: 67	Type: 0	Gold range: 0 - 0	Exp: 16140	HP: 146320	Empire: 0
+[ 2192 ]	Name: Testoasa de desert neagr	Rank: 5	Lvl: 97	Type: 0	Gold range: 0 - 0	Exp: 267300	HP: 2568600	Empire: 0
+[ 2201 ]	Name: Tigru Luptator Dur	Rank: 1	Lvl: 69	Type: 0	Gold range: 0 - 0	Exp: 748	HP: 5550	Empire: 0
+[ 2202 ]	Name: Spiritul Focului	Rank: 1	Lvl: 69	Type: 0	Gold range: 0 - 0	Exp: 748	HP: 5550	Empire: 0
+[ 2203 ]	Name: Tigru Luptator	Rank: 2	Lvl: 70	Type: 0	Gold range: 0 - 0	Exp: 1265	HP: 7592	Empire: 0
+[ 2204 ]	Name: Flacara	Rank: 2	Lvl: 71	Type: 0	Gold range: 0 - 0	Exp: 1283	HP: 7782	Empire: 0
+[ 2205 ]	Name: Luptator de Foc	Rank: 3	Lvl: 72	Type: 0	Gold range: 0 - 0	Exp: 2601	HP: 12459	Empire: 0
+[ 2206 ]	Name: Regele Focului	Rank: 4	Lvl: 73	Type: 0	Gold range: 0 - 0	Exp: 13185	HP: 51024	Empire: 0
+[ 2207 ]	Name: Regele negru al focului	Rank: 4	Lvl: 73	Type: 0	Gold range: 0 - 0	Exp: 180600	HP: 356080	Empire: 0
+[ 2221 ]	Name: ?????	Rank: 1	Lvl: 69	Type: 0	Gold range: 0 - 0	Exp: 2396	HP: 5550	Empire: 0
+[ 2222 ]	Name: ??	Rank: 1	Lvl: 69	Type: 0	Gold range: 0 - 0	Exp: 2396	HP: 5550	Empire: 0
+[ 2223 ]	Name: ???	Rank: 2	Lvl: 70	Type: 0	Gold range: 0 - 0	Exp: 3429	HP: 7592	Empire: 0
+[ 2224 ]	Name: ???	Rank: 2	Lvl: 71	Type: 0	Gold range: 0 - 0	Exp: 4065	HP: 7782	Empire: 0
+[ 2225 ]	Name: ????	Rank: 3	Lvl: 72	Type: 0	Gold range: 0 - 0	Exp: 6702	HP: 12459	Empire: 0
+[ 2226 ]	Name: ??	Rank: 1	Lvl: 60	Type: 0	Gold range: 0 - 0	Exp: 2396	HP: 25000	Empire: 0
+[ 2227 ]	Name: ??	Rank: 1	Lvl: 90	Type: 0	Gold range: 0 - 0	Exp: 2396	HP: 100000	Empire: 0
+[ 2231 ]	Name: Tigru Luptator Puternic	Rank: 1	Lvl: 69	Type: 0	Gold range: 0 - 0	Exp: 524	HP: 4440	Empire: 0
+[ 2232 ]	Name: Spirit Flacara Dura	Rank: 1	Lvl: 69	Type: 0	Gold range: 0 - 0	Exp: 524	HP: 4440	Empire: 0
+[ 2233 ]	Name: Tigru Razboinic Dur	Rank: 2	Lvl: 70	Type: 0	Gold range: 0 - 0	Exp: 885	HP: 6073	Empire: 0
+[ 2234 ]	Name: Fantoma Razboinica Dura	Rank: 2	Lvl: 71	Type: 0	Gold range: 0 - 0	Exp: 898	HP: 6225	Empire: 0
+[ 2235 ]	Name: Razboinic Foc Dur	Rank: 3	Lvl: 72	Type: 0	Gold range: 0 - 0	Exp: 1821	HP: 9967	Empire: 0
+[ 2291 ]	Name: Dragon Rosu	Rank: 5	Lvl: 75	Type: 0	Gold range: 0 - 0	Exp: 101588	HP: 489610	Empire: 0
+[ 2292 ]	Name: ??	Rank: 5	Lvl: 99	Type: 0	Gold range: 0 - 0	Exp: 361200	HP: 5000000	Empire: 0
+[ 2293 ]	Name: ??	Rank: 5	Lvl: 99	Type: 0	Gold range: 0 - 0	Exp: 361200	HP: 5000000	Empire: 0
+[ 2301 ]	Name: Copac Fantoma	Rank: 0	Lvl: 65	Type: 0	Gold range: 0 - 0	Exp: 576	HP: 2261	Empire: 0
+[ 2302 ]	Name: Buturuga Fantoma	Rank: 0	Lvl: 67	Type: 0	Gold range: 0 - 0	Exp: 603	HP: 3939	Empire: 0
+[ 2303 ]	Name: Driade	Rank: 1	Lvl: 69	Type: 0	Gold range: 0 - 0	Exp: 774	HP: 3548	Empire: 0
+[ 2304 ]	Name: Salcia Fantoma	Rank: 1	Lvl: 70	Type: 0	Gold range: 0 - 0	Exp: 794	HP: 5206	Empire: 0
+[ 2305 ]	Name: Copac Rau	Rank: 2	Lvl: 71	Type: 0	Gold range: 0 - 0	Exp: 1375	HP: 7214	Empire: 0
+[ 2306 ]	Name: Copac Fantoma Urias	Rank: 4	Lvl: 84	Type: 0	Gold range: 0 - 0	Exp: 20427	HP: 353840	Empire: 0
+[ 2307 ]	Name: Copac Fantoma Nobil	Rank: 5	Lvl: 86	Type: 0	Gold range: 0 - 0	Exp: 188100	HP: 452900	Empire: 0
+[ 2311 ]	Name: Copacul Rosu Fantoma	Rank: 1	Lvl: 74	Type: 0	Gold range: 0 - 0	Exp: 802	HP: 3596	Empire: 0
+[ 2312 ]	Name: Buturuga Fantoma Rosie	Rank: 2	Lvl: 76	Type: 0	Gold range: 0 - 0	Exp: 1373	HP: 7032	Empire: 0
+[ 2313 ]	Name: Driada Rosie	Rank: 2	Lvl: 77	Type: 0	Gold range: 0 - 0	Exp: 1391	HP: 5699	Empire: 0
+[ 2314 ]	Name: Salcia Fantoma Rosie	Rank: 3	Lvl: 80	Type: 0	Gold range: 0 - 0	Exp: 2889	HP: 11558	Empire: 0
+[ 2315 ]	Name: Copac Rau Rosu	Rank: 3	Lvl: 82	Type: 0	Gold range: 0 - 0	Exp: 2961	HP: 11843	Empire: 0
+[ 2401 ]	Name: Setaou Luptator	Rank: 0	Lvl: 87	Type: 0	Gold range: 0 - 0	Exp: 5288	HP: 12635	Empire: 0
+[ 2402 ]	Name: Vanator Setaou	Rank: 0	Lvl: 89	Type: 0	Gold range: 0 - 0	Exp: 5409	HP: 10283	Empire: 0
+[ 2403 ]	Name: Setaou Mistic	Rank: 1	Lvl: 89	Type: 0	Gold range: 0 - 0	Exp: 6494	HP: 16784	Empire: 0
+[ 2404 ]	Name: Conducator Setaou	Rank: 1	Lvl: 90	Type: 0	Gold range: 0 - 0	Exp: 6566	HP: 22272	Empire: 0
+[ 2411 ]	Name: Soldat Setaou	Rank: 1	Lvl: 91	Type: 0	Gold range: 0 - 0	Exp: 14606	HP: 17000	Empire: 0
+[ 2412 ]	Name: Arcas Setaou	Rank: 2	Lvl: 93	Type: 0	Gold range: 0 - 0	Exp: 14940	HP: 15390	Empire: 0
+[ 2413 ]	Name: Judecator Setaou	Rank: 2	Lvl: 95	Type: 0	Gold range: 0 - 0	Exp: 15266	HP: 21724	Empire: 0
+[ 2414 ]	Name: Comandant Setaou	Rank: 3	Lvl: 97	Type: 0	Gold range: 0 - 0	Exp: 31185	HP: 41400	Empire: 0
+[ 2431 ]	Name: ????	Rank: 0	Lvl: 80	Type: 0	Gold range: 0 - 0	Exp: 19656	HP: 7090	Empire: 0
+[ 2432 ]	Name: ????	Rank: 0	Lvl: 82	Type: 0	Gold range: 0 - 0	Exp: 19751	HP: 5522	Empire: 0
+[ 2433 ]	Name: ????	Rank: 1	Lvl: 82	Type: 0	Gold range: 0 - 0	Exp: 25047	HP: 14784	Empire: 0
+[ 2434 ]	Name: ????	Rank: 1	Lvl: 83	Type: 0	Gold range: 0 - 0	Exp: 25101	HP: 20272	Empire: 0
+[ 2451 ]	Name: ?????	Rank: 1	Lvl: 84	Type: 0	Gold range: 0 - 0	Exp: 8181	HP: 16923	Empire: 0
+[ 2452 ]	Name: ?????	Rank: 2	Lvl: 86	Type: 0	Gold range: 0 - 0	Exp: 8366	HP: 22608	Empire: 0
+[ 2453 ]	Name: ?????	Rank: 2	Lvl: 88	Type: 0	Gold range: 0 - 0	Exp: 8546	HP: 23634	Empire: 0
+[ 2454 ]	Name: ?????	Rank: 3	Lvl: 90	Type: 0	Gold range: 0 - 0	Exp: 17465	HP: 39540	Empire: 0
+[ 2481 ]	Name: ????	Rank: 1	Lvl: 91	Type: 0	Gold range: 0 - 0	Exp: 39836	HP: 21999	Empire: 0
+[ 2482 ]	Name: ?????	Rank: 2	Lvl: 92	Type: 0	Gold range: 0 - 0	Exp: 40304	HP: 28760	Empire: 0
+[ 2483 ]	Name: ?????	Rank: 2	Lvl: 94	Type: 0	Gold range: 0 - 0	Exp: 40907	HP: 30077	Empire: 0
+[ 2484 ]	Name: ????	Rank: 2	Lvl: 96	Type: 0	Gold range: 0 - 0	Exp: 65936	HP: 33440	Empire: 0
+[ 2491 ]	Name: Capitanul Yonghan	Rank: 3	Lvl: 93	Type: 0	Gold range: 0 - 0	Exp: 33525	HP: 320000	Empire: 0
+[ 2492 ]	Name: Generalul Yonghan	Rank: 4	Lvl: 95	Type: 0	Gold range: 0 - 0	Exp: 342450	HP: 900000	Empire: 0
+[ 2493 ]	Name: Beran-Setaou	Rank: 5	Lvl: 97	Type: 0	Gold range: 0 - 0	Exp: 2673000	HP: 5000000	Empire: 0
+[ 2494 ]	Name: Capitanul Huashin	Rank: 3	Lvl: 88	Type: 0	Gold range: 0 - 0	Exp: 33525	HP: 300000	Empire: 0
+[ 2495 ]	Name: Generalul Huashin	Rank: 4	Lvl: 90	Type: 0	Gold range: 0 - 0	Exp: 342450	HP: 600000	Empire: 0
+[ 2501 ]	Name: Meduzele Iadului	Rank: 0	Lvl: 79	Type: 0	Gold range: 0 - 0	Exp: 555	HP: 6206	Empire: 0
+[ 2502 ]	Name: Cainele Iadului	Rank: 1	Lvl: 80	Type: 0	Gold range: 0 - 0	Exp: 672	HP: 7582	Empire: 0
+[ 2503 ]	Name: Zombie	Rank: 1	Lvl: 81	Type: 0	Gold range: 0 - 0	Exp: 680	HP: 7718	Empire: 0
+[ 2504 ]	Name: Ofiterul Iadului	Rank: 2	Lvl: 82	Type: 0	Gold range: 0 - 0	Exp: 1145	HP: 10475	Empire: 0
+[ 2505 ]	Name: Gardianul Iadului	Rank: 2	Lvl: 83	Type: 0	Gold range: 0 - 0	Exp: 1157	HP: 10660	Empire: 0
+[ 2506 ]	Name: Arcasul Iadului 2 Capete	Rank: 3	Lvl: 84	Type: 0	Gold range: 0 - 0	Exp: 2337	HP: 16947	Empire: 0
+[ 2507 ]	Name: Gheare Diabolice	Rank: 3	Lvl: 85	Type: 0	Gold range: 0 - 0	Exp: 2361	HP: 17242	Empire: 0
+[ 2508 ]	Name: Luptatorul Iadului	Rank: 0	Lvl: 79	Type: 0	Gold range: 0 - 0	Exp: 555	HP: 6206	Empire: 0
+[ 2509 ]	Name: Arcasul Iadului	Rank: 1	Lvl: 80	Type: 0	Gold range: 0 - 0	Exp: 672	HP: 7582	Empire: 0
+[ 2510 ]	Name: Sulitasul Iadului	Rank: 1	Lvl: 81	Type: 0	Gold range: 0 - 0	Exp: 680	HP: 7718	Empire: 0
+[ 2511 ]	Name: Parintele Iadului	Rank: 2	Lvl: 82	Type: 0	Gold range: 0 - 0	Exp: 1145	HP: 10475	Empire: 0
+[ 2512 ]	Name: Maiorul Iadului	Rank: 2	Lvl: 83	Type: 0	Gold range: 0 - 0	Exp: 1157	HP: 10660	Empire: 0
+[ 2513 ]	Name: Macelarul Iadului	Rank: 3	Lvl: 84	Type: 0	Gold range: 0 - 0	Exp: 2337	HP: 16947	Empire: 0
+[ 2514 ]	Name: Generalul Iadului	Rank: 3	Lvl: 86	Type: 0	Gold range: 0 - 0	Exp: 2385	HP: 17537	Empire: 0
+[ 2541 ]	Name: Luptator Satanic	Rank: 0	Lvl: 79	Type: 0	Gold range: 0 - 0	Exp: 555	HP: 6206	Empire: 0
+[ 2542 ]	Name: Arcas Satanic	Rank: 1	Lvl: 80	Type: 0	Gold range: 0 - 0	Exp: 672	HP: 7582	Empire: 0
+[ 2543 ]	Name: Sulitas Satanic	Rank: 1	Lvl: 81	Type: 0	Gold range: 0 - 0	Exp: 680	HP: 7718	Empire: 0
+[ 2544 ]	Name: Parinte Satanic	Rank: 2	Lvl: 82	Type: 0	Gold range: 0 - 0	Exp: 1145	HP: 10475	Empire: 0
+[ 2545 ]	Name: Maior Satanic	Rank: 2	Lvl: 83	Type: 0	Gold range: 0 - 0	Exp: 1157	HP: 10660	Empire: 0
+[ 2546 ]	Name: Macelar Satanic	Rank: 3	Lvl: 84	Type: 0	Gold range: 0 - 0	Exp: 2337	HP: 16947	Empire: 0
+[ 2547 ]	Name: General Satanic	Rank: 3	Lvl: 86	Type: 0	Gold range: 0 - 0	Exp: 2385	HP: 17537	Empire: 0
+[ 2591 ]	Name: Tartaros	Rank: 4	Lvl: 89	Type: 0	Gold range: 0 - 0	Exp: 24540	HP: 73770	Empire: 0
+[ 2592 ]	Name: Ucigasul Iadului	Rank: 4	Lvl: 89	Type: 0	Gold range: 0 - 0	Exp: 24540	HP: 73770	Empire: 0
+[ 2593 ]	Name: Ucigasul Iadului	Rank: 4	Lvl: 89	Type: 0	Gold range: 0 - 0	Exp: 24540	HP: 73770	Empire: 0
+[ 2594 ]	Name: Ucigasul Iadului	Rank: 4	Lvl: 89	Type: 0	Gold range: 0 - 0	Exp: 24540	HP: 73770	Empire: 0
+[ 2595 ]	Name: Erebos	Rank: 4	Lvl: 89	Type: 0	Gold range: 0 - 0	Exp: 24540	HP: 43770	Empire: 0
+[ 2596 ]	Name: Creatura lui Azrael	Rank: 4	Lvl: 89	Type: 0	Gold range: 0 - 0	Exp: 24540	HP: 43770	Empire: 0
+[ 2597 ]	Name: Charon	Rank: 5	Lvl: 91	Type: 0	Gold range: 0 - 0	Exp: 250200	HP: 114345	Empire: 0
+[ 2598 ]	Name: Azrael	Rank: 5	Lvl: 91	Type: 0	Gold range: 0 - 0	Exp: 250200	HP: 924600	Empire: 0
+[ 2600 ]	Name: ????	Rank: 1	Lvl: 92	Type: 0	Gold range: 0 - 0	Exp: 22500	HP: 25000	Empire: 0
+[ 2601 ]	Name: ????	Rank: 2	Lvl: 93	Type: 0	Gold range: 0 - 0	Exp: 25500	HP: 40000	Empire: 0
+[ 2602 ]	Name: ????	Rank: 2	Lvl: 94	Type: 0	Gold range: 0 - 0	Exp: 28500	HP: 43000	Empire: 0
+[ 2603 ]	Name: ????	Rank: 3	Lvl: 95	Type: 0	Gold range: 0 - 0	Exp: 225000	HP: 300000	Empire: 0
+[ 2620 ]	Name: ????	Rank: 5	Lvl: 98	Type: 0	Gold range: 0 - 0	Exp: 450000	HP: 2430000	Empire: 0
+[ 2630 ]	Name: ????	Rank: 1	Lvl: 94	Type: 0	Gold range: 0 - 0	Exp: 24000	HP: 40000	Empire: 0
+[ 2631 ]	Name: ????	Rank: 2	Lvl: 96	Type: 0	Gold range: 0 - 0	Exp: 27000	HP: 30000	Empire: 0
+[ 2632 ]	Name: ????	Rank: 2	Lvl: 96	Type: 0	Gold range: 0 - 0	Exp: 30000	HP: 50000	Empire: 0
+[ 2633 ]	Name: ????	Rank: 3	Lvl: 98	Type: 0	Gold range: 0 - 0	Exp: 247500	HP: 400000	Empire: 0
+[ 2650 ]	Name: ???	Rank: 5	Lvl: 100	Type: 0	Gold range: 0 - 0	Exp: 495000	HP: 2220000	Empire: 0
+[ 2660 ]	Name: ????	Rank: 1	Lvl: 97	Type: 0	Gold range: 0 - 0	Exp: 25500	HP: 45000	Empire: 0
+[ 2661 ]	Name: ?????	Rank: 2	Lvl: 98	Type: 0	Gold range: 0 - 0	Exp: 28500	HP: 32000	Empire: 0
+[ 2662 ]	Name: ?????	Rank: 2	Lvl: 98	Type: 0	Gold range: 0 - 0	Exp: 31500	HP: 54000	Empire: 0
+[ 2663 ]	Name: ??????	Rank: 3	Lvl: 99	Type: 0	Gold range: 0 - 0	Exp: 270000	HP: 620000	Empire: 0
+[ 2680 ]	Name: ????	Rank: 5	Lvl: 103	Type: 0	Gold range: 0 - 0	Exp: 525000	HP: 2400000	Empire: 0
+[ 3001 ]	Name: Gnoll Razboinic	Rank: 0	Lvl: 95	Type: 0	Gold range: 0 - 0	Exp: 943	HP: 7084	Empire: 0
+[ 3002 ]	Name: Gnoll Arcas	Rank: 1	Lvl: 96	Type: 0	Gold range: 0 - 0	Exp: 2287	HP: 14388	Empire: 0
+[ 3003 ]	Name: Gnoll Aparator	Rank: 1	Lvl: 97	Type: 0	Gold range: 0 - 0	Exp: 2310	HP: 14605	Empire: 0
+[ 3004 ]	Name: Gnoll Magician	Rank: 2	Lvl: 98	Type: 0	Gold range: 0 - 0	Exp: 7002	HP: 37064	Empire: 0
+[ 3005 ]	Name: Gnoll General	Rank: 3	Lvl: 99	Type: 0	Gold range: 0 - 0	Exp: 16900	HP: 75218	Empire: 0
+[ 3090 ]	Name: Gnoll Lord	Rank: 4	Lvl: 103	Type: 0	Gold range: 0 - 0	Exp: 84738	HP: 318384	Empire: 0
+[ 3091 ]	Name: Gnoll Suprem	Rank: 5	Lvl: 105	Type: 0	Gold range: 0 - 0	Exp: 311029	HP: 981420	Empire: 0
+[ 3101 ]	Name: Capcaun cu Un Ochi	Rank: 0	Lvl: 98	Type: 0	Gold range: 0 - 0	Exp: 972	HP: 7412	Empire: 0
+[ 3102 ]	Name: Ciclop Soldat	Rank: 1	Lvl: 99	Type: 0	Gold range: 0 - 0	Exp: 2358	HP: 15043	Empire: 0
+[ 3103 ]	Name: Ciclop Magician	Rank: 1	Lvl: 100	Type: 0	Gold range: 0 - 0	Exp: 2382	HP: 15263	Empire: 0
+[ 3104 ]	Name: Ciclop Calau	Rank: 2	Lvl: 101	Type: 0	Gold range: 0 - 0	Exp: 7217	HP: 38703	Empire: 0
+[ 3105 ]	Name: Generalul Outis	Rank: 3	Lvl: 102	Type: 0	Gold range: 0 - 0	Exp: 17411	HP: 78507	Empire: 0
+[ 3190 ]	Name: Arges	Rank: 4	Lvl: 104	Type: 0	Gold range: 0 - 0	Exp: 85558	HP: 322784	Empire: 0
+[ 3191 ]	Name: Polyphemos	Rank: 5	Lvl: 106	Type: 0	Gold range: 0 - 0	Exp: 313984	HP: 994620	Empire: 0
+[ 3201 ]	Name: Manticore Razboinic	Rank: 0	Lvl: 96	Type: 0	Gold range: 0 - 0	Exp: 953	HP: 7194	Empire: 0
+[ 3202 ]	Name: Manticore Soldat	Rank: 1	Lvl: 97	Type: 0	Gold range: 0 - 0	Exp: 2310	HP: 14605	Empire: 0
+[ 3203 ]	Name: Manticore Mag	Rank: 1	Lvl: 98	Type: 0	Gold range: 0 - 0	Exp: 2334	HP: 14825	Empire: 0
+[ 3204 ]	Name: Manticore Calau	Rank: 2	Lvl: 99	Type: 0	Gold range: 0 - 0	Exp: 7074	HP: 37609	Empire: 0
+[ 3205 ]	Name: Generalul Cor	Rank: 3	Lvl: 101	Type: 0	Gold range: 0 - 0	Exp: 17241	HP: 77407	Empire: 0
+[ 3290 ]	Name: Rakshasa	Rank: 4	Lvl: 103	Type: 0	Gold range: 0 - 0	Exp: 84738	HP: 318384	Empire: 0
+[ 3291 ]	Name: Martyaxwar	Rank: 5	Lvl: 105	Type: 0	Gold range: 0 - 0	Exp: 311029	HP: 981420	Empire: 0
+[ 3301 ]	Name: Lemures Razbonic	Rank: 0	Lvl: 97	Type: 0	Gold range: 0 - 0	Exp: 963	HP: 7302	Empire: 0
+[ 3302 ]	Name: Lemures Soldat	Rank: 1	Lvl: 98	Type: 0	Gold range: 0 - 0	Exp: 2334	HP: 14825	Empire: 0
+[ 3303 ]	Name: Lemures Magician	Rank: 1	Lvl: 99	Type: 0	Gold range: 0 - 0	Exp: 2358	HP: 15043	Empire: 0
+[ 3304 ]	Name: Lemures Calau	Rank: 2	Lvl: 100	Type: 0	Gold range: 0 - 0	Exp: 7146	HP: 38159	Empire: 0
+[ 3305 ]	Name: Lemures General	Rank: 3	Lvl: 101	Type: 0	Gold range: 0 - 0	Exp: 17241	HP: 77407	Empire: 0
+[ 3390 ]	Name: Lemures Print	Rank: 4	Lvl: 103	Type: 0	Gold range: 0 - 0	Exp: 84738	HP: 318384	Empire: 0
+[ 3391 ]	Name: Lemures Bodyguard	Rank: 5	Lvl: 105	Type: 0	Gold range: 0 - 0	Exp: 311029	HP: 981420	Empire: 0
+[ 3401 ]	Name: Tritonic Moray	Rank: 0	Lvl: 96	Type: 0	Gold range: 0 - 0	Exp: 953	HP: 7194	Empire: 0
+[ 3402 ]	Name: Rechin Soldat	Rank: 1	Lvl: 97	Type: 0	Gold range: 0 - 0	Exp: 2310	HP: 14605	Empire: 0
+[ 3403 ]	Name: Tritonic Magician	Rank: 1	Lvl: 98	Type: 0	Gold range: 0 - 0	Exp: 2334	HP: 14825	Empire: 0
+[ 3404 ]	Name: Tritonic Vanator	Rank: 2	Lvl: 99	Type: 0	Gold range: 0 - 0	Exp: 7074	HP: 37609	Empire: 0
+[ 3405 ]	Name: Tritonic Macelar	Rank: 3	Lvl: 101	Type: 0	Gold range: 0 - 0	Exp: 17241	HP: 77407	Empire: 0
+[ 3490 ]	Name: General Kappa	Rank: 4	Lvl: 103	Type: 0	Gold range: 0 - 0	Exp: 84738	HP: 318384	Empire: 0
+[ 3491 ]	Name: Triton	Rank: 5	Lvl: 105	Type: 0	Gold range: 0 - 0	Exp: 311029	HP: 981420	Empire: 0
+[ 3501 ]	Name: Talhar Rosu Amazon	Rank: 0	Lvl: 95	Type: 0	Gold range: 0 - 0	Exp: 943	HP: 7084	Empire: 0
+[ 3502 ]	Name: Talhar Rosu Asasin	Rank: 1	Lvl: 96	Type: 0	Gold range: 0 - 0	Exp: 2287	HP: 14388	Empire: 0
+[ 3503 ]	Name: Talhar Rosu Magician	Rank: 1	Lvl: 97	Type: 0	Gold range: 0 - 0	Exp: 2310	HP: 14605	Empire: 0
+[ 3504 ]	Name: Talhar Rosu Calau	Rank: 2	Lvl: 98	Type: 0	Gold range: 0 - 0	Exp: 7002	HP: 37064	Empire: 0
+[ 3505 ]	Name: General Negru	Rank: 3	Lvl: 99	Type: 0	Gold range: 0 - 0	Exp: 16900	HP: 75218	Empire: 0
+[ 3551 ]	Name: Talhar Brutal Amazon	Rank: 0	Lvl: 97	Type: 0	Gold range: 0 - 0	Exp: 963	HP: 7302	Empire: 0
+[ 3552 ]	Name: Talhar Brutal Asasin	Rank: 1	Lvl: 98	Type: 0	Gold range: 0 - 0	Exp: 2334	HP: 14825	Empire: 0
+[ 3553 ]	Name: Talhar Brutal Magician	Rank: 1	Lvl: 99	Type: 0	Gold range: 0 - 0	Exp: 2358	HP: 15043	Empire: 0
+[ 3554 ]	Name: Talhar Brutal Calau	Rank: 2	Lvl: 100	Type: 0	Gold range: 0 - 0	Exp: 7146	HP: 38159	Empire: 0
+[ 3555 ]	Name: General Alb	Rank: 3	Lvl: 101	Type: 0	Gold range: 0 - 0	Exp: 17241	HP: 77407	Empire: 0
+[ 3590 ]	Name: Craniu	Rank: 4	Lvl: 103	Type: 0	Gold range: 0 - 0	Exp: 84738	HP: 318384	Empire: 0
+[ 3591 ]	Name: Conducator Rosu	Rank: 5	Lvl: 105	Type: 0	Gold range: 0 - 0	Exp: 311029	HP: 981420	Empire: 0
+[ 3595 ]	Name: Craniu Brutal	Rank: 4	Lvl: 105	Type: 0	Gold range: 0 - 0	Exp: 86379	HP: 327140	Empire: 0
+[ 3596 ]	Name: Talhar Rosu Brutal	Rank: 5	Lvl: 107	Type: 0	Gold range: 0 - 0	Exp: 316939	HP: 1007688	Empire: 0
+[ 3601 ]	Name: Crab Razboinic	Rank: 0	Lvl: 96	Type: 0	Gold range: 0 - 0	Exp: 953	HP: 7194	Empire: 0
+[ 3602 ]	Name: Scorpion Arcas	Rank: 1	Lvl: 97	Type: 0	Gold range: 0 - 0	Exp: 2310	HP: 14605	Empire: 0
+[ 3603 ]	Name: Crevete Soldat	Rank: 1	Lvl: 98	Type: 0	Gold range: 0 - 0	Exp: 2334	HP: 14825	Empire: 0
+[ 3604 ]	Name: Pustnic Diabolic	Rank: 2	Lvl: 99	Type: 0	Gold range: 0 - 0	Exp: 7074	HP: 37609	Empire: 0
+[ 3605 ]	Name: Crab Blindat	Rank: 3	Lvl: 101	Type: 0	Gold range: 0 - 0	Exp: 17241	HP: 77407	Empire: 0
+[ 3690 ]	Name: Homar General	Rank: 4	Lvl: 103	Type: 0	Gold range: 0 - 0	Exp: 84738	HP: 318384	Empire: 0
+[ 3691 ]	Name: Regele Crab	Rank: 5	Lvl: 105	Type: 0	Gold range: 0 - 0	Exp: 311029	HP: 981420	Empire: 0
+[ 3701 ]	Name: Gigant Escroc	Rank: 0	Lvl: 100	Type: 0	Gold range: 0 - 0	Exp: 993	HP: 7631	Empire: 0
+[ 3702 ]	Name: Gigant Macelar	Rank: 1	Lvl: 101	Type: 0	Gold range: 0 - 0	Exp: 2406	HP: 15481	Empire: 0
+[ 3703 ]	Name: Gigant Mag	Rank: 1	Lvl: 103	Type: 0	Gold range: 0 - 0	Exp: 2453	HP: 15919	Empire: 0
+[ 3704 ]	Name: Colos	Rank: 2	Lvl: 104	Type: 0	Gold range: 0 - 0	Exp: 7431	HP: 40348	Empire: 0
+[ 3705 ]	Name: Capitanul Carlig	Rank: 3	Lvl: 105	Type: 0	Gold range: 0 - 0	Exp: 17922	HP: 81785	Empire: 0
+[ 3790 ]	Name: Gargoyle	Rank: 4	Lvl: 106	Type: 0	Gold range: 0 - 0	Exp: 87200	HP: 331540	Empire: 0
+[ 3791 ]	Name: Regele Wubba	Rank: 5	Lvl: 107	Type: 0	Gold range: 0 - 0	Exp: 316939	HP: 1007688	Empire: 0
+[ 3801 ]	Name: Hangork	Rank: 0	Lvl: 99	Type: 0	Gold range: 0 - 0	Exp: 983	HP: 7521	Empire: 0
+[ 3802 ]	Name: Ork Arcas	Rank: 1	Lvl: 100	Type: 0	Gold range: 0 - 0	Exp: 2382	HP: 15263	Empire: 0
+[ 3803 ]	Name: Orc Galagios	Rank: 1	Lvl: 101	Type: 0	Gold range: 0 - 0	Exp: 2406	HP: 15481	Empire: 0
+[ 3804 ]	Name: Orc Mag	Rank: 2	Lvl: 102	Type: 0	Gold range: 0 - 0	Exp: 7288	HP: 39253	Empire: 0
+[ 3805 ]	Name: Generalul Ogg	Rank: 3	Lvl: 103	Type: 0	Gold range: 0 - 0	Exp: 17581	HP: 79596	Empire: 0
+[ 3890 ]	Name: Capitanul Shruk	Rank: 4	Lvl: 105	Type: 0	Gold range: 0 - 0	Exp: 86379	HP: 327140	Empire: 0
+[ 3891 ]	Name: Marele Orc	Rank: 5	Lvl: 107	Type: 0	Gold range: 0 - 0	Exp: 316939	HP: 1007688	Empire: 0
+[ 3901 ]	Name: Copac Monstru	Rank: 5	Lvl: 110	Type: 0	Gold range: 0 - 0	Exp: 296187	HP: 1047156	Empire: 0
+[ 3902 ]	Name: Eoten	Rank: 5	Lvl: 110	Type: 0	Gold range: 0 - 0	Exp: 296187	HP: 1047156	Empire: 0
+[ 3903 ]	Name: Skouman	Rank: 5	Lvl: 110	Type: 0	Gold range: 0 - 0	Exp: 296187	HP: 1047156	Empire: 0
+[ 3904 ]	Name: Capitanul Carlig	Rank: 2	Lvl: 101	Type: 0	Gold range: 0 - 0	Exp: 6561	HP: 38703	Empire: 0
+[ 3905 ]	Name: Mu-Shu	Rank: 5	Lvl: 110	Type: 0	Gold range: 0 - 0	Exp: 296187	HP: 1047156	Empire: 0
+[ 3906 ]	Name: Yah-Ki	Rank: 5	Lvl: 110	Type: 0	Gold range: 0 - 0	Exp: 296187	HP: 1047156	Empire: 0
+[ 3907 ]	Name: Moghu	Rank: 1	Lvl: 99	Type: 0	Gold range: 0 - 0	Exp: 2144	HP: 15043	Empire: 0
+[ 3908 ]	Name: Carnifex	Rank: 2	Lvl: 100	Type: 0	Gold range: 0 - 0	Exp: 6496	HP: 38159	Empire: 0
+[ 3909 ]	Name: General Albus	Rank: 3	Lvl: 101	Type: 0	Gold range: 0 - 0	Exp: 15674	HP: 77407	Empire: 0
+[ 3910 ]	Name: Skeletos	Rank: 4	Lvl: 103	Type: 0	Gold range: 0 - 0	Exp: 77035	HP: 318384	Empire: 0
+[ 3911 ]	Name: Aku-Boku	Rank: 4	Lvl: 105	Type: 0	Gold range: 0 - 0	Exp: 78527	HP: 327140	Empire: 0
+[ 3912 ]	Name: Arboretum	Rank: 4	Lvl: 105	Type: 0	Gold range: 0 - 0	Exp: 78527	HP: 327140	Empire: 0
+[ 3913 ]	Name: Sycomore	Rank: 4	Lvl: 105	Type: 0	Gold range: 0 - 0	Exp: 78527	HP: 327140	Empire: 0
+[ 5001 ]	Name: Pirat Tanaka	Rank: 4	Lvl: 1	Type: 0	Gold range: 0 - 0	Exp: 1	HP: 30000	Empire: 0
+[ 5002 ]	Name: Hae-Tae	Rank: 4	Lvl: 60	Type: 0	Gold range: 0 - 0	Exp: 14460	HP: 60144	Empire: 0
+[ 5003 ]	Name: Maimuta	Rank: 0	Lvl: 1	Type: 0	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 5004 ]	Name: Pirat Tanaka	Rank: 0	Lvl: 80	Type: 0	Gold range: 0 - 0	Exp: 1	HP: 1000	Empire: 0
+[ 5005 ]	Name: ???	Rank: 4	Lvl: 85	Type: 0	Gold range: 0 - 0	Exp: 63000	HP: 250000	Empire: 0
+[ 5101 ]	Name: Gibon Soldat	Rank: 0	Lvl: 22	Type: 0	Gold range: 0 - 0	Exp: 267	HP: 851	Empire: 0
+[ 5102 ]	Name: Gibon Grenadier	Rank: 1	Lvl: 25	Type: 0	Gold range: 0 - 0	Exp: 364	HP: 1219	Empire: 0
+[ 5103 ]	Name: Gibon Luptator	Rank: 2	Lvl: 27	Type: 0	Gold range: 0 - 0	Exp: 654	HP: 1805	Empire: 0
+[ 5104 ]	Name: Gibon General	Rank: 3	Lvl: 29	Type: 0	Gold range: 0 - 0	Exp: 1404	HP: 3098	Empire: 0
+[ 5111 ]	Name: Maimuta Soldat	Rank: 0	Lvl: 35	Type: 0	Gold range: 0 - 0	Exp: 423	HP: 1605	Empire: 0
+[ 5112 ]	Name: Maimuta Grenadier	Rank: 1	Lvl: 37	Type: 0	Gold range: 0 - 0	Exp: 537	HP: 2088	Empire: 0
+[ 5113 ]	Name: Maimuta Luptator	Rank: 2	Lvl: 39	Type: 0	Gold range: 0 - 0	Exp: 942	HP: 3008	Empire: 0
+[ 5114 ]	Name: Maimuta General	Rank: 3	Lvl: 40	Type: 0	Gold range: 0 - 0	Exp: 1932	HP: 4883	Empire: 0
+[ 5115 ]	Name: Maimuta de Piatra	Rank: 3	Lvl: 41	Type: 0	Gold range: 0 - 0	Exp: 1980	HP: 5258	Empire: 0
+[ 5116 ]	Name: Maimuta Conducator	Rank: 3	Lvl: 42	Type: 0	Gold range: 0 - 0	Exp: 7425	HP: 10515	Empire: 0
+[ 5121 ]	Name: Gorila Soldat	Rank: 0	Lvl: 45	Type: 0	Gold range: 0 - 0	Exp: 543	HP: 2340	Empire: 0
+[ 5122 ]	Name: Gorila Grenadier	Rank: 1	Lvl: 47	Type: 0	Gold range: 0 - 0	Exp: 681	HP: 3007	Empire: 0
+[ 5123 ]	Name: Gorila Luptator	Rank: 2	Lvl: 49	Type: 0	Gold range: 0 - 0	Exp: 1182	HP: 4286	Empire: 0
+[ 5124 ]	Name: Gorila General	Rank: 3	Lvl: 52	Type: 0	Gold range: 0 - 0	Exp: 2508	HP: 7380	Empire: 0
+[ 5125 ]	Name: Gorila de Piatra	Rank: 3	Lvl: 53	Type: 0	Gold range: 0 - 0	Exp: 2520	HP: 7618	Empire: 0
+[ 5126 ]	Name: Gorila de Aur	Rank: 3	Lvl: 54	Type: 0	Gold range: 0 - 0	Exp: 2580	HP: 7858	Empire: 0
+[ 5127 ]	Name: Gorila Conducator	Rank: 3	Lvl: 54	Type: 0	Gold range: 0 - 0	Exp: 9675	HP: 15715	Empire: 0
+[ 5131 ]	Name: Soldat maim. intel. mic	Rank: 0	Lvl: 22	Type: 0	Gold range: 0 - 0	Exp: 187	HP: 681	Empire: 0
+[ 5132 ]	Name: Arunc. maim. intel. mic	Rank: 1	Lvl: 25	Type: 0	Gold range: 0 - 0	Exp: 255	HP: 975	Empire: 0
+[ 5133 ]	Name: Lupt. maim. intel. mic	Rank: 2	Lvl: 27	Type: 0	Gold range: 0 - 0	Exp: 458	HP: 1444	Empire: 0
+[ 5134 ]	Name: Gen. maim. inteligent mi	Rank: 3	Lvl: 29	Type: 0	Gold range: 0 - 0	Exp: 983	HP: 2478	Empire: 0
+[ 5141 ]	Name: Urangutan Soldat	Rank: 0	Lvl: 35	Type: 0	Gold range: 0 - 0	Exp: 297	HP: 1284	Empire: 0
+[ 5142 ]	Name: Aruncator maim. viclean	Rank: 1	Lvl: 37	Type: 0	Gold range: 0 - 0	Exp: 376	HP: 1670	Empire: 0
+[ 5143 ]	Name: Luptator maim. viclean	Rank: 2	Lvl: 39	Type: 0	Gold range: 0 - 0	Exp: 660	HP: 2406	Empire: 0
+[ 5144 ]	Name: Gen. maim. viclean	Rank: 3	Lvl: 40	Type: 0	Gold range: 0 - 0	Exp: 1353	HP: 3906	Empire: 0
+[ 5145 ]	Name: Maim. de piatra vicleana	Rank: 3	Lvl: 41	Type: 0	Gold range: 0 - 0	Exp: 1386	HP: 4206	Empire: 0
+[ 5146 ]	Name: Conducator maim. viclean	Rank: 3	Lvl: 42	Type: 0	Gold range: 0 - 0	Exp: 5198	HP: 8412	Empire: 0
+[ 5151 ]	Name: Gorila Soldat Malefica	Rank: 0	Lvl: 45	Type: 0	Gold range: 0 - 0	Exp: 381	HP: 1872	Empire: 0
+[ 5152 ]	Name: Gorila Grenadier Malefic	Rank: 1	Lvl: 47	Type: 0	Gold range: 0 - 0	Exp: 477	HP: 2406	Empire: 0
+[ 5153 ]	Name: Luptator maim. rau	Rank: 2	Lvl: 49	Type: 0	Gold range: 0 - 0	Exp: 828	HP: 3429	Empire: 0
+[ 5154 ]	Name: Gorila General Malefica	Rank: 3	Lvl: 52	Type: 0	Gold range: 0 - 0	Exp: 1756	HP: 5904	Empire: 0
+[ 5155 ]	Name: Gorila de Piatra Malefic	Rank: 3	Lvl: 53	Type: 0	Gold range: 0 - 0	Exp: 1764	HP: 6094	Empire: 0
+[ 5156 ]	Name: Gorila de Aur Malefica	Rank: 3	Lvl: 54	Type: 0	Gold range: 0 - 0	Exp: 1806	HP: 6286	Empire: 0
+[ 5157 ]	Name: Conducator maim. rau	Rank: 3	Lvl: 54	Type: 0	Gold range: 0 - 0	Exp: 6773	HP: 12572	Empire: 0
+[ 5161 ]	Name: Maimuta de Piatra	Rank: 4	Lvl: 30	Type: 0	Gold range: 0 - 0	Exp: 14520	HP: 12960	Empire: 0
+[ 5162 ]	Name: Maimuta Umblatoare	Rank: 4	Lvl: 43	Type: 0	Gold range: 0 - 0	Exp: 20760	HP: 21800	Empire: 0
+[ 5163 ]	Name: Maimuta Lord	Rank: 4	Lvl: 55	Type: 0	Gold range: 0 - 0	Exp: 26520	HP: 32410	Empire: 0
+[ 6001 ]	Name: Fantoma din lava	Rank: 0	Lvl: 97	Type: 0	Gold range: 0 - 0	Exp: 993	HP: 11446	Empire: 0
+[ 6002 ]	Name: Tigru din lava	Rank: 0	Lvl: 99	Type: 0	Gold range: 0 - 0	Exp: 2406	HP: 23221	Empire: 0
+[ 6003 ]	Name: Om din lava	Rank: 1	Lvl: 100	Type: 0	Gold range: 0 - 0	Exp: 2453	HP: 23878	Empire: 0
+[ 6004 ]	Name: Razboinic de lava	Rank: 1	Lvl: 100	Type: 0	Gold range: 0 - 0	Exp: 993	HP: 11446	Empire: 0
+[ 6005 ]	Name: Rege de lava	Rank: 2	Lvl: 103	Type: 0	Gold range: 0 - 0	Exp: 2406	HP: 23221	Empire: 0
+[ 6006 ]	Name: Goldem de lava soldat	Rank: 2	Lvl: 103	Type: 0	Gold range: 0 - 0	Exp: 2453	HP: 23878	Empire: 0
+[ 6007 ]	Name: Goldem de lava magician	Rank: 2	Lvl: 105	Type: 0	Gold range: 0 - 0	Exp: 7431	HP: 60522	Empire: 0
+[ 6008 ]	Name: Golem de lava general	Rank: 3	Lvl: 105	Type: 0	Gold range: 0 - 0	Exp: 17922	HP: 122677	Empire: 0
+[ 6009 ]	Name: Capitan de lava	Rank: 3	Lvl: 107	Type: 0	Gold range: 0 - 0	Exp: 87200	HP: 497310	Empire: 0
+[ 6051 ]	Name: Lekhatros	Rank: 3	Lvl: 107	Type: 0	Gold range: 0 - 0	Exp: 87200	HP: 497310	Empire: 0
+[ 6091 ]	Name: Yamachun	Rank: 4	Lvl: 108	Type: 0	Gold range: 0 - 0	Exp: 316939	HP: 1511532	Empire: 0
+[ 6101 ]	Name: Spirit de cristal	Rank: 0	Lvl: 97	Type: 0	Gold range: 0 - 0	Exp: 983	HP: 7521	Empire: 0
+[ 6102 ]	Name: Insecta de cristal	Rank: 0	Lvl: 99	Type: 0	Gold range: 0 - 0	Exp: 2382	HP: 15263	Empire: 0
+[ 6103 ]	Name: Om de cristal	Rank: 1	Lvl: 100	Type: 0	Gold range: 0 - 0	Exp: 2406	HP: 15481	Empire: 0
+[ 6104 ]	Name: Urias de cristal	Rank: 1	Lvl: 100	Type: 0	Gold range: 0 - 0	Exp: 983	HP: 7521	Empire: 0
+[ 6105 ]	Name: Golem de cristal	Rank: 2	Lvl: 103	Type: 0	Gold range: 0 - 0	Exp: 2382	HP: 15263	Empire: 0
+[ 6106 ]	Name: Golem de cristal soldat	Rank: 2	Lvl: 103	Type: 0	Gold range: 0 - 0	Exp: 2406	HP: 15481	Empire: 0
+[ 6107 ]	Name: Golem de cristal magicia	Rank: 2	Lvl: 105	Type: 0	Gold range: 0 - 0	Exp: 7288	HP: 39253	Empire: 0
+[ 6108 ]	Name: Golem de cristal general	Rank: 3	Lvl: 105	Type: 0	Gold range: 0 - 0	Exp: 17581	HP: 79596	Empire: 0
+[ 6109 ]	Name: Capitan de cristal	Rank: 3	Lvl: 107	Type: 0	Gold range: 0 - 0	Exp: 86379	HP: 327140	Empire: 0
+[ 6151 ]	Name: Iakari	Rank: 4	Lvl: 107	Type: 0	Gold range: 0 - 0	Exp: 86379	HP: 327140	Empire: 0
+[ 6191 ]	Name: Hanma	Rank: 4	Lvl: 108	Type: 0	Gold range: 0 - 0	Exp: 316939	HP: 1007688	Empire: 0
+[ 7001 ]	Name: Maimuta Soldat	Rank: 1	Lvl: 52	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 3370	Empire: 0
+[ 7002 ]	Name: Maimuta Jocheu	Rank: 1	Lvl: 53	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 4330	Empire: 0
+[ 7003 ]	Name: Maimuta Soldat Gimu	Rank: 1	Lvl: 54	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 6172	Empire: 0
+[ 7004 ]	Name: Maimuta Comandant	Rank: 2	Lvl: 54	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 10627	Empire: 0
+[ 7005 ]	Name: Maimuta de Piatra	Rank: 2	Lvl: 55	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 10969	Empire: 0
+[ 7006 ]	Name: MaimuTa  de Aur	Rank: 2	Lvl: 56	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 11315	Empire: 0
+[ 7007 ]	Name: Maimuta General	Rank: 3	Lvl: 56	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 22630	Empire: 0
+[ 7008 ]	Name: Muncitor Tu-Gui	Rank: 1	Lvl: 52	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 37814	Empire: 0
+[ 7009 ]	Name: Controlor soldaTi Tu-Gui	Rank: 3	Lvl: 53	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 60733	Empire: 0
+[ 7010 ]	Name: Comandor alb Tu-Gui	Rank: 1	Lvl: 54	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 66632	Empire: 0
+[ 7012 ]	Name: Bi-Ma-Gui-An	Rank: 1	Lvl: 52	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 2457	Empire: 0
+[ 7013 ]	Name: Rege Scorpion	Rank: 1	Lvl: 53	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 2651	Empire: 0
+[ 7014 ]	Name: Om Scorpion Las	Rank: 2	Lvl: 54	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 4226	Empire: 0
+[ 7015 ]	Name: Arcas scorpion	Rank: 1	Lvl: 54	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 2455	Empire: 0
+[ 7016 ]	Name: Luptator sabie sarpe	Rank: 2	Lvl: 55	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 4834	Empire: 0
+[ 7017 ]	Name: Arcas sarpe	Rank: 2	Lvl: 56	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 3726	Empire: 0
+[ 7018 ]	Name: Talhar de desert	Rank: 3	Lvl: 56	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 9122	Empire: 0
+[ 7019 ]	Name: Soldat Tu-ji	Rank: 1	Lvl: 59	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 6660	Empire: 0
+[ 7020 ]	Name: Hwa-ryung	Rank: 1	Lvl: 59	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 6660	Empire: 0
+[ 7021 ]	Name: Pierde-vara Tu-Ji	Rank: 2	Lvl: 60	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 9110	Empire: 0
+[ 7022 ]	Name: Cham-Ma	Rank: 2	Lvl: 61	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 9338	Empire: 0
+[ 7023 ]	Name: Teawha-Mu	Rank: 3	Lvl: 62	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 14951	Empire: 0
+[ 7024 ]	Name: Juk-gui	Rank: 1	Lvl: 64	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 2158	Empire: 0
+[ 7025 ]	Name: Dung-Juk	Rank: 2	Lvl: 66	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 4219	Empire: 0
+[ 7026 ]	Name: Juk-Mok	Rank: 2	Lvl: 67	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 3419	Empire: 0
+[ 7027 ]	Name: Hwaryu Juk	Rank: 3	Lvl: 70	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 6935	Empire: 0
+[ 7028 ]	Name: Juk-Guimok negru	Rank: 3	Lvl: 72	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 7106	Empire: 0
+[ 7029 ]	Name: NoNAme	Rank: 1	Lvl: 35	Type: 0	Gold range: 0 - 0	Exp: 888	HP: 1389	Empire: 0
+[ 7030 ]	Name: NoNAme	Rank: 1	Lvl: 31	Type: 0	Gold range: 0 - 0	Exp: 1313	HP: 1571	Empire: 0
+[ 7031 ]	Name: NoNAme	Rank: 1	Lvl: 33	Type: 0	Gold range: 0 - 0	Exp: 1397	HP: 1733	Empire: 0
+[ 7032 ]	Name: NoNAme	Rank: 2	Lvl: 35	Type: 0	Gold range: 0 - 0	Exp: 1481	HP: 1852	Empire: 0
+[ 7033 ]	Name: NoNAme	Rank: 2	Lvl: 36	Type: 0	Gold range: 0 - 0	Exp: 3045	HP: 3010	Empire: 0
+[ 7034 ]	Name: NoNAme	Rank: 2	Lvl: 38	Type: 0	Gold range: 0 - 0	Exp: 3213	HP: 3249	Empire: 0
+[ 7035 ]	Name: NoNAme	Rank: 3	Lvl: 40	Type: 0	Gold range: 0 - 0	Exp: 3381	HP: 3500	Empire: 0
+[ 7036 ]	Name: NoNAme	Rank: 1	Lvl: 52	Type: 0	Gold range: 0 - 0	Exp: 784	HP: 1906	Empire: 0
+[ 7037 ]	Name: NoNAme	Rank: 1	Lvl: 53	Type: 0	Gold range: 0 - 0	Exp: 959	HP: 2360	Empire: 0
+[ 7038 ]	Name: NoNAme	Rank: 1	Lvl: 54	Type: 0	Gold range: 0 - 0	Exp: 977	HP: 2433	Empire: 0
+[ 7039 ]	Name: NoNAme	Rank: 2	Lvl: 54	Type: 0	Gold range: 0 - 0	Exp: 1628	HP: 3244	Empire: 0
+[ 7040 ]	Name: NoNAme	Rank: 2	Lvl: 55	Type: 0	Gold range: 0 - 0	Exp: 995	HP: 2508	Empire: 0
+[ 7041 ]	Name: NoNAme	Rank: 2	Lvl: 56	Type: 0	Gold range: 0 - 0	Exp: 3375	HP: 5382	Empire: 0
+[ 7042 ]	Name: NoNAme	Rank: 3	Lvl: 57	Type: 0	Gold range: 0 - 0	Exp: 3435	HP: 5542	Empire: 0
+[ 7043 ]	Name: NoNAme	Rank: 1	Lvl: 81	Type: 0	Gold range: 0 - 0	Exp: 2017	HP: 5523	Empire: 0
+[ 7044 ]	Name: NoNAme	Rank: 1	Lvl: 81	Type: 0	Gold range: 0 - 0	Exp: 2049	HP: 5676	Empire: 0
+[ 7045 ]	Name: NoNAme	Rank: 1	Lvl: 82	Type: 0	Gold range: 0 - 0	Exp: 2082	HP: 5834	Empire: 0
+[ 7046 ]	Name: NoNAme	Rank: 2	Lvl: 83	Type: 0	Gold range: 0 - 0	Exp: 3470	HP: 7778	Empire: 0
+[ 7047 ]	Name: NoNAme	Rank: 2	Lvl: 83	Type: 0	Gold range: 0 - 0	Exp: 3524	HP: 7993	Empire: 0
+[ 7048 ]	Name: NoNAme	Rank: 2	Lvl: 84	Type: 0	Gold range: 0 - 0	Exp: 3578	HP: 8207	Empire: 0
+[ 7049 ]	Name: NoNAme	Rank: 3	Lvl: 85	Type: 0	Gold range: 0 - 0	Exp: 7155	HP: 12823	Empire: 0
+[ 7050 ]	Name: NoNAme	Rank: 1	Lvl: 35	Type: 0	Gold range: 0 - 0	Exp: 888	HP: 1389	Empire: 0
+[ 7051 ]	Name: NoNAme	Rank: 1	Lvl: 31	Type: 0	Gold range: 0 - 0	Exp: 1313	HP: 1571	Empire: 0
+[ 7052 ]	Name: NoNAme	Rank: 2	Lvl: 33	Type: 0	Gold range: 0 - 0	Exp: 1397	HP: 1733	Empire: 0
+[ 7053 ]	Name: NoNAme	Rank: 1	Lvl: 35	Type: 0	Gold range: 0 - 0	Exp: 1481	HP: 1852	Empire: 0
+[ 7054 ]	Name: NoNAme	Rank: 2	Lvl: 36	Type: 0	Gold range: 0 - 0	Exp: 3045	HP: 3010	Empire: 0
+[ 7055 ]	Name: NoNAme	Rank: 2	Lvl: 38	Type: 0	Gold range: 0 - 0	Exp: 3213	HP: 3249	Empire: 0
+[ 7056 ]	Name: NoNAme	Rank: 3	Lvl: 40	Type: 0	Gold range: 0 - 0	Exp: 3381	HP: 3500	Empire: 0
+[ 7057 ]	Name: NoNAme	Rank: 1	Lvl: 52	Type: 0	Gold range: 0 - 0	Exp: 784	HP: 1906	Empire: 0
+[ 7058 ]	Name: NoNAme	Rank: 1	Lvl: 53	Type: 0	Gold range: 0 - 0	Exp: 959	HP: 2360	Empire: 0
+[ 7059 ]	Name: NoNAme	Rank: 2	Lvl: 54	Type: 0	Gold range: 0 - 0	Exp: 977	HP: 2433	Empire: 0
+[ 7060 ]	Name: NoNAme	Rank: 1	Lvl: 54	Type: 0	Gold range: 0 - 0	Exp: 1628	HP: 3244	Empire: 0
+[ 7061 ]	Name: NoNAme	Rank: 2	Lvl: 55	Type: 0	Gold range: 0 - 0	Exp: 995	HP: 2508	Empire: 0
+[ 7062 ]	Name: NoNAme	Rank: 2	Lvl: 56	Type: 0	Gold range: 0 - 0	Exp: 3375	HP: 5382	Empire: 0
+[ 7063 ]	Name: NoNAme	Rank: 3	Lvl: 57	Type: 0	Gold range: 0 - 0	Exp: 3435	HP: 5542	Empire: 0
+[ 7064 ]	Name: NoNAme	Rank: 1	Lvl: 81	Type: 0	Gold range: 0 - 0	Exp: 2017	HP: 5523	Empire: 0
+[ 7065 ]	Name: NoNAme	Rank: 1	Lvl: 81	Type: 0	Gold range: 0 - 0	Exp: 2049	HP: 5676	Empire: 0
+[ 7066 ]	Name: NoNAme	Rank: 2	Lvl: 82	Type: 0	Gold range: 0 - 0	Exp: 2082	HP: 5834	Empire: 0
+[ 7067 ]	Name: NoNAme	Rank: 1	Lvl: 83	Type: 0	Gold range: 0 - 0	Exp: 3470	HP: 7778	Empire: 0
+[ 7068 ]	Name: NoNAme	Rank: 2	Lvl: 83	Type: 0	Gold range: 0 - 0	Exp: 3524	HP: 7993	Empire: 0
+[ 7069 ]	Name: NoNAme	Rank: 2	Lvl: 84	Type: 0	Gold range: 0 - 0	Exp: 3578	HP: 8207	Empire: 0
+[ 7070 ]	Name: NoNAme	Rank: 3	Lvl: 85	Type: 0	Gold range: 0 - 0	Exp: 7155	HP: 12823	Empire: 0
+[ 7071 ]	Name: NoNAme	Rank: 1	Lvl: 33	Type: 0	Gold range: 0 - 0	Exp: 1397	HP: 1733	Empire: 0
+[ 7072 ]	Name: NoNAme	Rank: 1	Lvl: 35	Type: 0	Gold range: 0 - 0	Exp: 1481	HP: 1852	Empire: 0
+[ 7073 ]	Name: NoNAme	Rank: 2	Lvl: 36	Type: 0	Gold range: 0 - 0	Exp: 3045	HP: 3010	Empire: 0
+[ 7074 ]	Name: NoNAme	Rank: 2	Lvl: 38	Type: 0	Gold range: 0 - 0	Exp: 3213	HP: 3249	Empire: 0
+[ 7075 ]	Name: NoNAme	Rank: 3	Lvl: 40	Type: 0	Gold range: 0 - 0	Exp: 3381	HP: 3500	Empire: 0
+[ 7076 ]	Name: NoNAme	Rank: 1	Lvl: 54	Type: 0	Gold range: 0 - 0	Exp: 977	HP: 2433	Empire: 0
+[ 7077 ]	Name: NoNAme	Rank: 1	Lvl: 54	Type: 0	Gold range: 0 - 0	Exp: 1628	HP: 3244	Empire: 0
+[ 7078 ]	Name: NoNAme	Rank: 2	Lvl: 55	Type: 0	Gold range: 0 - 0	Exp: 995	HP: 2508	Empire: 0
+[ 7079 ]	Name: NoNAme	Rank: 2	Lvl: 56	Type: 0	Gold range: 0 - 0	Exp: 3375	HP: 5382	Empire: 0
+[ 7080 ]	Name: NoNAme	Rank: 3	Lvl: 57	Type: 0	Gold range: 0 - 0	Exp: 3435	HP: 5542	Empire: 0
+[ 7081 ]	Name: NoNAme	Rank: 1	Lvl: 82	Type: 0	Gold range: 0 - 0	Exp: 2082	HP: 5834	Empire: 0
+[ 7082 ]	Name: NoNAme	Rank: 1	Lvl: 83	Type: 0	Gold range: 0 - 0	Exp: 3470	HP: 7778	Empire: 0
+[ 7083 ]	Name: NoNAme	Rank: 2	Lvl: 83	Type: 0	Gold range: 0 - 0	Exp: 3524	HP: 7993	Empire: 0
+[ 7084 ]	Name: NoNAme	Rank: 2	Lvl: 84	Type: 0	Gold range: 0 - 0	Exp: 3578	HP: 8207	Empire: 0
+[ 7085 ]	Name: NoNAme	Rank: 3	Lvl: 85	Type: 0	Gold range: 0 - 0	Exp: 7155	HP: 12823	Empire: 0
+[ 7086 ]	Name: NoNAme	Rank: 0	Lvl: 35	Type: 0	Gold range: 0 - 0	Exp: 1481	HP: 1852	Empire: 0
+[ 7087 ]	Name: NoNAme	Rank: 1	Lvl: 36	Type: 0	Gold range: 0 - 0	Exp: 3045	HP: 3010	Empire: 0
+[ 7088 ]	Name: NoNAme	Rank: 1	Lvl: 38	Type: 0	Gold range: 0 - 0	Exp: 3213	HP: 3249	Empire: 0
+[ 7089 ]	Name: NoNAme	Rank: 2	Lvl: 40	Type: 0	Gold range: 0 - 0	Exp: 3381	HP: 3500	Empire: 0
+[ 7090 ]	Name: NoNAme	Rank: 0	Lvl: 54	Type: 0	Gold range: 0 - 0	Exp: 1628	HP: 3244	Empire: 0
+[ 7091 ]	Name: NoNAme	Rank: 1	Lvl: 55	Type: 0	Gold range: 0 - 0	Exp: 995	HP: 2508	Empire: 0
+[ 7092 ]	Name: NoNAme	Rank: 1	Lvl: 56	Type: 0	Gold range: 0 - 0	Exp: 3375	HP: 5382	Empire: 0
+[ 7093 ]	Name: NoNAme	Rank: 2	Lvl: 57	Type: 0	Gold range: 0 - 0	Exp: 3435	HP: 5542	Empire: 0
+[ 7094 ]	Name: NoNAme	Rank: 0	Lvl: 83	Type: 0	Gold range: 0 - 0	Exp: 3470	HP: 7778	Empire: 0
+[ 7095 ]	Name: NoNAme	Rank: 1	Lvl: 83	Type: 0	Gold range: 0 - 0	Exp: 3524	HP: 7993	Empire: 0
+[ 7096 ]	Name: NoNAme	Rank: 1	Lvl: 84	Type: 0	Gold range: 0 - 0	Exp: 3578	HP: 8207	Empire: 0
+[ 7097 ]	Name: ???	Rank: 2	Lvl: 85	Type: 0	Gold range: 0 - 0	Exp: 14310	HP: 12823	Empire: 0
+[ 8001 ]	Name: Metinul Necazului	Rank: 5	Lvl: 5	Type: 2	Gold range: 0 - 0	Exp: 1	HP: 14550	Empire: 0
+[ 8002 ]	Name: Metinul Luptei	Rank: 5	Lvl: 10	Type: 2	Gold range: 0 - 0	Exp: 3	HP: 23250	Empire: 0
+[ 8003 ]	Name: Piatra Metin a Bataliei	Rank: 5	Lvl: 15	Type: 2	Gold range: 0 - 0	Exp: 4	HP: 34050	Empire: 0
+[ 8004 ]	Name: Metinul Lacomiei	Rank: 5	Lvl: 20	Type: 2	Gold range: 0 - 0	Exp: 6	HP: 47400	Empire: 0
+[ 8005 ]	Name: Metinul Amarulu	Rank: 5	Lvl: 25	Type: 2	Gold range: 0 - 0	Exp: 9	HP: 63450	Empire: 0
+[ 8006 ]	Name: Metinul Intunericului	Rank: 5	Lvl: 30	Type: 2	Gold range: 0 - 0	Exp: 12	HP: 80250	Empire: 0
+[ 8007 ]	Name: Metinul Geloziei	Rank: 5	Lvl: 35	Type: 2	Gold range: 0 - 0	Exp: 14	HP: 98700	Empire: 0
+[ 8008 ]	Name: Metinul Sufletului	Rank: 5	Lvl: 40	Type: 2	Gold range: 0 - 0	Exp: 16	HP: 119700	Empire: 0
+[ 8009 ]	Name: Metinul Umbrei	Rank: 5	Lvl: 45	Type: 2	Gold range: 0 - 0	Exp: 18	HP: 142350	Empire: 0
+[ 8010 ]	Name: Metinul Puterii	Rank: 5	Lvl: 50	Type: 2	Gold range: 0 - 0	Exp: 21	HP: 167850	Empire: 0
+[ 8011 ]	Name: Metinul Diavolului	Rank: 5	Lvl: 55	Type: 2	Gold range: 0 - 0	Exp: 23	HP: 195900	Empire: 0
+[ 8012 ]	Name: Metinul Dizgratiei	Rank: 5	Lvl: 60	Type: 2	Gold range: 0 - 0	Exp: 25	HP: 226650	Empire: 0
+[ 8013 ]	Name: Metinul Mortii	Rank: 5	Lvl: 65	Type: 2	Gold range: 0 - 0	Exp: 27	HP: 260250	Empire: 0
+[ 8014 ]	Name: Metinul Crimelor	Rank: 5	Lvl: 70	Type: 2	Gold range: 0 - 0	Exp: 30	HP: 296550	Empire: 0
+[ 8015 ]	Name: Metinul Puterii	Rank: 5	Lvl: 50	Type: 2	Gold range: 0 - 0	Exp: 21	HP: 167850	Empire: 0
+[ 8016 ]	Name: Metinul Diavolului	Rank: 5	Lvl: 55	Type: 2	Gold range: 0 - 0	Exp: 23	HP: 195900	Empire: 0
+[ 8017 ]	Name: Metinul Dizgratiei	Rank: 5	Lvl: 60	Type: 2	Gold range: 0 - 0	Exp: 25	HP: 226650	Empire: 0
+[ 8018 ]	Name: Metinul Mortii	Rank: 5	Lvl: 65	Type: 2	Gold range: 0 - 0	Exp: 27	HP: 260250	Empire: 0
+[ 8019 ]	Name: Metinul Crimelor	Rank: 5	Lvl: 70	Type: 2	Gold range: 0 - 0	Exp: 30	HP: 296550	Empire: 0
+[ 8020 ]	Name: Stanca Shinsoo	Rank: 5	Lvl: 1	Type: 2	Gold range: 0 - 0	Exp: 30	HP: 2965500	Empire: 0
+[ 8021 ]	Name: Stanca Jinno	Rank: 5	Lvl: 1	Type: 2	Gold range: 0 - 0	Exp: 30	HP: 2965500	Empire: 0
+[ 8022 ]	Name: Stanca Chunjo	Rank: 5	Lvl: 1	Type: 2	Gold range: 0 - 0	Exp: 30	HP: 2965500	Empire: 0
+[ 8023 ]	Name: Stanca imperiala	Rank: 5	Lvl: 1	Type: 2	Gold range: 0 - 0	Exp: 30	HP: 2965500	Empire: 0
+[ 8024 ]	Name: Metin Pung-Ma	Rank: 5	Lvl: 75	Type: 2	Gold range: 0 - 0	Exp: 32	HP: 469000	Empire: 0
+[ 8025 ]	Name: Metin Ma-An	Rank: 5	Lvl: 80	Type: 2	Gold range: 0 - 0	Exp: 34	HP: 584000	Empire: 0
+[ 8026 ]	Name: Metin Tu-Young	Rank: 5	Lvl: 85	Type: 2	Gold range: 0 - 0	Exp: 36	HP: 727000	Empire: 0
+[ 8027 ]	Name: Metin Jeon-Un	Rank: 5	Lvl: 90	Type: 2	Gold range: 0 - 0	Exp: 39	HP: 905000	Empire: 0
+[ 8028 ]	Name: ???	Rank: 5	Lvl: 90	Type: 2	Gold range: 0 - 0	Exp: 77	HP: 905000	Empire: 0
+[ 8029 ]	Name: ???	Rank: 5	Lvl: 90	Type: 2	Gold range: 0 - 0	Exp: 77	HP: 905000	Empire: 0
+[ 8030 ]	Name: ???	Rank: 5	Lvl: 90	Type: 2	Gold range: 0 - 0	Exp: 77	HP: 905000	Empire: 0
+[ 8031 ]	Name: Metinul Muntelui	Rank: 5	Lvl: 60	Type: 2	Gold range: 0 - 0	Exp: 38	HP: 250000	Empire: 0
+[ 8032 ]	Name: Metinul Razbunarii	Rank: 5	Lvl: 60	Type: 2	Gold range: 0 - 0	Exp: 38	HP: 250000	Empire: 0
+[ 8033 ]	Name: Metinul Singuratatii	Rank: 5	Lvl: 60	Type: 2	Gold range: 0 - 0	Exp: 38	HP: 250000	Empire: 0
+[ 8034 ]	Name: Metinul Arogantei	Rank: 5	Lvl: 60	Type: 2	Gold range: 0 - 0	Exp: 38	HP: 250000	Empire: 0
+[ 8035 ]	Name: Metinul Eliberarii	Rank: 5	Lvl: 60	Type: 2	Gold range: 0 - 0	Exp: 38	HP: 250000	Empire: 0
+[ 8036 ]	Name: Metinul Tradarii	Rank: 5	Lvl: 80	Type: 2	Gold range: 0 - 0	Exp: 38	HP: 250000	Empire: 0
+[ 8037 ]	Name: Metinul Resentimentului	Rank: 5	Lvl: 60	Type: 2	Gold range: 0 - 0	Exp: 38	HP: 250000	Empire: 0
+[ 8038 ]	Name: Metinul Rasplatei	Rank: 5	Lvl: 85	Type: 2	Gold range: 0 - 0	Exp: 38	HP: 250000	Empire: 0
+[ 8039 ]	Name: Metinul Mandriei	Rank: 5	Lvl: 60	Type: 2	Gold range: 0 - 0	Exp: 38	HP: 250000	Empire: 0
+[ 8040 ]	Name: Metinul Invidiei	Rank: 5	Lvl: 60	Type: 2	Gold range: 0 - 0	Exp: 38	HP: 250000	Empire: 0
+[ 8041 ]	Name: Metin de Paste	Rank: 5	Lvl: 10	Type: 2	Gold range: 0 - 0	Exp: 23	HP: 23250	Empire: 0
+[ 8042 ]	Name: Metin de Paste	Rank: 5	Lvl: 20	Type: 2	Gold range: 0 - 0	Exp: 60	HP: 47400	Empire: 0
+[ 8043 ]	Name: Metin de Paste	Rank: 5	Lvl: 30	Type: 2	Gold range: 0 - 0	Exp: 113	HP: 80250	Empire: 0
+[ 8044 ]	Name: Metin de Paste	Rank: 5	Lvl: 40	Type: 2	Gold range: 0 - 0	Exp: 158	HP: 119700	Empire: 0
+[ 8045 ]	Name: Metin de Paste	Rank: 5	Lvl: 50	Type: 2	Gold range: 0 - 0	Exp: 203	HP: 167850	Empire: 0
+[ 8046 ]	Name: Metin de Paste	Rank: 5	Lvl: 60	Type: 2	Gold range: 0 - 0	Exp: 248	HP: 226650	Empire: 0
+[ 8047 ]	Name: Metin de Paste	Rank: 5	Lvl: 70	Type: 2	Gold range: 0 - 0	Exp: 293	HP: 296550	Empire: 0
+[ 8048 ]	Name: Metin de Paste	Rank: 5	Lvl: 80	Type: 2	Gold range: 0 - 0	Exp: 338	HP: 584000	Empire: 0
+[ 8049 ]	Name: Metin de Paste	Rank: 5	Lvl: 90	Type: 2	Gold range: 0 - 0	Exp: 383	HP: 905000	Empire: 0
+[ 8050 ]	Name: Metin de Paste	Rank: 5	Lvl: 95	Type: 2	Gold range: 0 - 0	Exp: 518	HP: 145000	Empire: 0
+[ 8051 ]	Name: Metinul Tristetii	Rank: 5	Lvl: 95	Type: 2	Gold range: 0 - 0	Exp: 39	HP: 905000	Empire: 0
+[ 8052 ]	Name: Metinul Carbunilor	Rank: 5	Lvl: 95	Type: 2	Gold range: 0 - 0	Exp: 39	HP: 905000	Empire: 0
+[ 8053 ]	Name: Metinul Vanitatii	Rank: 5	Lvl: 100	Type: 2	Gold range: 0 - 0	Exp: 39	HP: 1200000	Empire: 0
+[ 8054 ]	Name: Metinul Furiei	Rank: 5	Lvl: 100	Type: 2	Gold range: 0 - 0	Exp: 39	HP: 1200000	Empire: 0
+[ 8055 ]	Name: Metinul Nenorocirilor	Rank: 5	Lvl: 105	Type: 2	Gold range: 0 - 0	Exp: 39	HP: 1500000	Empire: 0
+[ 8056 ]	Name: Metinul Rautatii	Rank: 5	Lvl: 105	Type: 2	Gold range: 0 - 0	Exp: 39	HP: 1500000	Empire: 0
+[ 8057 ]	Name: Metin Focul Iadului	Rank: 5	Lvl: 100	Type: 2	Gold range: 0 - 0	Exp: 39	HP: 1200000	Empire: 0
+[ 8058 ]	Name: Metin de Gheata	Rank: 4	Lvl: 105	Type: 2	Gold range: 0 - 0	Exp: 7288	HP: 39253	Empire: 0
+[ 8059 ]	Name: ???	Rank: 5	Lvl: 60	Type: 2	Gold range: 0 - 0	Exp: 930	HP: 226650	Empire: 0
+[ 8060 ]	Name: ???	Rank: 5	Lvl: 60	Type: 2	Gold range: 0 - 0	Exp: 3000	HP: 226650	Empire: 0
+[ 8101 ]	Name: Metinul Necazului	Rank: 5	Lvl: 5	Type: 2	Gold range: 0 - 0	Exp: 32	HP: 193	Empire: 0
+[ 8102 ]	Name: Metinul Luptei	Rank: 5	Lvl: 10	Type: 2	Gold range: 0 - 0	Exp: 62	HP: 309	Empire: 0
+[ 8103 ]	Name: Metinul Bataliei	Rank: 5	Lvl: 15	Type: 2	Gold range: 0 - 0	Exp: 92	HP: 454	Empire: 0
+[ 8104 ]	Name: Metinul Lacomiei	Rank: 5	Lvl: 20	Type: 2	Gold range: 0 - 0	Exp: 122	HP: 632	Empire: 0
+[ 8105 ]	Name: Metinul Amarului	Rank: 5	Lvl: 25	Type: 2	Gold range: 0 - 0	Exp: 152	HP: 845	Empire: 0
+[ 8106 ]	Name: Metinul Intunericului	Rank: 5	Lvl: 30	Type: 2	Gold range: 0 - 0	Exp: 182	HP: 1069	Empire: 0
+[ 8107 ]	Name: Metinul Geloziei	Rank: 5	Lvl: 35	Type: 2	Gold range: 0 - 0	Exp: 212	HP: 1315	Empire: 0
+[ 8108 ]	Name: Metinul Sufletului	Rank: 5	Lvl: 40	Type: 2	Gold range: 0 - 0	Exp: 242	HP: 1591	Empire: 0
+[ 8109 ]	Name: Metinul Umbrei	Rank: 5	Lvl: 45	Type: 2	Gold range: 0 - 0	Exp: 272	HP: 1898	Empire: 0
+[ 8110 ]	Name: Metinul Puterii	Rank: 5	Lvl: 50	Type: 2	Gold range: 0 - 0	Exp: 302	HP: 2238	Empire: 0
+[ 8111 ]	Name: Metinul Diavolului	Rank: 5	Lvl: 55	Type: 2	Gold range: 0 - 0	Exp: 332	HP: 2612	Empire: 0
+[ 8112 ]	Name: Metinul Dizgratiei	Rank: 5	Lvl: 60	Type: 2	Gold range: 0 - 0	Exp: 362	HP: 3022	Empire: 0
+[ 8113 ]	Name: Metinul Mortii	Rank: 5	Lvl: 65	Type: 2	Gold range: 0 - 0	Exp: 392	HP: 3469	Empire: 0
+[ 8114 ]	Name: Metinul Crimelor	Rank: 5	Lvl: 70	Type: 2	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 8200 ]	Name: ???	Rank: 5	Lvl: 60	Type: 2	Gold range: 0 - 0	Exp: 3000	HP: 226650	Empire: 0
+[ 8501 ]	Name: Caine salbatic	Rank: 0	Lvl: 35	Type: 0	Gold range: 0 - 0	Exp: 900	HP: 1472	Empire: 0
+[ 8502 ]	Name: Mistret	Rank: 0	Lvl: 30	Type: 0	Gold range: 0 - 0	Exp: 825	HP: 1184	Empire: 0
+[ 8503 ]	Name: Urs	Rank: 0	Lvl: 25	Type: 0	Gold range: 0 - 0	Exp: 675	HP: 994	Empire: 0
+[ 8504 ]	Name: Tigru Alb	Rank: 0	Lvl: 5	Type: 0	Gold range: 0 - 0	Exp: 375	HP: 235	Empire: 0
+[ 8505 ]	Name: Orc Negru Gigant	Rank: 0	Lvl: 10	Type: 0	Gold range: 0 - 0	Exp: 300	HP: 408	Empire: 0
+[ 8506 ]	Name: General Brotac	Rank: 0	Lvl: 12	Type: 0	Gold range: 0 - 0	Exp: 300	HP: 399	Empire: 0
+[ 8507 ]	Name: Talhar de desert	Rank: 0	Lvl: 15	Type: 0	Gold range: 0 - 0	Exp: 150	HP: 599	Empire: 0
+[ 8508 ]	Name: Despot esoteric	Rank: 0	Lvl: 20	Type: 0	Gold range: 0 - 0	Exp: 375	HP: 887	Empire: 0
+[ 8509 ]	Name: Incantator esoteric	Rank: 0	Lvl: 25	Type: 0	Gold range: 0 - 0	Exp: 225	HP: 450	Empire: 0
+[ 8510 ]	Name: Luptator de Foc	Rank: 0	Lvl: 21	Type: 0	Gold range: 0 - 0	Exp: 225	HP: 321	Empire: 0
+[ 8511 ]	Name: Golem de Gheata	Rank: 0	Lvl: 11	Type: 0	Gold range: 0 - 0	Exp: 225	HP: 591	Empire: 0
+[ 8600 ]	Name: ?????	Rank: 4	Lvl: 73	Type: 0	Gold range: 0 - 0	Exp: 267300	HP: 700000	Empire: 0
+[ 8601 ]	Name: ?????	Rank: 5	Lvl: 86	Type: 0	Gold range: 0 - 0	Exp: 267300	HP: 1000000	Empire: 0
+[ 8602 ]	Name: ?????	Rank: 4	Lvl: 73	Type: 0	Gold range: 0 - 0	Exp: 267300	HP: 700000	Empire: 0
+[ 8603 ]	Name: ?????	Rank: 5	Lvl: 86	Type: 0	Gold range: 0 - 0	Exp: 267300	HP: 1000000	Empire: 0
+[ 8604 ]	Name: ????	Rank: 4	Lvl: 73	Type: 0	Gold range: 0 - 0	Exp: 267300	HP: 700000	Empire: 0
+[ 8605 ]	Name: ????	Rank: 5	Lvl: 86	Type: 0	Gold range: 0 - 0	Exp: 267300	HP: 1000000	Empire: 0
+[ 8606 ]	Name: ??	Rank: 4	Lvl: 73	Type: 0	Gold range: 0 - 0	Exp: 267300	HP: 700000	Empire: 0
+[ 8607 ]	Name: ??	Rank: 5	Lvl: 86	Type: 0	Gold range: 0 - 0	Exp: 267300	HP: 1000000	Empire: 0
+[ 8608 ]	Name: ???	Rank: 4	Lvl: 73	Type: 0	Gold range: 0 - 0	Exp: 267300	HP: 700000	Empire: 0
+[ 8609 ]	Name: ???	Rank: 5	Lvl: 86	Type: 0	Gold range: 0 - 0	Exp: 267300	HP: 1000000	Empire: 0
+[ 8610 ]	Name: ?????	Rank: 4	Lvl: 73	Type: 0	Gold range: 0 - 0	Exp: 267300	HP: 700000	Empire: 0
+[ 8611 ]	Name: ?????	Rank: 5	Lvl: 86	Type: 0	Gold range: 0 - 0	Exp: 267300	HP: 1000000	Empire: 0
+[ 8612 ]	Name: ????	Rank: 4	Lvl: 73	Type: 0	Gold range: 0 - 0	Exp: 267300	HP: 700000	Empire: 0
+[ 8613 ]	Name: ????	Rank: 5	Lvl: 86	Type: 0	Gold range: 0 - 0	Exp: 267300	HP: 1000000	Empire: 0
+[ 8614 ]	Name: ??????	Rank: 4	Lvl: 73	Type: 0	Gold range: 0 - 0	Exp: 267300	HP: 700000	Empire: 0
+[ 8615 ]	Name: ??????	Rank: 5	Lvl: 86	Type: 0	Gold range: 0 - 0	Exp: 267300	HP: 1000000	Empire: 0
+[ 8616 ]	Name: ????	Rank: 5	Lvl: 86	Type: 0	Gold range: 0 - 0	Exp: 376200	HP: 452900	Empire: 0
+[ 9001 ]	Name: Negustor de Arme	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 9002 ]	Name: Negustor de Armuri	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 9003 ]	Name: Magazinul General	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 9004 ]	Name: Ajutor pt. evenimente	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 9005 ]	Name: Administrator Depozit	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 9006 ]	Name: Femeia Batrana	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 9007 ]	Name: Negustor de arme	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 9008 ]	Name: Negustor de armuri	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 9009 ]	Name: Pescar	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 9010 ]	Name: Magazin de diverse	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 9011 ]	Name: Organizatoare de nunti	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 9012 ]	Name: Teleporter	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 9999 ]	Name: ?t3as?	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10001 ]	Name: Tinutul_Yayang 4002 8995	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10002 ]	Name: Tinutul_Yongan 4503 9050	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10003 ]	Name: Tinut_Bokjung 1118 2161	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10004 ]	Name: Tinutul_Joan 876 2131	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10005 ]	Name: Tinutul_Bakra 9064 2214	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10006 ]	Name: Zona_Pyungmoo 9372 2188	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10007 ]	Name: Tinutul_Yongan 4188 9560	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10008 ]	Name: Tinutul_Yayang 3179 8332	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10009 ]	Name: Tinutul_Joan 897 1127	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10010 ]	Name: TinutulBokjung 1759 2210	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10011 ]	Name: Zona_Pyungmoo 9343 3143	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10012 ]	Name: Tinutul_Bakra 8348 2926	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10013 ]	Name: Templul_Hwang 5536 1441	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10014 ]	Name: Seungryong 3326 7468	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10015 ]	Name: DesertulYongbi 3467 6329	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10016 ]	Name: Kuahlo_Dong 600 4960	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10017 ]	Name: Templul_Hwang 5906 1102	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10018 ]	Name: Turnul_Gumsan 2165 7270	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10019 ]	Name: Tinutul_Yayang 3211 9009	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10020 ]	Name: Jungrang 1356 43	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10021 ]	Name: TinutulBokjung 1168 2920	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10022 ]	Name: Waryong 2219 93	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10023 ]	Name: Tinutul_Bakra 9098 2948	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10024 ]	Name: Imha 2718 130	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10025 ]	Name: Muntele_Sohan 4993 2984	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10026 ]	Name: Lungsam 2887 57	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10027 ]	Name: Lungsam 2866 437	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10028 ]	Name: Padurea_rosie 11199 708	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10029 ]	Name: Vale_cu_Serpi 10590 7262	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10030 ]	Name: DesertulYongbi 3519 6223	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10031 ]	Name: Vale_cu_Serpi 10590 7262	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10032 ]	Name: Taram_Giganti 8283 7635	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10033 ]	Name: Pestera_Zin 10594 7525	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10034 ]	Name: 2_pestera_Zin 10594 7525	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10035 ]	Name: Deon-Zeon 917 5253	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10036 ]	Name: 2_Deon-Zeon 7041 4642	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10037 ]	Name: JayangArea 3809 8233	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 1
+[ 10038 ]	Name: ShinSuCastle 9752 1330	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 1
+[ 10039 ]	Name: BokjungArea 1917 2900	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 2
+[ 10040 ]	Name: Zin-RohCastle 9239 1836	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 2
+[ 10041 ]	Name: BakraArea 8316 2154	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 3
+[ 10042 ]	Name: ChunZoCastle 9772 1850	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 3
+[ 10043 ]	Name: IceMountain 3819 2969	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 2
+[ 10044 ]	Name: ShinSuCastle 10189 1484	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 2
+[ 10045 ]	Name: IceMountain 3819 2969	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 3
+[ 10046 ]	Name: ShinSuCastle 9774 1501	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 3
+[ 10047 ]	Name: DragonValley 2699 6752	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 1
+[ 10048 ]	Name: Zin-RohCastle 9679 1994	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 1
+[ 10049 ]	Name: DragonValley 2699 6752	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 3
+[ 10050 ]	Name: Zin-RohCastle 9256 2012	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 3
+[ 10051 ]	Name: SaharaDesert 3478 6189	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 1
+[ 10052 ]	Name: ChunZoCastle 9780 1995	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 1
+[ 10053 ]	Name: SaharaDesert 3478 6189	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 2
+[ 10054 ]	Name: ChunZoCastle 10190 2002	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 2
+[ 10055 ]	Name: InfernalFF 6011 6874	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10056 ]	Name: IceMountain 4368 2158	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10057 ]	Name: DragonValley 3355 7558	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10058 ]	Name: DarkTemple 5943 1337	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10059 ]	Name: IceMountain 0 10496	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10060 ]	Name: DarkTemple 1536 10496	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10061 ]	Name: InfernalFF 4608 10496	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10062 ]	Name: DragonValley 6144 10496	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10063 ]	Name: GhostForest 3031 266	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10064 ]	Name: RedWoodForest 11133 534	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10065 ]	Name: NGForest 7754 10553	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10066 ]	Name: NRWForest 9915 11195	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10067 ]	Name: TemnitaMaimute 7752 4477	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10068 ]	Name: Tinutul_Yayang 4062 8756	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10069 ]	Name: TemnitaMaimute 8520 4477	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10070 ]	Name: TinutulBokjung 1611 2130	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10071 ]	Name: TemnitaMaimute 9288 4477	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10072 ]	Name: Tinutul_Bakra 8727 2100	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10073 ]	Name: DesertulYongbi 3061 6202	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10074 ]	Name: TemnitaMaimute 1352 6532	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10075 ]	Name: DesertulYongbi 2879 5407	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10076 ]	Name: TemnitaMaimute 1352 7300	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10077 ]	Name: HeavenLair 9 12078	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10078 ]	Name: DragonValley 2842 8106	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10079 ]	Name: AquaCavern 1459 13236	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10080 ]	Name: AquaCavern 2413 12755	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10081 ]	Name: HeavenLair 99 13618	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10082 ]	Name: YounganArea 5028 9998	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10083 ]	Name: HeavenLair 1360 14972	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10084 ]	Name: HeavenLair_2 2414 14289	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10085 ]	Name: HeavenLair 99 15154	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10086 ]	Name: JoanArea 616 1148	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10087 ]	Name: HeavenLair 1360 16508	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10088 ]	Name: HeavenLair_2 2414 15825	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10089 ]	Name: HeavenLair 99 16690	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10090 ]	Name: PyungmoArea 9609 3188	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10091 ]	Name: HeavenLair 1360 18044	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10092 ]	Name: HeavenLair_2 2414 17361	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10093 ]	Name: Poarta_Dragon 1731 12205	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10094 ]	Name: Poarta_Dragon 1733 13743	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10095 ]	Name: Poarta_Dragon 1728 15277	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10096 ]	Name: Poarta_Dragon 1724 16824	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10097 ]	Name: Temnita_V2 7040 5235	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10098 ]	Name: Temnita_SD3 984 5711	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 141	HP: 3954	Empire: 0
+[ 10099 ]	Name: Peninsula 11043 17885	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10100 ]	Name: Peninsula 10963 16744	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10101 ]	Name: Nephrite 10869 16558	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10102 ]	Name: Peninsula 11664 16779	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10103 ]	Name: Thunder 11345 16546	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10104 ]	Name: Thunder 11921 16550	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10105 ]	Name: Gautama 12263 16811	Rank: 0	Lvl: 70	Type: 3	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 10201 ]	Name: . 70 580	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10202 ]	Name: . 70 668	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10203 ]	Name: . 131 665	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10204 ]	Name: . 183 566	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10205 ]	Name: . 292  567	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10206 ]	Name: . 281 636	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10207 ]	Name: . 186 667	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10208 ]	Name: . 345 558	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10209 ]	Name: . 402 561	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10210 ]	Name: . 68 811	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10211 ]	Name: . 140 818	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10212 ]	Name: . 189 716	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10213 ]	Name: . 274 716	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10214 ]	Name: . 232 780	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10215 ]	Name: . 325 779	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10216 ]	Name: . 274 838	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10217 ]	Name: . 359 717	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10218 ]	Name: . 415 711	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10219 ]	Name: . 368 776	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10220 ]	Name: . 366 815	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10221 ]	Name: . 350 840	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10222 ]	Name: . 424 842	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10223 ]	Name: . 94 843	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10224 ]	Name: . 59 864	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10225 ]	Name: . 138 864	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10226 ]	Name: . 54 920	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10227 ]	Name: . 140 919	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10228 ]	Name: . 90 945	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10229 ]	Name: . 194 865	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10230 ]	Name: . 243 857	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10231 ]	Name: . 312 856	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10232 ]	Name: . 368 894	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10233 ]	Name: . 406 875	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10234 ]	Name: . 427 934	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10235 ]	Name: . 500 790	Rank: 1	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 225	HP: 1	Empire: 0
+[ 10501 ]	Name: . 345 361	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10502 ]	Name: . 106 547	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10503 ]	Name: . 75 368	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10504 ]	Name: . 89 746	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10505 ]	Name: . 520 352	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10506 ]	Name: . 541 45	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10507 ]	Name: . 211 109	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10508 ]	Name: . 615 49	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10509 ]	Name: . 284 705	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10510 ]	Name: . 145 310	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10511 ]	Name: . 553 285	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10512 ]	Name: . 487 274	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10513 ]	Name: . 626 291	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10514 ]	Name: . 285 569	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10515 ]	Name: . 80 303	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10516 ]	Name: . 315 238	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10517 ]	Name: . 416 272	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10518 ]	Name: . 72 498	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10519 ]	Name: . 215 495	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10520 ]	Name: . 523 415	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10521 ]	Name: . 72 498	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10522 ]	Name: . 518 480	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10523 ]	Name: . 583 379	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10524 ]	Name: . 459 558	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10601 ]	Name: . 345 361	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10602 ]	Name: . 520 352	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10603 ]	Name: . 487 274	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10604 ]	Name: . 75 368	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10605 ]	Name: . 211 109	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10606 ]	Name: . 215 495	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10607 ]	Name: . 315 238	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10608 ]	Name: . 520 352	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10609 ]	Name: . 284 705	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10610 ]	Name: . 145 310	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10611 ]	Name: . 416 272	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10612 ]	Name: . 80 303	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10613 ]	Name: . 72 498	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10614 ]	Name: . 106 547	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10615 ]	Name: . 523 415	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10616 ]	Name: . 541 45	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10617 ]	Name: . 72 121	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10618 ]	Name: . 518 480	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10619 ]	Name: . 89 746	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10620 ]	Name: . 285 569	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10621 ]	Name: . 615 49	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10622 ]	Name: . 72 498	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10623 ]	Name: . 583 379	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10624 ]	Name: . 459 558	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10625 ]	Name: . 609 553	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10626 ]	Name: . 594 338	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10701 ]	Name: . 75 368	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10702 ]	Name: . 541 45	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10703 ]	Name: . 615 49	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10704 ]	Name: . 284 705	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10705 ]	Name: . 520 352	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10706 ]	Name: . 553 285	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10707 ]	Name: . 145 310	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10708 ]	Name: . 345 361	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10709 ]	Name: . 523 415	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10710 ]	Name: . 72 498	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10711 ]	Name: . 626 291	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10712 ]	Name: . 487 274	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10713 ]	Name: . 72 498	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10714 ]	Name: . 106 547	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10715 ]	Name: . 518 480	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10716 ]	Name: . 285 569	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10717 ]	Name: . 80 303	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10718 ]	Name: . 211 109	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10719 ]	Name: . 416 272	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10720 ]	Name: . 215 495	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10721 ]	Name: . 315 238	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10722 ]	Name: . 89 746	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10723 ]	Name: . 583 379	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10724 ]	Name: . 459 558	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10725 ]	Name: . 609 553	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10726 ]	Name: . 594 338	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10801 ]	Name: . 70 581	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10802 ]	Name: . 69 664	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10803 ]	Name: . 132 660	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10804 ]	Name: . 184 566	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10805 ]	Name: . 285 567	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10806 ]	Name: . 272 636	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10807 ]	Name: . 191 667	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10808 ]	Name: . 345 563	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10809 ]	Name: . 400 570	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10810 ]	Name: . 68 806	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10811 ]	Name: . 140 811	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10812 ]	Name: . 189 722	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10813 ]	Name: . 274 722	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10814 ]	Name: .233 780	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10815 ]	Name: . 318 780	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10816 ]	Name: . 273 833	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10817 ]	Name: .356 717	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10818 ]	Name: .412 712	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10819 ]	Name: . 372 776	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10820 ]	Name: . 354 840	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10821 ]	Name: . 366 817	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10822 ]	Name: . 420 841	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10823 ]	Name: . 94 846	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10824 ]	Name: . 63 864	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10825 ]	Name: . 131 866	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10826 ]	Name: . 59 920	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10827 ]	Name: . 91 940	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10828 ]	Name: . 135 919	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10829 ]	Name: . 194 870	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10830 ]	Name: . 243 862	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10831 ]	Name: . 312 861	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10832 ]	Name: . 373 893	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10833 ]	Name: . 406 880	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10834 ]	Name: . 422 935	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 10835 ]	Name: . 500 807	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 11000 ]	Name: Gardian	Rank: 2	Lvl: 100	Type: 1	Gold range: 0 - 0	Exp: 602	HP: 6938	Empire: 1
+[ 11001 ]	Name: Administratorul luptelor	Rank: 2	Lvl: 100	Type: 1	Gold range: 0 - 0	Exp: 602	HP: 6938	Empire: 1
+[ 11002 ]	Name: Gardian	Rank: 2	Lvl: 100	Type: 1	Gold range: 0 - 0	Exp: 602	HP: 6938	Empire: 2
+[ 11003 ]	Name: Administratorul luptelor	Rank: 2	Lvl: 100	Type: 1	Gold range: 0 - 0	Exp: 602	HP: 6938	Empire: 2
+[ 11004 ]	Name: Gardian	Rank: 2	Lvl: 100	Type: 1	Gold range: 0 - 0	Exp: 602	HP: 6938	Empire: 3
+[ 11005 ]	Name: Administratorul luptelor	Rank: 2	Lvl: 100	Type: 1	Gold range: 0 - 0	Exp: 602	HP: 6938	Empire: 3
+[ 11100 ]	Name: Gardian	Rank: 2	Lvl: 50	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 5000	Empire: 0
+[ 11101 ]	Name: Administratorul luptelor	Rank: 2	Lvl: 50	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 4000	Empire: 0
+[ 11102 ]	Name: Gardian	Rank: 2	Lvl: 50	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 5000	Empire: 0
+[ 11103 ]	Name: Administratorul luptelor	Rank: 2	Lvl: 50	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 4000	Empire: 0
+[ 11104 ]	Name: Gardian	Rank: 2	Lvl: 50	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 5000	Empire: 0
+[ 11105 ]	Name: Administratorul luptelor	Rank: 2	Lvl: 50	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 4000	Empire: 0
+[ 11106 ]	Name: ???	Rank: 2	Lvl: 70	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 13000	Empire: 0
+[ 11107 ]	Name: ???	Rank: 2	Lvl: 70	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 8000	Empire: 0
+[ 11108 ]	Name: ???	Rank: 2	Lvl: 70	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 13000	Empire: 0
+[ 11109 ]	Name: ???	Rank: 2	Lvl: 70	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 8000	Empire: 0
+[ 11110 ]	Name: ???	Rank: 2	Lvl: 70	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 13000	Empire: 0
+[ 11111 ]	Name: ???	Rank: 2	Lvl: 70	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 8000	Empire: 0
+[ 11112 ]	Name: ???	Rank: 2	Lvl: 90	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 30000	Empire: 0
+[ 11113 ]	Name: ???	Rank: 2	Lvl: 90	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 20000	Empire: 0
+[ 11114 ]	Name: ???	Rank: 2	Lvl: 90	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 30000	Empire: 0
+[ 11115 ]	Name: ???	Rank: 2	Lvl: 90	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 20000	Empire: 0
+[ 11116 ]	Name: ???	Rank: 2	Lvl: 90	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 30000	Empire: 0
+[ 11117 ]	Name: ???	Rank: 2	Lvl: 90	Type: 0	Gold range: 0 - 0	Exp: 1500	HP: 20000	Empire: 0
+[ 11505 ]	Name: Broasca aurie	Rank: 2	Lvl: 100	Type: 0	Gold range: 0 - 0	Exp: 602	HP: 500000	Empire: 0
+[ 11506 ]	Name: ??	Rank: 2	Lvl: 100	Type: 0	Gold range: 0 - 0	Exp: 75000	HP: 6000000	Empire: 0
+[ 11507 ]	Name: ??	Rank: 2	Lvl: 100	Type: 0	Gold range: 0 - 0	Exp: 75000	HP: 3000000	Empire: 0
+[ 11508 ]	Name: ??	Rank: 2	Lvl: 100	Type: 0	Gold range: 0 - 0	Exp: 75000	HP: 6000000	Empire: 0
+[ 11509 ]	Name: ??	Rank: 2	Lvl: 100	Type: 0	Gold range: 0 - 0	Exp: 75000	HP: 3000000	Empire: 0
+[ 11510 ]	Name: ??	Rank: 2	Lvl: 100	Type: 0	Gold range: 0 - 0	Exp: 75000	HP: 3000000	Empire: 0
+[ 12000 ]	Name: Foc de tabara	Rank: 0	Lvl: 100	Type: 1	Gold range: 0 - 0	Exp: 602	HP: 6938	Empire: 0
+[ 13000 ]	Name: Poarta de lemn	Rank: 5	Lvl: 70	Type: 4	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 13001 ]	Name: Poarta de piatra	Rank: 5	Lvl: 70	Type: 4	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14000 ]	Name: Atelier	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14001 ]	Name: Atelier	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14002 ]	Name: Atelier	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14003 ]	Name: Atelier	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14004 ]	Name: Atelier	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14005 ]	Name: Atelier	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14006 ]	Name: Atelier	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14007 ]	Name: Atelier	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14008 ]	Name: Atelier	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14009 ]	Name: Atelier	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14010 ]	Name: Altar	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14011 ]	Name: Altar	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14012 ]	Name: Altar	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14013 ]	Name: Altar	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14014 ]	Name: Altar	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14015 ]	Name: Altar	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14016 ]	Name: Altar	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14017 ]	Name: Altar	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14018 ]	Name: Altar	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14019 ]	Name: Altar	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14020 ]	Name: Baza	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14021 ]	Name: Baza	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14022 ]	Name: Baza	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14023 ]	Name: Baza	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14024 ]	Name: Baza	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14025 ]	Name: Baza	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14026 ]	Name: Baza	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14027 ]	Name: Baza	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14028 ]	Name: Baza	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14029 ]	Name: Baza	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14030 ]	Name: Baza de antrenament	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14031 ]	Name: Baza de antrenament	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14032 ]	Name: Baza de antrenament	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14033 ]	Name: Baza de antrenament	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14034 ]	Name: Baza de antrenament	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14035 ]	Name: Baza de antrenament	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14036 ]	Name: Baza de antrenament	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14037 ]	Name: Baza de antrenament	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14038 ]	Name: Baza de antrenament	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14039 ]	Name: Baza de antrenament	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14040 ]	Name: Cuptor	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14041 ]	Name: Cuptor	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14042 ]	Name: Cuptor	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14043 ]	Name: Cuptor	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14044 ]	Name: Cuptor	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14045 ]	Name: Cuptor	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14046 ]	Name: Cuptor	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14047 ]	Name: Cuptor	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14048 ]	Name: Cuptor	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 14049 ]	Name: Cuptor	Rank: 5	Lvl: 70	Type: 5	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20001 ]	Name: Alchimist	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20002 ]	Name: Aranyo	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20003 ]	Name: Ah-Yu	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20004 ]	Name: Cersetor	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20005 ]	Name: Yonah	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20006 ]	Name: Mirine	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20007 ]	Name: Administrator Depozit	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20008 ]	Name: Octavio	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20009 ]	Name: Batran	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20010 ]	Name: Negustor ambulant	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20011 ]	Name: Uriel	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20012 ]	Name: Yu-Rang	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20013 ]	Name: Pescar	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20014 ]	Name: Taurean	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20015 ]	Name: Deokbae	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20016 ]	Name: Fierar	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20017 ]	Name: Yu-Hwan	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20018 ]	Name: Baek-Go	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20019 ]	Name: Yang-Shin	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20020 ]	Name: Tradatorul Balso	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20021 ]	Name: Ariyoung	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20022 ]	Name: Huahn-So	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20023 ]	Name: Soon	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20024 ]	Name: Harang	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20025 ]	Name: .	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20026 ]	Name: Ji-Ryu	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20027 ]	Name: Gillian	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20028 ]	Name: Fratele lui Mirine	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20029 ]	Name: Ponei	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20030 ]	Name: Cal	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20031 ]	Name: Mos Craciun	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20032 ]	Name: Brad de Craciun	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20033 ]	Name: Brad de Craciun	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20034 ]	Name: Brad de Craciun	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20035 ]	Name: Steag	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 1
+[ 20036 ]	Name: Steag	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 2
+[ 20037 ]	Name: Steag	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 3
+[ 20038 ]	Name: ..	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 20039 ]	Name: .	Rank: 5	Lvl: 1	Type: 9	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 20040 ]	Name: Vanzator de terenuri	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 1	HP: 1	Empire: 0
+[ 20041 ]	Name: CetaTean turmentat	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20042 ]	Name: Negustor ambulant	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20043 ]	Name: .	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20044 ]	Name: Fierar de arme	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20045 ]	Name: Fierar de armuri	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20046 ]	Name: Bijutier	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20047 ]	Name: Zacamant de diamante	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20048 ]	Name: Zacamant de chihlimbar	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20049 ]	Name: Zacamant de fosile	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20050 ]	Name: Zacamant de cupru	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20051 ]	Name: Zacamant de argint	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20052 ]	Name: Zacamant de aur	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20053 ]	Name: Zacamant de jade	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20054 ]	Name: Zacamant de lemn abanos	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20055 ]	Name: Teanc de scoici	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20056 ]	Name: Zacamant de aur alb	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20057 ]	Name: Zacamant de cristal	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20058 ]	Name: Zacamant de cuart	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20059 ]	Name: Minereu Lacrima Cerului	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20060 ]	Name: Alchimist de diamante	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20061 ]	Name: Alchimist de chihlimbar	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20062 ]	Name: Alchimist de fosile-lemn	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20063 ]	Name: Alchimist de cupru	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20064 ]	Name: Alchimist de argint	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20065 ]	Name: Alchimist de aur	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20066 ]	Name: Alchimist de jade	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20067 ]	Name: Alchimist de lemn abanos	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20068 ]	Name: Alchimist de perle	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20069 ]	Name: Alchimist de aur alb	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20070 ]	Name: Alchimist de cristal	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20071 ]	Name: Alchimist de cuarT	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20072 ]	Name: Alchimist d lacrima cer.	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20073 ]	Name: Sigiliu vechi	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20074 ]	Name: Fierar de arme de turn	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20075 ]	Name: Fierar de armuri de turn	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20076 ]	Name: Bijutierul turnului	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20077 ]	Name: Gardian Altar	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20078 ]	Name: Gardian Altar	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20079 ]	Name: Gardian Altar	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20080 ]	Name: Scara de antrenament	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20081 ]	Name: Sigiliul pasajului furat	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20082 ]	Name: Maestru	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20083 ]	Name: Jegal-Tunseok	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20084 ]	Name: Biologul Chaegirab	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20085 ]	Name: Jimjunja	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20086 ]	Name: Handu-Up	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20087 ]	Name: Wonda-Rim	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20088 ]	Name: Chuk-Sal	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20089 ]	Name: Pung-Ho	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20090 ]	Name: Heuk-Young	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20091 ]	Name: Seon-Pyeong	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20092 ]	Name: Hwa-Hee	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20093 ]	Name: Koe-Pung	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20094 ]	Name: Hong-Hae	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20095 ]	Name: Seon-Hae	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20096 ]	Name: ??? ???	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20097 ]	Name: Poarta Castelului	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20098 ]	Name: Poarta Castelului	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20099 ]	Name: Poarta Castelului	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20101 ]	Name: Cal alb	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20102 ]	Name: Cal maro	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20103 ]	Name: Cal negru	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20104 ]	Name: Cal alb	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20105 ]	Name: Cal maro	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20106 ]	Name: Cal negru	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20107 ]	Name: Cal alb	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20108 ]	Name: Cal maro	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20109 ]	Name: Cal negru	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20110 ]	Name: MistreT Salbatic	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20111 ]	Name: Lup	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20112 ]	Name: Tigru	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20113 ]	Name: Leu	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20114 ]	Name: white lion	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20115 ]	Name: Mistret Salbatic d Lupta	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20116 ]	Name: Lup de Batalie	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20117 ]	Name: Tigrul Furtunii	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20118 ]	Name: Leul Luptator	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20119 ]	Name: NoNAme	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20120 ]	Name: ?????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20121 ]	Name: ?????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20122 ]	Name: ?????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20123 ]	Name: ?????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20124 ]	Name: ?????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20125 ]	Name: ?????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20126 ]	Name: Mos Craciun	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20127 ]	Name: ????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 15	HP: 120	Empire: 0
+[ 20128 ]	Name: ?????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 15	HP: 120	Empire: 0
+[ 20129 ]	Name: ?????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 15	HP: 120	Empire: 0
+[ 20130 ]	Name: ????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 15	HP: 120	Empire: 0
+[ 20131 ]	Name: BabyAzrael	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 66	HP: 120	Empire: 0
+[ 20132 ]	Name: BabyHund	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 66	HP: 120	Empire: 0
+[ 20133 ]	Name: BabyHund	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 66	HP: 120	Empire: 0
+[ 20134 ]	Name: BabyHund	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 66	HP: 120	Empire: 0
+[ 20135 ]	Name: BabyLoewe	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 66	HP: 120	Empire: 0
+[ 20136 ]	Name: BabyLoewe	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 66	HP: 120	Empire: 0
+[ 20137 ]	Name: BabyLoewe	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 66	HP: 120	Empire: 0
+[ 20138 ]	Name: BabyKeiler	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 66	HP: 120	Empire: 0
+[ 20139 ]	Name: BabyKeiler	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 66	HP: 120	Empire: 0
+[ 20140 ]	Name: BabyKeiler	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 66	HP: 120	Empire: 0
+[ 20141 ]	Name: BabyTiger	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 66	HP: 120	Empire: 0
+[ 20142 ]	Name: BabyTiger	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 66	HP: 120	Empire: 0
+[ 20143 ]	Name: BabyTiger	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 66	HP: 120	Empire: 0
+[ 20144 ]	Name: Baby Eisbär	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 66	HP: 120	Empire: 0
+[ 20145 ]	Name: Baby Eisbär	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 66	HP: 120	Empire: 0
+[ 20146 ]	Name: Baby Eisbär	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 66	HP: 120	Empire: 0
+[ 20200 ]	Name: ???	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 15	HP: 120	Empire: 0
+[ 20201 ]	Name: ??????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20202 ]	Name: ??????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20203 ]	Name: ?????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20204 ]	Name: ???????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20205 ]	Name: ?????? ??????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20206 ]	Name: ?????? ??????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20207 ]	Name: ?????? ?????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20208 ]	Name: ?????? ???????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20209 ]	Name: ?????? ??????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20210 ]	Name: ?????? ??????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20211 ]	Name: ?????? ?????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20212 ]	Name: ?????? ???????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20213 ]	Name: ?????????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20214 ]	Name: ?????? ?????????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20215 ]	Name: ?????? ?????????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20216 ]	Name: ????????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20217 ]	Name: ?????? ????????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20218 ]	Name: ?????? ????????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20219 ]	Name: blackpony	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20220 ]	Name: AC¸R?s¸??s ?o.I	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20221 ]	Name: Aü°C1é?o	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20222 ]	Name: Aü°CAO´o	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20223 ]	Name: Aü°C?R.aAÚ	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20224 ]	Name: 3­AoÇN Aü°C?R.aAÚ	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20225 ]	Name: ?ë¸ÍÇN Aü°C?R.aAÚ	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20226 ]	Name: EaA?´IÄÜ	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20227 ]	Name: 1éA?´IÄÜ	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20300 ]	Name: Invatator Lupta de Corp	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20301 ]	Name: Invatator Lupta Mentala	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20302 ]	Name: Invatator Lupta cu Sabia	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20303 ]	Name: Invatator Lupta cu Arcul	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20304 ]	Name: Invatator Arme Magice	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20305 ]	Name: Invatator Magie Neagra	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20306 ]	Name: Invatator Puterea Dragon	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20307 ]	Name: Invatator Vindecare	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20320 ]	Name: Invatator Lupta de Corp	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20321 ]	Name: invaTator de lupta ment.	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20322 ]	Name: invaTator de lupta apro.	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20323 ]	Name: invaTator de lupta depa.	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20324 ]	Name: invaTator de arme magice	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20325 ]	Name: invaTator de magie neagr	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20326 ]	Name: invaTator de puter. zmeu	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20327 ]	Name: invaTator de vindecare	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20340 ]	Name: Invatator Lupta de Corp	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20341 ]	Name: invaTator de lupta ment.	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20342 ]	Name: invaTator de lupta apro.	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20343 ]	Name: invaTator de lupta depa.	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20344 ]	Name: invaTator de arme magice	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20345 ]	Name: invaTator de magie neagr	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20346 ]	Name: invaTator de puter. zmeu	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20347 ]	Name: invaTator de vindecare	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20348 ]	Name: Paznic turnul demonilor	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20349 ]	Name: Grajdar	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20350 ]	Name: Paznicul Garnizoanei	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20351 ]	Name: Paznicul halei	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20352 ]	Name: Monument piatra Hasun	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20353 ]	Name: Monument piatra SeulRong	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20354 ]	Name: Gardianul Orasului	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20355 ]	Name: Capitan	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20356 ]	Name: Culegator de Ginseng	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20357 ]	Name: Monument piatra Weol	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20358 ]	Name: Flori fara nume	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20359 ]	Name: Cutie cu Manuscrise	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20360 ]	Name: Piatra Memoriala Wha	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20361 ]	Name: Piatra Memoriala Su	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20362 ]	Name: Piatra Memoriala  Mok	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20363 ]	Name: Monument Gum	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20364 ]	Name: Nakajima	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20365 ]	Name: Monument To	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20366 ]	Name: Sa-Soe	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20367 ]	Name: Paznicul Catacombei	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20368 ]	Name: Negustor Ambulant	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20369 ]	Name: ????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20370 ]	Name: ????Á? ?Ö´Â ??Á¤	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20371 ]	Name: Mormant Vechi	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20372 ]	Name: Tableta Piatra Veche	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20373 ]	Name: Bodyguard	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20374 ]	Name: Garda	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20375 ]	Name: Baricada de Lemn	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20376 ]	Name: Kim Rim	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20377 ]	Name: Yak-Hwan	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20378 ]	Name: Amiralul Angmur	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20379 ]	Name: Soldat Ranit	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20380 ]	Name: Yon-I-Walker	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20381 ]	Name: Confucius	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20382 ]	Name: Floare de Stanca	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20383 ]	Name: Jae-Seon Kim	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20384 ]	Name: Brad de Craciun	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20385 ]	Name: Marele Am-heh	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20386 ]	Name: Stele din Isfet	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20387 ]	Name: Poarta Destinului	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20388 ]	Name: Poarta Dragonului	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20389 ]	Name: NoNAme	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20390 ]	Name: Mormant Taramor	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20391 ]	Name: Iarba Soarelui	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20392 ]	Name: NoNAme	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20393 ]	Name: Soldat Ranit	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 20394 ]	Name: Paznic Tara de Foc	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20395 ]	Name: NoNAme	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20397 ]	Name: Statuia Leului Inghetat	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20398 ]	Name: Sigiliul Nordului	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 20399 ]	Name: Pilonul Dragonului Nordi	Rank: 5	Lvl: 100	Type: 2	Gold range: 0 - 0	Exp: 39	HP: 650000	Empire: 0
+[ 20400 ]	Name: Battle Master	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 0	HP: 100000	Empire: 0
+[ 20406 ]	Name: Theowahdan	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 15	HP: 120	Empire: 0
+[ 20500 ]	Name: football1	Rank: 1	Lvl: 99	Type: 1	Gold range: 0 - 0	Exp: 15	HP: 500000	Empire: 0
+[ 20501 ]	Name: halloween1	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 0	HP: 250	Empire: 0
+[ 20502 ]	Name: Metin of Easter	Rank: 5	Lvl: 20	Type: 2	Gold range: 0 - 0	Exp: 900	HP: 40000	Empire: 0
+[ 20547 ]	Name: ???	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 36	HP: 120	Empire: 0
+[ 30000 ]	Name: ????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 30001 ]	Name: ????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 30101 ]	Name: Statuia Kud	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 30102 ]	Name: Obelisc Bazalt	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 30103 ]	Name: Piatra Testoasa	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 30104 ]	Name: Fragment de Runa	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 30111 ]	Name: 1. Poarta Pierzaniei	Rank: 2	Lvl: 85	Type: 4	Gold range: 0 - 0	Exp: 2400	HP: 600000	Empire: 0
+[ 30112 ]	Name: 2. Poarta Pierzaniei	Rank: 2	Lvl: 85	Type: 4	Gold range: 0 - 0	Exp: 2400	HP: 300000	Empire: 0
+[ 30113 ]	Name: 3. Poarta Pierzaniei	Rank: 2	Lvl: 85	Type: 4	Gold range: 0 - 0	Exp: 2400	HP: 600000	Empire: 0
+[ 30114 ]	Name: 4. Poarta Pierzaniei	Rank: 2	Lvl: 85	Type: 4	Gold range: 0 - 0	Exp: 2400	HP: 300000	Empire: 0
+[ 30115 ]	Name: 5. Poarta Pierzaniei	Rank: 2	Lvl: 85	Type: 4	Gold range: 0 - 0	Exp: 2400	HP: 300000	Empire: 0
+[ 30116 ]	Name: 6. Poarta Pierzaniei	Rank: 2	Lvl: 85	Type: 4	Gold range: 0 - 0	Exp: 2400	HP: 600000	Empire: 0
+[ 30117 ]	Name: 7. Poarta Pierzaniei	Rank: 2	Lvl: 85	Type: 4	Gold range: 0 - 0	Exp: 2400	HP: 300000	Empire: 0
+[ 30118 ]	Name: 8. Poarta Pierzaniei	Rank: 2	Lvl: 85	Type: 4	Gold range: 0 - 0	Exp: 2400	HP: 600000	Empire: 0
+[ 30119 ]	Name: 9. Poarta Pierzaniei	Rank: 2	Lvl: 85	Type: 4	Gold range: 0 - 0	Exp: 2400	HP: 300000	Empire: 0
+[ 30120 ]	Name: Punga cu Ierburi	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 30121 ]	Name: Spiritul Sura	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 30122 ]	Name: Spiritul Razboinic	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 30123 ]	Name: Sanctuarul intunecat	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 30124 ]	Name: Schelet-Sura 1	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 30125 ]	Name: Schelet-Sura 2	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 30126 ]	Name: Schelet-Sura 3	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 30127 ]	Name: Schelet-Sura 4	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 30128 ]	Name: Schelet-Sura 5	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 30129 ]	Name: Iepurasul de Paste	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 30130 ]	Name: Sigiliu_Temnita_SD3	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 30223 ]	Name: dinosaur	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 18	HP: 120	Empire: 0
+[ 30224 ]	Name: dinosaur	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 18	HP: 120	Empire: 0
+[ 30225 ]	Name: dinosaur	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 18	HP: 120	Empire: 0
+[ 30226 ]	Name: UnicorndeFoc	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 18	HP: 120	Empire: 0
+[ 30227 ]	Name: UnicorndeFoc	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 18	HP: 120	Empire: 0
+[ 30301 ]	Name: Farama Minereu Cristal	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 30302 ]	Name: Farama Minereu Rubin	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 30303 ]	Name: Farama Minereu Granat	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 30304 ]	Name: Farama Minereu Smarald	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 30305 ]	Name: Farama Minereu Safir	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 30397 ]	Name: TESTE	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 18	HP: 120	Empire: 0
+[ 30398 ]	Name: TESTE	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 18	HP: 120	Empire: 0
+[ 30399 ]	Name: TESTE	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 18	HP: 120	Empire: 0
+[ 33001 ]	Name: ?????? ???	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 422	HP: 3954	Empire: 0
+[ 33002 ]	Name: NoNAme	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 33003 ]	Name: NoNAme	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 33004 ]	Name: NoNAme	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 33005 ]	Name: NoNAme	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 33006 ]	Name: NoNAme	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 33007 ]	Name: NoNAme	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 33008 ]	Name: Dovleacul Jack	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 34001 ]	Name: phoenix1	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 34002 ]	Name: ??? ???	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 34003 ]	Name: ?????????	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 34004 ]	Name: AÄE2	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 34005 ]	Name: Porcusor	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 34006 ]	Name: Rufus	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 34007 ]	Name: Khan	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 34008 ]	Name: Leonidas	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 34009 ]	Name: AÄE2	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 34010 ]	Name: Bambi	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 34011 ]	Name: ?A?a 1é°o	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 34012 ]	Name: ?A?a AO´o	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 34013 ]	Name: sÓAs??Au´Ü?Ö?aAa?ö	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 34014 ]	Name: sÓAs??Au´ÜE2?İ?Ö?aAa?ö	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 34015 ]	Name: ÇO.iAC>A°­?AÁö	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 34016 ]	Name: 3i?°sO>çÁ?	Rank: 5	Lvl: 1	Type: 1	Gold range: 0 - 0	Exp: 8	HP: 120	Empire: 0
+[ 34019 ]	Name: ?A?a Aü°C1éE?	Rank: 5	Lvl: 70	Type: 1	Gold range: 0 - 0	Exp: 1716	HP: 3954	Empire: 0
+
+Found 1444 mobs.

@@ -1,0 +1,3 @@
+[2023-05-26 07:29:31.906] [multi_sink] [info] HookHunter started..
+[2023-05-26 07:29:31.909] [multi_sink] [critical] Unable to open a handle to process 0
+[2023-05-26 07:29:31.909] [multi_sink] [debug] Finished scanning, it took 0 milliseconds.

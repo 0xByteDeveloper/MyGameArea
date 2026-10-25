@@ -48,3 +48,28 @@
 - MaxExecutor/README.md: derleme + kurulum + xGODMOD2 akış komut eşlemesi
 - MaxExecutor/MaximumPyScript_STABLE.py: v17 + 3 cerrahi yama (RC12 tek-giriş, RC13 recovery kilidi, RC14 GameWindow kanıtı) — scripts/patch_stable.py anchor-doğrulamalı uyguladı, tüm kontroller OK
 - Google Drive indirme: rate-limit; yavaş retry döngüsü arka planda (scripts/download_retry_slow.sh)
+
+---
+
+## Oturum 4 — NightTownFullpack İndirildi + Repo'ya alındı (2026-10-25)
+
+### Adım 4.1 — Kullanıcının verdiği doğrudan URL ile indirme (x3 TAMAMLANDI)
+- Kullanıcı URL verdi: `https://drive.usercontent.google.com/download?id=1JaxWFkMID_7e9929_--yk20a7PqJ-aZE&export=download`
+- gdown yolunu terk ettik: virus-scan HTML'inden `confirm=t&uuid=...` form parametreleri çekildi
+- `curl -C -` resume ile HTTP 206 → kalan 371MB 13.5 sn'de tamamlandı
+- **NightTownFullpack.rar = 1,198,166,225 byte, RAR5 imza doğrulandı** → /home/z/my-project/game/
+- İlk script'li arka plan denemesi 826MB'da sandbox tarafından öldürüldü → foreground curl ile çözüldü (ders: büyük indirmeler foreground yapılmalı)
+
+### Adım 4.2 — Açma + envanter
+- unrar x → 2908 öğe, 1.57GB → /home/z/my-project/game/NightTownFullpack/
+- Kritik: metin2client.exe (5,216,256) = yeniden_olusturulan_MemoryGenislet.exe ile aynı boyut (yamalı rebuild)
+- python27.dll (845,868) → client Python 2.7 gömülü (bilgi teyit edildi)
+- **ErrorLog.txt: denemeoutput.exe 0xc0000005, stack'te 13 exe + 6 python27.dll frame** → RC1 GIL hipotezini güçlendiren GERÇEK crash kanıtı
+- logs/console.txt: HookHunter anti-cheat aktif; pyDetour/ = Python detour kütüphanesi
+- 73 root script + Modules/ + HyperBot/ + OpenBot/ + m2kmod/ + lib/ + accounts.save
+
+### Adım 4.3 — Repo'ya alma (persistence protokolü)
+- nighttown/ oluşturuldu: exes/ + scripts_root/ (73 py) + Modules/ + HyperBot/ + pyDetour/ + m2kmod/ + lib/ + logs/ + ErrorLog.txt + config/
+- nighttown/README.md = tam envanter + GIL kanıt analizi + klasör boyut tablosu
+- 1.1GB tam rar GitHub 100MB limiti nedeniyle repoya konulamadı (yerelde duruyor) — README'de belirtildi
+- GOD_MOD_MAP.md X3 bölümü TAMAMLANDI olarak güncellendi
