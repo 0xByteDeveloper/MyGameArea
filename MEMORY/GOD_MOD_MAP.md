@@ -106,3 +106,35 @@ Yöntem: **WndProc subclass + dosya-kuyruk + ana-thread PyRun.**
 - Hata kodları login: NOID, WRONGPWD, ALREADY, FULL, SHUTDOWN, BLOCK, BESAMEKEY... (`intrologin.py:179-198`)
 - Create hata: `TPacketGCCreateFailure{9, bType}` → bType 0 = genel/karakter yaratamazsın, 1 = isim mevcut. 30 sn create cooldown (DB core).
 - `app.Pump/app.Update/app.ProcessMessage` bu client'ta YOK (`scenechanger_result.txt` kanıtı).
+
+---
+
+## OTURUM 5 — GERÇEK BINARY TESTİ (2026-10-25) — RC18/RC19 BULUNDU
+
+Kullanıcı: "metin2client.exe üstünde test et, gerçek zamanlı debug, gereken tüm testleri yap."
+Yöntem: Linux sandbox'ta statik derin analiz (pefile + capstone x86-32 + byte-diff + string tarama + 142 script analizi).
+
+### Yeni Kök Nedenler
+- **RC18 (MazeProtector):** denemeoutput.exe'de "i4M MazeProtector V4.3-IP" — SendAttackPacket (RVA 0xD7610,
+  95B gövde) şifreli, .maze section'da 661B "MZI5" blob, ilk çağrıda in-place decrypt.
+  ErrorLog crash çerçeveleri (0x4D769C/0x4D7647) TAM bu fonksiyonda. Kimlik: hata string'i
+  "Send Battle Attack Packet Error" (0x8033BC) + HEADER_CG_ATTACK=2 (packet.h:13).
+  Sequence üreteci: 0x482840 (sayaç 0x8BF835, tablolar 0x7F6748/0x8BF838).
+- **RC19 (Sahte PyTuple):** 11/main.cpp+globals.h "Generated v9.2.0" DLL — sahte PyInt/TupleObject
+  (refcnt=9999, statik C dizisi) ile Python C-fonksiyon çağrısı, PyGILState_ensure=0, worker thread.
+- **Crash stack çözüldü:** PyObject_Call(+0x4C) → PyEval_EvalCodeEx(+0x65A) → PyEval_EvalFrameEx(+0x21AE) = eval-loop içi.
+
+### Düzeltilen Teori
+- Thread'den basit paket çağrısı (SendChatPacket) bu client'ta ÇALIŞIYOR (spambot.py:77-83 kanıt).
+  Ölümcül olan: sahte tuple (RC19), phase fonksiyonları (RC12/13), korumalı bölge (RC18), yüksek frekans spam.
+
+### Doğrulamalar
+- MaxExecutor/pylib komut seti binary isimleriyle BİREBİR teyit (rapor §6 tablo: StartGame 0x401A95,
+  DirectEnter 0x401CD3, SendSelectCharacterPacket 0x401D81 ...).
+- m2netm2g/playerm2g2 bu client'ta YOK → net/player/chat kullan.
+- pyDetour (Python-seviyesi hook, güvenli yöntem) L5 yazım hatası var.
+- HookHunter anti-cheat: WndProc subclass güvenli, global hook tehlikeli.
+
+### Rapor
+- reports/DEV_REAL_BINARY_TEST.md (10 bölüm, adres+satır kanıtlı)
+- nighttown/11/ + nighttown/denemeoutput.exe_MazeMap.txt repoya eklendi

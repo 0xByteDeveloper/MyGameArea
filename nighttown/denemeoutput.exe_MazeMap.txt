@@ -1,0 +1,6 @@
+# MazeMap - i4M MazeProtector V4.3-IP IP1 (sabit anahtar)
+# RVA'lar ImageBase'e gore. Cheat Engine: modulBase + RVA
+FUNC Bolge_1_0xD7610 882192 95 5513216 5513428 5513439 0CADF9C2 1
+IPINFO headLen=6 bodyLen=89 blobRva=0x542000 blobSize=661 retsRva=0x542211 crc=237B2882 state=depth0/lock0/enc
+WARN Govdede 1 reloc -> ilk decrypt'te delta geri alinacak (reloc-guvenli)
+WARN Govde section'i yazilabilir yapildi (in-place decrypt)

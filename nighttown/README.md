@@ -59,3 +59,28 @@ Modules/ bot modülleri: Alchemist, Bookreader, Buffbot, EQChanger, Fishbot, Gen
 2. ErrorLog stack'i → RC1 root-cause (GIL / yanlış thread'den interpreter erişimi) kanıtını güçlendiriyor
 3. pyDetour + HookHunter karşılaştırması → hook tespiti mekanizması ayrıca incelenecek
 4. lib/accounts.save → oyun içi hesap yapısı (executor giriş otomasyonu için kullanılabilir)
+
+---
+
+## GÜNCELLEME — Oturum 5 Gerçek Binary Testi (DEV raporu: reports/DEV_REAL_BINARY_TEST.md)
+
+**2 yeni kök neden + crash zinciri çözüldü:**
+
+1. **RC18 — MazeProtector:** `denemeoutput.exe` içinde **i4M MazeProtector V4.3-IP** koruması
+   (`denemeoutput.exe_MazeMap.txt` + gizli `.maze` section 0x542000, 661 byte "MZI5" blob).
+   Korumalı fonksiyon = **SendAttackPacket** (RVA 0xD7610, HEADER_CG_ATTACK=2, hata string'i
+   "Send Battle Attack Packet Error" 0x8033BC). İlk çağrıda in-place decrypt. ErrorLog'taki
+   crash çerçeveleri (0x4D769C/0x4D7647) bu fonksiyonun içinde.
+2. **RC19 — Sahte PyTuple:** `11/main.cpp` + `11/globals.h` ("Generated v9.2.0" DLL) —
+   C++ stack'inde sahte PyIntObject/PyTupleObject (refcnt=9999) ile Python C-fonksiyonu çağrısı,
+   **PyGILState_Ensure = 0**, worker thread'den. → eval-loop crash imzası.
+3. **Crash stack çözümü:** PyObject_Call(+0x4C) → PyEval_EvalCodeEx(+0x65A) → PyEval_EvalFrameEx(+0x21AE).
+4. **Çalışan script deseni:** ~20 script thread'den net.SendChatPacket çağırıp HAYATTA KALIYOR
+   (spambot.py:77-83) → "thread+API=kesin ölüm" teorisi çürütüldü; ölümcül olan: sahte tuple,
+   phase fonksiyonları, korumalı bölge, yüksek frekans.
+5. **Binary API ground truth:** StartGame/DirectEnter/SendSelectCharacterPacket/... VA'ları
+   rapor §6'da — MaxExecutor/pylib komut seti teyit edildi.
+6. **m2netm2g/playerm2g2** alias'ları bu client'ta YOK → net/player/chat kullan.
+7. **pyDetour L5** bozuk: `sys.modulesodule]` → `sys.modules[module]`.
+
+Yeni dosyalar: `nighttown/11/` (C++ kaynak), `nighttown/denemeoutput.exe_MazeMap.txt`.

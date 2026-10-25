@@ -73,3 +73,32 @@
 - nighttown/README.md = tam envanter + GIL kanıt analizi + klasör boyut tablosu
 - 1.1GB tam rar GitHub 100MB limiti nedeniyle repoya konulamadı (yerelde duruyor) — README'de belirtildi
 - GOD_MOD_MAP.md X3 bölümü TAMAMLANDI olarak güncellendi
+
+---
+
+## Oturum 5 — Gerçek Client Binary Testi (2026-10-25)
+
+### Adım 5.1 — Ortam + araç
+- Disk %100 dolmuştu: pack/BGM/screenshot/dmg silindi (~1.45GB), LegendySF .git silindi (1.5GB, kaynak ağacı kaldı) → 2.4GB boşaltıldı
+- pefile + capstone + uncompyle6 kuruldu (TMPDIR=/home/z/my-project/tmp)
+
+### Adım 5.2 — FAZ 1/1b/1c binary analizi
+- PE karşılaştırma: metin2client vs MemoryGenislet (aynı boyut, MD5 farklı) vs denemeoutput (+0x1000 .maze)
+- ErrorLog crash stack TAM çözüldü: python27 eval → client API → CInstanceBase → Bolge_1 → helper → crash
+- python27 export-nearest: PyObject_Call/EvalCodeEx/EvalFrameEx çerçeveleri
+- String tarama: 18,187 string; API ground truth tablosu; m2g alias'ları YOK; PHASE_WINDOW_* bulundu
+
+### Adım 5.3 — FAZ 2/3 script ekosistemi
+- 142 script (root73+Modules25+bot44) API/thread taraması
+- spambot.py:77-83 = thread'den SendChatPacket ÇALIŞIYOR → teori inceltildi
+- pyDetour = Python-seviyesi detour (L5 hatası), OpenBot=eXLib, HookHunter logu
+
+### Adım 5.4 — FAZ 4 MazeProtector + Generated DLL
+- .maze section + MazeMap.txt çözümü: MZI5 blob, RVA 0xD7610 = SendAttackPacket ("Send Battle Attack Packet Error" 0x8033BC)
+- byte-diff: yalnız 2 bölge (0xD7610-0xD766F) farklı = koruma bölgesi
+- 11/main.cpp+globals.h okundu: RC19 sahte tuple + GIL yok + worker thread; 5 kusur tablosu
+
+### Çıktılar
+- reports/DEV_REAL_BINARY_TEST.md (büyük rapor)
+- nighttown/11/ + MazeMap repoya; nighttown/README güncellendi
+- scripts/realtest_faz1.py, faz1b.py, faz1c.py, faz23.py, faz4_maze.py (workspace'te)
