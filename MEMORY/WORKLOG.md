@@ -102,3 +102,26 @@
 - reports/DEV_REAL_BINARY_TEST.md (büyük rapor)
 - nighttown/11/ + MazeMap repoya; nighttown/README güncellendi
 - scripts/realtest_faz1.py, faz1b.py, faz1c.py, faz23.py, faz4_maze.py (workspace'te)
+
+---
+
+## Oturum 6 — Derleme + Dağıtım (2026-10-25)
+
+### Adım 6.1 — Derleyici kurulumu (root yok, apt kapalı)
+- llvm-mingw 20250319 portable indirildi (clang 20.1.1, i686-w64-mingw32, ~90MB)
+- Kullanıcı kararı: Maze önemli değil — odak metin2client.exe (maze'siz)
+
+### Adım 6.2 — MaxExecutor derlemesi
+- MaxExecutor.cpp'de EKSIK FONKSIYON BULUNDU ve duzeltildi: HookGameWindow()
+  (WorkerThread cagiriyordu ama tanim yoktu — EnumWndProc + SetWindowLongPtrA subclass)
+- EnqueueCommand %u/%lu format uyarilari duzeltildi
+- bin/MaxExecutor.dll: 618KB, i386 DLL, -static (libc++/unwind gomulu; USER32/KERNEL32 + UCRT)
+- MaxInject.cpp YAZILDI (LoadLibrary enjektoru: isim/PID hedefleme, PROCESSENTRY32W fix)
+- bin/MaxInject.exe: 81KB, i386 console
+- UCRT notu: Win10/11 yerlesik; Win7/8 icin VC++ 2015-2022 x86 redistributable
+
+### Adım 6.3 — Kilavuz + paket
+- MaxExecutor/KULLANIM.md: 8 bolum — kurulum (5 adim), login akisi (8 komut birebir),
+  create/empire, race tablosu, hata takibi, eski SHM yolu (STABLE), sorun giderme tablosu,
+  yeniden derleme, test kontrol listesi
+- MaxExecutor_bundle_v1.zip (278KB): dll + exe + pylib + STABLE + kilavuz + kaynaklar

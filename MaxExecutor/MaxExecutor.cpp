@@ -116,8 +116,8 @@ static bool EnqueueCommand(const std::string& code, std::string& outFile)
     static unsigned seq = 0;
     ++seq;
     char tmp[MAX_PATH], fin[MAX_PATH];
-    sprintf(tmp, "%s\\c_%u_%04u.tmp", QUEUE_DIR, GetTickCount(), seq);
-    sprintf(fin, "%s\\c_%u_%04u.cmd", QUEUE_DIR, GetTickCount(), seq);
+    sprintf(tmp, "%s\\c_%lu_%04lu.tmp", QUEUE_DIR, (unsigned long)GetTickCount(), (unsigned long)seq);
+    sprintf(fin, "%s\\c_%lu_%04lu.cmd", QUEUE_DIR, (unsigned long)GetTickCount(), (unsigned long)seq);
     if (!WriteFileAll(tmp, code)) return false;
     if (!MoveFileA(tmp, fin)) { DeleteFileA(tmp); return false; }
     outFile = fin;
@@ -197,6 +197,23 @@ static BOOL CALLBACK EnumWndProc(HWND hwnd, LPARAM lp)
     DWORD area = (rc.right - rc.left) * (rc.bottom - rc.top);
     if (area > ctx->bestArea) { ctx->bestArea = area; ctx->best = hwnd; }
     return TRUE;
+}
+
+// Ana pencereyi bul ve WndProc'u subclass et. WorkerThread yeniden dener
+// (oyun penceresi DLL yuklemesinden sonra birkac saniye gec olusabilir).
+static bool HookGameWindow(void)
+{
+    if (g_hGameWnd) return true;
+    FindCtx ctx; ctx.best = 0; ctx.bestArea = 0; ctx.pid = GetCurrentProcessId();
+    EnumWindows(EnumWndProc, (LPARAM)&ctx);
+    if (!ctx.best) return false;
+    WNDPROC old = (WNDPROC)SetWindowLongPtrA(ctx.best, GWLP_WNDPROC, (LONG_PTR)MaxExecWndProc);
+    if (!old) return false;
+    g_oldWndProc = old;
+    g_hGameWnd   = ctx.best;
+    LogLine("oyun penceresi subclass edildi: hwnd=%p oldWndProc=%p",
+            (unsigned long)(uintptr_t)ctx.best, (unsigned long)(uintptr_t)old);
+    return true;
 }
 
 // ---------------------------------------------------------------------------
