@@ -72,7 +72,7 @@ static bool Inject(DWORD pid, const char* dllPath)
 
 int main(int argc, char** argv)
 {
-    printf("=== MaxInject — MaxExecutor.dll enjectoru (ana-thread guvenli executor) ===\n");
+    printf("=== MaxInject - MaxExecutor.dll enjectoru (ana-thread guvenli executor) ===\n");
     const char* target = (argc >= 2 && argv[1][0] && !(argv[1][0] >= '0' && argv[1][0] <= '9')) ? argv[1] : "metin2client.exe";
     const char* dll    = (argc >= 3) ? argv[2] : "C:\\MaxExec\\MaxExecutor.dll";
 
@@ -93,6 +93,12 @@ int main(int argc, char** argv)
     if (GetFullPathNameA(dll, MAX_PATH, fullPath, NULL)) dll = fullPath;
 
     printf("[i] Hedef PID=%lu (%s)\n[i] DLL   = %s\n", (unsigned long)pid, target, dll);
-    if (Inject(pid, dll)) return 0;
+    if (Inject(pid, dll))
+    {
+        printf("[i] Konsol gorunmuyor mu? Alt+Tab -> 'MaxExecutor' penceresini ara.\n");
+        printf("[i] Konsol acilmadi/bos mu? C:\\MaxExec\\maxexec.log dosyasini kontrol et.\n");
+        printf("[i] Python hatalari icin    : C:\\MaxExec\\pyerr.log (pylib load sonrasi)\n");
+        return 0;
+    }
     return 2;
 }

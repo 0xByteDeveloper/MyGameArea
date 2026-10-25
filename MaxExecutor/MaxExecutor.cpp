@@ -1,5 +1,19 @@
 // ============================================================================
-//  MaxExecutor.cpp — Metin2 Ana-Thread Güvenli Python Executor  (v1.0)
+//  MaxExecutor.cpp — Metin2 Ana-Thread Güvenli Python Executor  (v1.1)
+// ============================================================================
+//  v1.1 DUZELTMELER (konsol bos / yazi yok sorunu):
+//    FIX-1: GUI surecinde CRT stdout tablosu gecersiz handle ile baslar;
+//           AllocConsole() sonrasi freopen(CONIN$/CONOUT$) ile CRT yeniden
+//           baglanmaliydi — eksikti. Bu yuzden printf cikisi gorunmuyordu.
+//    FIX-2: setvbuf(_IONBF) — cikis buffer'siz, crash olsa bile yazar.
+//    FIX-3: Konsol kurulumu DllMain'den worker thread'e tasindi
+//           (loader-lock hijyeni; AllocConsole DllMain icinde riskli).
+//    FIX-4: Konsol penceresi HWND_TOPMOST yapildi (oyun arkasinda kalmaz).
+//    FIX-5: Otomatik dreneaj thread'i (2 sn): konsol olmasa bile kuyruk
+//           islenir — .cmd dosyasini elle birak, 2 sn icinde calisir.
+//    FIX-6: Her adim maxexec.log'a yaziliyor (konsolsuz debug kanali).
+//    FIX-7: load komutu sys.stderr'i C:\MaxExec\pyerr.log'a yonlendirir
+//           (Python traceback'leri artik gorunur).
 // ============================================================================
 //  xgodmod4 gereksinimleri:
 //    * Python fonksiyon hook'u  YOK  (monkey-patch yok)
@@ -49,6 +63,7 @@ static const char*   RESULT_DIR       = "C:\\MaxExec\\results";
 static const char*   ALIVE_FILE       = "C:\\MaxExec\\alive.txt";
 static const char*   EXEC_LOG         = "C:\\MaxExec\\maxexec.log";
 static const int     MAX_CMDS_PER_DRAIN = 4;              // tek mesajda maks. komut (render'i sisirmemek icin)
+static const char*   PYERR_LOG        = "C:\\MaxExec\\pyerr.log";
 
 // ---------------------------------------------------------------------------
 // Python27 sembolleri (yalniz ANA THREAD'den kullanilir!)
@@ -74,6 +89,7 @@ static bool ResolvePython(void)
 // Kucuk yardimcilar (dosya)
 // ---------------------------------------------------------------------------
 static void MkDirp(const char* path) { CreateDirectoryA(path, NULL); }
+static void EnsureDirs(void);   // fwd decl: WorkerThread kullanir, tanim DllMain bolgesinde
 
 static void LogLine(const char* fmt, ...)
 {
@@ -139,7 +155,7 @@ static void Heartbeat(void)
 
 static void DrainQueue(void)
 {
-    if (!pfn_PyRun_SimpleString) return;
+    if (!pfn_PyRun_SimpleString) { Heartbeat(); return; }  // python27 yoksa da nabiz yaz
 
     WIN32_FIND_DATAA fd;
     char pattern[MAX_PATH];
@@ -229,12 +245,20 @@ static void QRaw(const std::string& code)
 
 static void CmdLoad(const std::string& path)
 {
-    char buf[512];
+    char buf[1024];
     // Dosyayi ANA THREAD'de exec et — tum kurulum GIL-guvenli olur (RC4 caresi)
-    _snprintf(buf, sizeof(buf), "exec(open(r'%s').read())", path.c_str());
+    // Ek: sys.stderr -> pyerr.log (Python hatalari artik dosyada gorunur, FIX-7)
+    _snprintf(buf, sizeof(buf),
+        "import sys\n"
+        "try:\n"
+        "    sys.stderr = open(r'%s', 'a', 1)\n"
+        "except:\n"
+        "    pass\n"
+        "exec(open(r'%s').read())\n", PYERR_LOG, path.c_str());
     buf[sizeof(buf)-1] = 0;
     QRaw(buf);
     printf("[MAXEXEC] pylib yukleme komutu kuyruga alindi (kurulum ana thread'de olur)\n");
+    printf("[MAXEXEC] Python hatalari icin: %s\n", PYERR_LOG);
 }
 
 static void CmdLogin(const std::string& id, const std::string& pwd)
@@ -323,6 +347,55 @@ static void CmdWaitFor(const std::string& sceneName, int seconds)
 }
 
 // ---------------------------------------------------------------------------
+// Konsol kurulumu — WORKER THREAD icinde (DllMain'de DEGIL!)
+// GUI surecinde CRT stdout'u gecersiz handle ile baslar; AllocConsole
+// sonrasi CRT'yi CONIN$/CONOUT$ cihazlarina yeniden baglamak SART.
+// ---------------------------------------------------------------------------
+static bool InitConsole(void)
+{
+    if (!AllocConsole())
+    {
+        LogLine("AllocConsole BASARISIZ gle=%lu (headless mod: kuyruk dosyalari ile kullan)",
+                (unsigned long)GetLastError());
+        return false;
+    }
+    if (!freopen("CONIN$",  "rb", stdin))
+        LogLine("CONIN$ yeniden acilamadi (stdin klavye gelmeyecek)");
+    if (!freopen("CONOUT$", "wb", stdout))
+        LogLine("CONOUT$ yeniden acilamadi (stdout konsola yazmayacak!)");
+    if (!freopen("CONOUT$", "wb", stderr))
+        LogLine("CONOUT$ (stderr) yeniden acilamadi");
+    setvbuf(stdout, NULL, _IONBF, 0);   // buffer'siz: crash olsa bile yazar
+    setvbuf(stderr, NULL, _IONBF, 0);
+    SetConsoleTitleA("MaxExecutor v1.1");
+    HWND cw = GetConsoleWindow();
+    if (cw)
+    {
+        // Oyun tam ekran/ustte olsa bile konsol gorunur kalsin (Alt+Tab'a gerek yok)
+        SetWindowPos(cw, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+        SetForegroundWindow(cw);
+    }
+    LogLine("konsol hazir (CONIN/CONOUT yeniden baglandi, unbuffered)");
+    return true;
+}
+
+// ---------------------------------------------------------------------------
+// Otomatik dreneaj — konsol kapali/headless olsa bile kuyruk 2 sn'de islenir
+// (yalnizca PostMessage; Python'a dokunmaz)
+// ---------------------------------------------------------------------------
+static DWORD WINAPI AutoDrainThread(LPVOID)
+{
+    while (!g_hGameWnd) Sleep(500);
+    LogLine("otomatik dreneaj aktif (2 sn periyot)");
+    while (true)
+    {
+        PostMessage(g_hGameWnd, WM_APP_MAXEXEC, 1, 0);
+        Sleep(2000);
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
 // Konsol worker thread  (Python'a HIC dokunmaz — sadece dosya + PostMessage)
 // ---------------------------------------------------------------------------
 static std::vector<std::string> SplitArgs(const std::string& line)
@@ -362,16 +435,26 @@ static void PrintHelp(void)
 
 static DWORD WINAPI WorkerThread(LPVOID)
 {
+    LogLine("worker thread basladi");
+    EnsureDirs();
+    const bool con = InitConsole();
+
     printf("\n=============================================\n");
-    printf("  MaxExecutor v1.0 — ana-thread executor\n");
+    printf("  MaxExecutor v1.1 — ana-thread executor\n");
     printf("  hook yok | SHM yok | arka-plan PyRun yok\n");
     printf("=============================================\n");
+    if (!con)
+        printf("[!] KONSOL ACILAMADI (headless). Komutlari C:\\MaxExec\\queue klasorune\n"
+               "    elle .cmd dosyasi olarak birak — 2 sn icinde otomatik islenir.\n");
     for (int i = 0; i < 40 && !ResolvePython(); ++i) Sleep(500);
+    LogLine("python27: %s", pfn_PyRun_SimpleString ? "BULUNDU" : "YOK");
     printf("python27.dll : %s\n", pfn_PyRun_SimpleString ? "BULUNDU" : "YOK (oyun python'u daha baslamamis olabilir)");
     for (int i = 0; i < 40 && !HookGameWindow(); ++i) Sleep(500);
+    if (!g_hGameWnd) LogLine("oyun penceresi 20 sn icinde bulunamadi");
     printf("oyun penceresi: %s (hwnd=%p)\n", g_hGameWnd ? "SUBCLASS EDILDI" : "BULUNAMADI",
            (void*)g_hGameWnd);
     printf("kuyruk: %s | sonuc: %s\n", QUEUE_DIR, RESULT_DIR);
+    CreateThread(NULL, 0, AutoDrainThread, NULL, 0, NULL);
     PrintHelp();
 
     char line[4096];
@@ -425,12 +508,12 @@ BOOL APIENTRY DllMain(HMODULE hMod, DWORD reason, LPVOID)
 {
     if (reason == DLL_PROCESS_ATTACH)
     {
+        // Loader-lock guvenli minimal init: konsol kurulumu worker'a tasindi (FIX-3)
         DisableThreadLibraryCalls(hMod);
         EnsureDirs();
-        AllocConsole();
-        SetConsoleTitleA("MaxExecutor v1.0 — ana-thread executor");
         CreateThread(NULL, 0, WorkerThread, NULL, 0, NULL);
-        LogLine("MaxExecutor yuklendi (pid=%lu)", GetCurrentProcessId());
+        LogLine("MaxExecutor v1.1 yuklendi (pid=%lu) — worker baslatiliyor",
+                GetCurrentProcessId());
     }
     return TRUE;
 }

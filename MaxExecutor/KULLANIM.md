@@ -2,7 +2,7 @@
 
 > Paket içeriği, kurulum, komutlar, giriş akışı, sorun giderme — hepsi bu dosyada.
 > Mimari gerekçe için: `reports/DEV_REAL_BINARY_TEST.md` (RC18/RC19) + `reports/DEV_GIL_ANALYSIS.md` (RC1-RC17).
-> Son güncelleme: Oturum 6 (derlenen exe'ler bu pakette: `bin/`)
+> Son güncelleme: **Oturum 7 — v1.1** (konsol-yok hatası düzeltildi, otomatik kuyruk drenajı, pyerr.log)
 
 ---
 
@@ -10,14 +10,14 @@
 
 | Dosya | Ne işe yarar | Nereden geldi |
 |---|---|---|
-| `bin/MaxExecutor.dll` | **Ana proje.** Oyun içine enjekte edilen 32-bit DLL. Ana thread'de (WndProc) Python çalıştırır. Hook YOK, SHM YOK, arka-plan PyRun YOK. | Bu repo — derlendi (clang-mingw i686) |
+| `bin/MaxExecutor.dll` | **Ana proje.** Oyun içine enjekte edilen 32-bit DLL. Ana thread'de (WndProc) Python çalıştırır. Hook YOK, SHM YOK, arka-plan PyRun YOK. **v1.1: konsol fix (freopen CONIN/CONOUT) + 2 sn otomatik kuyruk drenajı + headless mod.** | Bu repo — derlendi (GCC 14 mingw-w64 i686, `-static`) |
 | `bin/MaxInject.exe` | DLL enjektörü. `metin2client.exe` sürecini bulur, DLL'i LoadLibrary ile yükler. | Bu repo — derlendi |
 | `pylib.py` | DLL içine yüklenen Python komut kütüphanesi (maxlib): login/charlist/empire/create/enter/status | Bu repo |
 | `MaximumPyScript_STABLE.py` | Eski mimarinin (SHM'li v17) RC12/RC13/RC14 yamalı hali. Alternatif yol. | Bu repo |
 | `MaxExecutor.cpp` / `MaxInject.cpp` | Kaynak kodlar (değişiklik yaparsan yeniden derlersin) | Bu repo |
 | `README.md` | Mimari açıklama (İngilizce başlıklı ama içerik Türkçe) | Bu repo |
 
-**Derleme ortamı:** llvm-mingw 20250319 (clang 20.1.1), i686-w64-mingw32, `-static` (618KB DLL, bağımlılığı yalnız USER32/KERNEL32 + UCRT).
+**Derleme ortamı (v1.1):** Debian GCC 14.2 mingw-w64 (win32 threads), i686-w64-mingw32, `-static` (579KB DLL, bağımlılık: yalnız USER32/KERNEL32 + UCRT).
 
 ---
 
@@ -40,7 +40,7 @@
    - Başka isimli client: `MaxInject.exe metin2.exe`
    - PID ile: `MaxInject.exe 12345`
    - Farklı DLL yolu: `MaxInject.exe metin2client.exe D:\yer\MaxExecutor.dll`
-4. **Konsol açılır** — "MaxExecutor v1.0 — ana-thread executor" başlıklı siyah pencere.
+4. **Konsol açılır** — "MaxExecutor v1.1" başlıklı siyah pencere (oyunun ÜSTÜNDE kalır, TOPMOST).
    İlk satırlarda şunları görmelisin:
    ```
    python27.dll : BULUNDU
@@ -48,6 +48,8 @@
    ```
    > `python27.dll : YOK` ise oyunun Python'u henüz başlamamıştır → konsolda bekle,
    > oyun login ekranına gelince `status` yazarak tekrar dene (DLL her 0.5 sn'de yeniden dener, 20 sn boyunca).
+   > Konsol bir sebeple hiç açılmazsa: `C:\MaxExec\maxexec.log` dosyasına bak (her adım oraya yazılır)
+   > ve §6'daki "headless mod" başlığına geç.
 5. **Hazır.** §3'teki akışa geç.
 
 > ⚠️ **Win7/Win8'de "api-ms-win-crt-*.dll eksik" hatası alırsan:** Visual C++ 2015-2022 Redistributable (x86) kur → UCRT'yi getirir. Win10/11'de gerekmez.
@@ -126,6 +128,11 @@ eski Controller (win32apiMetin2Py / cppcmpr) zincirini kullanacaksan çalıştı
 
 | Belirti | Sebep | Çözüm |
 |---|---|---|
+| **Konsol açılıyor AMA hiç yazı yazmıyor** (v1.0 hatası) | GUI process'in CRT stdout'u geçersiz handle ile başlar; `AllocConsole` sonrası CRT konsola yeniden bağlanmamıştı | **v1.1'e güncelle** (freopen CONIN$/CONOUT$ + unbuffered fix). v1.1'de bu sorun yapısal olarak imkânsız — her adım ayrıca `maxexec.log`'a yazılır |
+| `VirtualAllocEx basarisiz: 8` (NOT_ENOUGH_MEMORY) | Oyun 32-bit adres alanı (2GB) pack dosyalarıyla dolu/parçalı; oyundan SONRA inject etmeye çalışınca bölge bulunamıyor | Oyunu ilk açtığın anda (login ekranı çıkınca hemen) inject et; oyunu -windowed modda başlat; cmd'yi Yönetici yap; hâlâ olmazsa oyunu yeniden başlatıp tekrar dene (PID değişir, MaxInject otomatik bulur) |
+| Konsol penceresi görünmüyor | Oyun tam ekran, konsol arkada | v1.1 konsolu TOPMOST yapar. Eski v1.0'daysa Alt+Tab ile "MaxExecutor" penceresini ara |
+| **Konsol hiç açılmadı (headless mod)** | AllocConsole bazı koruma/ortamlarda başarısız olur | Sorun değil: `C:\MaxExec\queue\` klasörüne komutu elle `.cmd` dosyası olarak bırak — v1.1'in otomatik drenajı (2 sn) işler. Örn. Not Defteri ile `c_test.cmd` içine `import maxlib\nmaxlib.status()` yaz. Sonuç: `results/`, sağlık: `alive.txt` (2 sn'de bir güncellenir) |
+| Python kodum hata verdi, nerede göreceğim? | Python traceback'leri oyun içine gider | v1.1: `load` komutu `sys.stderr`'i `C:\MaxExec\pyerr.log`'a yönlendirir — `load` sonrası tüm Python hataları o dosyada |
 | `MaxInject.exe` "sureci bulunamadi" | Oyun kapalı ya da exe adı farklı | Oyunu aç; `MaxInject.exe <gercek-exe-adı>` |
 | "OpenProcess basarisiz (5)" | Yönetici değil | cmd'yi Yönetici olarak aç |
 | `python27.dll : YOK` | Oyun Python'u başlatmamış | Login ekranına kadar bekle; DLL 20 sn boyunca otomatik tekrar dener; o da yetmezse oyunu login ekranına getirip DLL'i TEKRAR enjekte et |
@@ -142,12 +149,15 @@ eski Controller (win32apiMetin2Py / cppcmpr) zincirini kullanacaksan çalıştı
 ## 7. YENİDEN DERLEME (kaynağı değiştirirsen)
 
 ```bash
-# llvm-mingw (linux) ile:
-i686-w64-mingw32-g++ -shared -static -O2 -std=c++17 \
+# Debian/Ubuntu'da: sudo apt install g++-mingw-w64-i686 (root yoksa: apt-get download + dpkg -x)
+i686-w64-mingw32-g++ -shared -static -static-libgcc -static-libstdc++ -O2 \
     -o bin/MaxExecutor.dll MaxExecutor.cpp -luser32 -lkernel32 -lgdi32
 
-i686-w64-mingw32-g++ -static -O2 -std=c++17 \
+i686-w64-mingw32-g++ -static -static-libgcc -O2 \
     -o bin/MaxInject.exe MaxInject.cpp -luser32 -lkernel32
+
+# dogrulama (ikisi de pei-i386 / i386 cikmali):
+i686-w64-mingw32-objdump -f bin/MaxExecutor.dll | grep architecture
 ```
 Visual Studio kullanacaksan: x86 platform, DLL projesi, `/MT` (statik CRT), ek include yok.
 
