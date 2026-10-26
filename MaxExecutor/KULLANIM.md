@@ -2,7 +2,9 @@
 
 > Paket içeriği, kurulum, komutlar, giriş akışı, sorun giderme — hepsi bu dosyada.
 > Mimari gerekçe için: `reports/DEV_REAL_BINARY_TEST.md` (RC18/RC19) + `reports/DEV_GIL_ANALYSIS.md` (RC1-RC17).
-> Son güncelleme: **Oturum 7b — v1.2** (SetTimer drenajı, zincir sayaçları, probe, selserver/serverlist, basedir.txt)
+> Son güncelleme: **Oturum 8 — v1.3** (oto pylib yükleme, kendini onaran komutlar, `pyerr` komutu, load dosya kontrolü)
+>
+> **v1.3 ÖZET — saha testi 26.10 dersi:** kuyruk/drenaj/ana-thread zinciri ÇALIŞIYORDU (kanıt: `results\py_probe.txt` oluştu, `alive.txt` aktti) ama makinede **`C:\MaxExec\pylib.py` dosyası yoktu**. `load` sessiz IOError yedi, `maxlib` hiç kurulmadı; her `status`/`login`/`waitfor` komutu pyerr.log'a "ImportError: No module named maxlib" yazdı (100+ kez). **v1.3 pylib.py'yi otomatik yükler** — dosya yoksa baştan uyarır.
 
 ---
 
@@ -10,7 +12,7 @@
 
 | Dosya | Ne işe yarar | Nereden geldi |
 |---|---|---|
-| `bin/MaxExecutor.dll` | **Ana proje.** Oyun içine enjekte edilen 32-bit DLL. Ana thread'de (WndProc) Python çalıştırır. Hook YOK, SHM YOK, arka-plan PyRun YOK. **v1.1: konsol fix (freopen CONIN/CONOUT) + 2 sn otomatik kuyruk drenajı + headless mod.** | Bu repo — derlendi (GCC 14 mingw-w64 i686, `-static`) |
+| `bin/MaxExecutor.dll` | **Ana proje.** Oyun içine enjekte edilen 32-bit DLL. Ana thread'de (WndProc + SetTimer) Python çalıştırır. Hook YOK, SHM YOK, arka-plan PyRun YOK. **v1.2: SetTimer drenajı + sayaçlar + probe. v1.3: pylib.py otomatik yükleme + kendini onaran komut bootstrap'i + `pyerr` komutu.** | Bu repo — derlendi (GCC 14 mingw-w64 i686, `-static`) |
 | `bin/MaxInject.exe` | DLL enjektörü. `metin2client.exe` sürecini bulur, DLL'i LoadLibrary ile yükler. | Bu repo — derlendi |
 | `pylib.py` | DLL içine yüklenen Python komut kütüphanesi (maxlib): login/charlist/empire/create/enter/status | Bu repo |
 | `MaximumPyScript_STABLE.py` | Eski mimarinin (SHM'li v17) RC12/RC13/RC14 yamalı hali. Alternatif yol. | Bu repo |
@@ -40,12 +42,16 @@
    - Başka isimli client: `MaxInject.exe metin2.exe`
    - PID ile: `MaxInject.exe 12345`
    - Farklı DLL yolu: `MaxInject.exe metin2client.exe D:\yer\MaxExecutor.dll`
-4. **Konsol açılır** — "MaxExecutor v1.1" başlıklı siyah pencere (oyunun ÜSTÜNDE kalır, TOPMOST).
+4. **Konsol açılır** — "MaxExecutor v1.3" başlıklı siyah pencere (oyunun ÜSTÜNDE kalır, TOPMOST).
    İlk satırlarda şunları görmelisin:
    ```
-   python27.dll : BULUNDU
+   python27.dll : BULUNDU [initialized]
+   pylib.py      : OTOMATIK yuklenecek (v1.3 — load yazmana gerek yok)
    oyun penceresi: SUBCLASS EDILDI (hwnd=0x...)
+   ana-thread timer: KURULDU
    ```
+   > `pylib.py : YOK!!` satırı görürsen: pylib.py'yi `C:\MaxExec` içine kopyalamamışsın demektir —
+   > bundle zip'ten kopyala. v1.3 olmadan da komutlar kendini onarır ama dosya ŞART.
    > `python27.dll : YOK` ise oyunun Python'u henüz başlamamıştır → konsolda bekle,
    > oyun login ekranına gelince `status` yazarak tekrar dene (DLL her 0.5 sn'de yeniden dener, 20 sn boyunca).
    > Konsol bir sebeple hiç açılmazsa: `C:\MaxExec\maxexec.log` dosyasına bak (her adım oraya yazılır)
@@ -65,7 +71,8 @@ MaxExecutor konsolunda sırayla:
 
 ```
 status                                  (0) SCENE= ne diyor bak (LoginWindow+ServerList ise dogru ekrandasin)
-load C:/MaxExec/pylib.py                (1) maxlib'i ANA THREAD'de yükle
+                                        (1) load ARTIK YOK — v1.3 pylib.py'yi otomatik yükler
+                                           (kanıt: results\last_pylib_load.txt, 2 sn içinde oluşur)
 selserver 0 0                           (2) listedeki 0. sunucu + 0. CH'yi seç, OK'a bas
 serverlist                              (*)  isimleri/listbox içeriğini görmek istersen
 waitfor LoginWindow 15                  (3) login (id/şifre) ekranına düşünceye kadar
@@ -75,6 +82,7 @@ charlist                                (6) 5 slot tablosu
 enter 0                                 (7) 1. slotla oyuna gir (TEK DirectEnter)
 waitfor GameWindow 60                   (8) oyun + NPC spawn
 status                                  (9) son durum
+pyerr                                   (*)  Python hatası olduysa son 30 satırı konsola döker
 ```
 
 Sonuç dosyaları `C:\MaxExec\results\` altında: `py_probe.txt` (zincir kanıtı), `last_status.txt`, `last_server.txt`, `last_login.txt`, `last_charlist.txt`, `last_enter.txt`, `last_error.txt`, `last_pylib_load.txt`.
@@ -145,8 +153,11 @@ eski Controller (win32apiMetin2Py / cppcmpr) zincirini kullanacaksan çalıştı
 
 | Belirti | Sebep | Çözüm |
 |---|---|---|
-| **Komutlar kuyruğa yazılıyor ama hiçbir sonuç dosyası oluşmuyor** (v1.1 saha bulgusu) | v1.1 drenajı yalnız WndProc subclass + PostMessage'a dayanıyordu; subclass etkisizse zincir ölür | **v1.2 kullan** — SetTimer yolu WndProc'tan bağımsız. Test: `results\py_probe.txt` oluşmalı (30 sn bekle) |
-| **C:\MaxExec'te dosya oluşumu şüpheli** (sanallaştırma/izin) | Oyun süreci C:\ yazamıyor olabilir | `C:\MaxExec\basedir.txt` içine tek satır `D:\MaxExec` yaz → tüm queue/results/log oraya taşınır |
+| **`ImportError: No module named maxlib`** (pyerr.log'da tekrar tekrar; status → "sonuc dosyasi yok") | **`C:\MaxExec\pylib.py` makinede yok** — v1.2 saha bulgusu: `load` sessiz IOError yedi, maxlib kurulmadı, her komut import hatası yedi. Zincir kendisi sağlamdı (py_probe.txt oluştu) | bundle zip'teki `pylib.py`'yi `C:\MaxExec` içine kopyala. **v1.3 otomatik yükler + dosya yoksa konsolda "pylib.py : YOK!!" der; komutlar kendini onarır** |
+| **`load` komutu "dosya YOK" diyor** | Yanlış/eksik yol | `load C:/MaxExec/pylib.py` — ya da hiç yazma; v1.3 otomatik yükler |
+| **C:\ yazma izni şüphesi** | — | **KANIT: py_probe.txt + alive.txt oyun süreci tarafından yazıldı ve göründü → C:\ sağlıklı, VirtualStore sorunu YOK.** Yine de istersen: `basedir.txt` içine `D:\MaxExec` yaz → tüm dosyalar oraya taşınır (pylib.py'yi de oraya koy!) |
+| Python hatasını konsolda görmek | — | **`pyerr`** komutu — pyerr.log'un son 30 satırını döker |
+| **Komutlar kuyruğa yazılıyor ama hiçbir sonuç dosyası oluşmuyor** (v1.1 saha bulgusu) | v1.1 drenajı yalnız WndProc subclass + PostMessage'a dayanıyordu; subclass etkisizse zincir ölür | **v1.2+ kullan** — SetTimer yolu WndProc'tan bağımsız. Test: `results\py_probe.txt` oluşmalı (30 sn bekle) |
 | `SCENE=?` dönüyor | mainStream frame-walk ile bulunamadı | `status` tekrar dene (frame yürüyüşü her çağrıda çalışır); oyunun intro ekranı değişmişse `raw` ile `import sys; print(sys.modules.keys())` incele |
 | `selserver` "serverList.SelectItem YOK" | Bu ekranda değil ya da attr adı farklı | Önce `serverlist` yaz — aday attr'ları raporlar |
 | **Konsol açılıyor AMA hiç yazı yazmıyor** (v1.0 hatası) | GUI process'in CRT stdout'u geçersiz handle ile başlar; `AllocConsole` sonrası CRT konsola yeniden bağlanmamıştı | **v1.2'ye güncelle** (freopen CONIN$/CONOUT$ + unbuffered fix). Her adım ayrıca `maxexec.log`'a yazılır |
@@ -158,7 +169,7 @@ eski Controller (win32apiMetin2Py / cppcmpr) zincirini kullanacaksan çalıştı
 | "OpenProcess basarisiz (5)" | Yönetici değil | cmd'yi Yönetici olarak aç |
 | `python27.dll : YOK` | Oyun Python'u başlatmamış | Login ekranına kadar bekle; DLL 20 sn boyunca otomatik tekrar dener |
 | `oyun penceresi: BULUNAMADI` | Pencere henüz yok | DLL 20 sn yeniden dener |
-| `status` → "sonuc dosyasi yok" | pylib yüklü değil | `load C:/MaxExec/pylib.py` çalıştırmayı unutma |
+| `status` → "sonuc dosyasi yok" | pylib yüklü değil ya da hata yedi | `pyerr` komutuna bak; pylib.py dosyası yerinde mi? (v1.3 otomatik yükler) |
 | `login` sonrası hiçbir şey olmuyor | Hatalı ID/şifre veya serverlist ekranı atlanmış | Önce `selserver` yap; sonra `last_login.txt` + `pyerr.log` + oyun popup'ı (OnLoginFailure: NOID/WRONGPWD/ALREADY...) |
 | NPC'ler gelmiyor | Eski script alışkanlığı: çift giriş | `enter` TEK SEFER; `waitfor GameWindow 60` ile bekle |
 | Oyunda lag/kasma | Çok sık komut | Drain 4 komut/mesaj sınırlı; `raw` spamı yapma |
@@ -186,8 +197,9 @@ Visual Studio kullanacaksan: x86 platform, DLL projesi, `/MT` (statik CRT), ek i
 ## 8. TEST KONTROL LİSTESİ (kullanıcı tarafında)
 
 - [ ] `MaxInject.exe` → konsol açıldı, `python27.dll : BULUNDU`
-- [ ] `status` → `SCENE=LoginWindow` + `GIL=MAIN` benzeri çıktı
-- [ ] `load C:/MaxExec/pylib.py` → hata yok
+- [ ] `pylib.py : OTOMATIK yuklenecek` satırı göründü (YOK!! ise dosyayı kopyala)
+- [ ] 30 sn sonra `results\last_pylib_load.txt` VAR (oto-yükleme kanıtı)
+- [ ] `status` → `SCENE=LoginWindow+ServerList` benzeri çıktı
 - [ ] `login id pwd` → `waitfor SelectCharacterWindow 30` ile ekran geçişi
 - [ ] `charlist` → `results/last_charlist.txt` dolu (5 slot, race/level/isim)
 - [ ] (yeni karakter) `empire` + `create` + hata takibi

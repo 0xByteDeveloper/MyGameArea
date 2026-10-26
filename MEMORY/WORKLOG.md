@@ -217,3 +217,41 @@
 - KULLANIM.md: akis yeniden yazildi (selserver baslangicli, 10 adim) + ZINCIR KOPTU MU
   tablosu (probe/alive.txt alanlari) + 5 yeni sorun giderme satiri
 - bundle yenilendi (341KB); commit 4f38865 push OK
+
+## Oturum 8 — v1.3: "bi bok yazilmadi" kok nedeni bulundu + oto-yukleme
+
+### Saha testi 3 analizi (v1.2, kullanici konsol ciktisi + 3 log dosyasi)
+- ZINCIR KANITLANDI: results/py_probe.txt OLUSTU ("PYOK t=03:00:46 ver=2.7.6"),
+  alive.txt akti (tick/drain/exec/timer/msg hepsi artiyordu) — SetTimer drenaji,
+  ana-thread PyRun ve C:\ yazma yolu CALISIYOR. C:\ korumali degil, VirtualStore yok
+  (kanit: oyun surecinin yazdigi dosyalar kullaniciya gorundu).
+- KOK NEDEN (pyerr.log): "IOError: [Errno 2] No such file or directory:
+  'C:/MaxExec/pylib.py'" — makinede pylib.py YOKTU (v1.2'nin bundle'inda var ama
+  kullanici sadece yeni DLL'i kopyalamis). load sessizce IOError yedi ->
+  maxlib hic kurulmadi -> her status/login/waitfor pollu "ImportError: No module
+  named maxlib" yedi (~100 traceback = v1.1'in 134 komutuyla tam örtüşüyor:
+  waitfor 700ms poll x 30sn/60sn). Sonuc dosyasi hic olusmadi, waitfor'lar TIMEOUT.
+- Ucuncu goz: queue klasoru bos = komutlar tuketildi (normal); hata calistirma
+  degil YUKLEME katmanindaydi.
+
+### v1.3 (FIX-14..18)
+- FIX-14 AUTO-LOAD: pylib.py BASE_DIR'de varsa startup'ta kuyruga otomatik konur;
+  yoksa konsolda "pylib.py : YOK!!" + last_load.txt'ye cozum yazilir.
+  `load` komutu artik ZORUNLU DEGIL.
+- FIX-15 KENDINI ONARAN SNIPPET: her komut try:import maxlib / except:exec(pylib.py)
+  bootstrap'i ile gider — maxlib dusse bile ilk komut geri getirir.
+- FIX-16 load dosya varlik kontrolu C++ tarafinda (GetFileAttributes) — sessiz
+  IOError devri kapandi; hata konsolda+log'da+results'ta net soylenir.
+- FIX-17 pyerr komutu: pyerr.log son 30 satiri konsola doker.
+- FIX-18 probe sys.stderr'i pyerr.log'a baglar (ilk andan itibaren traceback'ler
+  dosyada).
+- Referans dogrulama: MaximumPyScript_Merged_calisan.py'nin do_select_server
+  bloğu (serverList.SelectItem -> channelList.SelectItem -> serverSelectButton.
+  CallEvent) pylib v2.0 selserver ile birebir ortusuyor — calisan yol zaten dogru,
+  dosya eksikti. pylib degismedi; py2 gramer yeniden dogrulandi.
+
+### Dagitim
+- DLL 596KB / EXE 235KB (pei-i386 dogrulandi), bundle 348KB (pylib.py icinde!)
+- KULLANIM.md: Oturum 8 ozeti + v1.3 kurulum satirlari + akista load kalkti +
+  4 yeni sorun-giderme satiri (ImportError maxlib satiri en ustte)
+- Test checklist guncellendi: last_pylib_load.txt oto-yukleme kaniti

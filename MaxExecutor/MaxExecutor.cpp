@@ -25,6 +25,22 @@
 //    FIX-12: basedir.txt destegi (C:\MaxExec\basedir.txt icine "D:\MaxExec"
 //            yazarsan tum dosyalar oraya tasinir; C:\ sorunu yasayanlar icin).
 //    FIX-13: 30 sn'de bir maxexec.log'a sayaç ozeti yazilir.
+//  v1.3 DUZELTMELER (saha testi 26.10 — "bi bok yazilmadi" kökü bulundu):
+//    KOK NEDEN: makinede C:\MaxExec\pylib.py YOKTU. load komutu sessiz
+//    IOError yedi (pyerr.log'a dustu), maxlib hic kurulmadi; sonraki her
+//    status/login/waitfor "ImportError: No module named maxlib" yedi.
+//    Zincir kendisi SAGLAMDI: py_probe.txt olustu (kanit), alive.txt kostu.
+//    FIX-14: AUTO-LOAD — pylib.py BASE_DIR icindeyse startup'ta otomatik
+//            kuyruga konur; `load` yazmak ARTIK ZORUNLU DEGIL. Dosya yoksa
+//            konsol + log + results\last_load.txt uzerinden NET uyarı.
+//    FIX-15: KENDINI ONARAN SNIPPET — butun komutlar
+//            try:import maxlib / except:exec(pylib.py) bootstrap ile gider;
+//            maxlib bir kere dusse bile ilk komut geri getirir.
+//    FIX-16: load <dosya> C++ tarafinda varlik kontrolu yapar; yanlis yazi
+//            sahibine acikca soylenir (sessiz IOError devri kapandi).
+//    FIX-17: pyerr komutu — pyerr.log son satirlarini konsola doker.
+//    FIX-18: PROBE sys.stderr'i pyerr.log'a baglar; ilk andan itibaren
+//            butun traceback'ler dosyaya duser.
 // ============================================================================
 //  xgodmod4 gereksinimleri:
 //    * Python fonksiyon hook'u  YOK  (monkey-patch yok)
@@ -311,8 +327,44 @@ static void QRaw(const std::string& code)
     if (g_hGameWnd) PostMessage(g_hGameWnd, WM_APP_MAXEXEC, 0, 0);
 }
 
+// ---------------------------------------------------------------------------
+// FIX-15: kendini onaran import bootstrap — maxlib sys.modules'te yoksa
+// pylib.py'yi exec edip tekrar dener. load atlandiysa ya da modul dustuysa
+// ilk komut kendini iyilestirir. (Pyerr.log'a dusen "No module named maxlib"
+// saldirisinin panzehiri.)
+// ---------------------------------------------------------------------------
+static std::string BootImport(void)
+{
+    char buf[512];
+    _snprintf(buf, sizeof(buf),
+        "try:\n"
+        "    import maxlib\n"
+        "except Exception:\n"
+        "    exec(open(r'%s\\pylib.py').read())\n"
+        "    import maxlib\n", BASE_DIR);
+    buf[sizeof(buf)-1] = 0;
+    return std::string(buf);
+}
+
 static void CmdLoad(const std::string& path)
 {
+    // FIX-16: once C++ tarafinda varlik kontrolu — sessiz IOError'a son
+    DWORD attr = GetFileAttributesA(path.c_str());
+    if (attr == INVALID_FILE_ATTRIBUTES || (attr & FILE_ATTRIBUTE_DIRECTORY))
+    {
+        char rp[MAX_PATH];
+        _snprintf(rp, MAX_PATH, "%s\\last_load.txt", RESULT_DIR); rp[MAX_PATH-1]=0;
+        std::string msg = "HATA: pylib dosyasi YOK: " + path + "\n"
+                          "Cozum: bundle zip icindeki pylib.py'yi su klasore kopyala:\n  " +
+                          std::string(BASE_DIR) +
+                          "\n(v1.3: dosya oradaysa otomatik yuklenir)\n";
+        WriteFileAll(rp, msg);
+        printf("[MAXEXEC] HATA: dosya YOK: %s\n", path.c_str());
+        printf("    pylib.py'yi su klasore kopyala: %s\n", BASE_DIR);
+        printf("    (bundle zip icinde var; v1.3 otomatik yukler)\n");
+        LogLine("load HATA: dosya yok: %s", path.c_str());
+        return;
+    }
     char buf[1024];
     // Dosyayi ANA THREAD'de exec et — tum kurulum GIL-guvenli olur (RC4 caresi)
     // Ek: sys.stderr -> pyerr.log (Python hatalari artik dosyada gorunur, FIX-7)
@@ -333,8 +385,8 @@ static void CmdLogin(const std::string& id, const std::string& pwd)
 {
     char buf[512];
     _snprintf(buf, sizeof(buf),
-        "import maxlib\n"
-        "maxlib.login(r'%s', r'%s')\n", id.c_str(), pwd.c_str());
+        "%s"
+        "maxlib.login(r'%s', r'%s')\n", BootImport().c_str(), id.c_str(), pwd.c_str());
     buf[sizeof(buf)-1] = 0;
     QRaw(buf);
 }
@@ -342,20 +394,20 @@ static void CmdLogin(const std::string& id, const std::string& pwd)
 static void CmdSelServer(int srv, int ch)
 {
     char buf[256];
-    _snprintf(buf, sizeof(buf), "import maxlib\nmaxlib.selserver(%d, %d)\n", srv, ch);
+    _snprintf(buf, sizeof(buf), "%smaxlib.selserver(%d, %d)\n", BootImport().c_str(), srv, ch);
     buf[sizeof(buf)-1] = 0;
     QRaw(buf);
 }
 
 static void CmdCharlist(void)
 {
-    QRaw("import maxlib\nmaxlib.charlist()\n");
+    QRaw(BootImport() + "maxlib.charlist()\n");
 }
 
 static void CmdEmpire(int e)
 {
     char buf[256];
-    _snprintf(buf, sizeof(buf), "import maxlib\nmaxlib.empire(%d)\n", e);
+    _snprintf(buf, sizeof(buf), "%smaxlib.empire(%d)\n", BootImport().c_str(), e);
     buf[sizeof(buf)-1] = 0;
     QRaw(buf);
 }
@@ -364,8 +416,8 @@ static void CmdCreate(int slot, const std::string& name, int race, int shape)
 {
     char buf[512];
     _snprintf(buf, sizeof(buf),
-        "import maxlib\n"
-        "maxlib.create(%d, r'%s', %d, %d)\n", slot, name.c_str(), race, shape);
+        "%s"
+        "maxlib.create(%d, r'%s', %d, %d)\n", BootImport().c_str(), slot, name.c_str(), race, shape);
     buf[sizeof(buf)-1] = 0;
     QRaw(buf);
 }
@@ -373,7 +425,7 @@ static void CmdCreate(int slot, const std::string& name, int race, int shape)
 static void CmdEnter(int slot)
 {
     char buf[256];
-    _snprintf(buf, sizeof(buf), "import maxlib\nmaxlib.enter(%d)\n", slot);
+    _snprintf(buf, sizeof(buf), "%smaxlib.enter(%d)\n", BootImport().c_str(), slot);
     buf[sizeof(buf)-1] = 0;
     QRaw(buf);
 }
@@ -381,7 +433,7 @@ static void CmdEnter(int slot)
 static void CmdStatus(void)
 {
     char buf[256];
-    _snprintf(buf, sizeof(buf), "import maxlib\nmaxlib.status()\n");
+    _snprintf(buf, sizeof(buf), "%smaxlib.status()\n", BootImport().c_str());
     buf[sizeof(buf)-1] = 0;
     QRaw(buf);
     Sleep(400);  // ana thread'in islemesine sure ver
@@ -389,7 +441,7 @@ static void CmdStatus(void)
     if (ReadFileAll(std::string(RESULT_DIR) + "\\last_status.txt", s))
         printf("[STATUS] %s", s.c_str());
     else
-        printf("[STATUS] sonuc dosyasi yok (pylib yuklu mu? ana thread nabzi var mi?)\n");
+        printf("[STATUS] sonuc dosyasi yok — `pyerr` komutuna bak (import hatasi mi var?)\n");
 }
 
 // C++ TARAFINDA bekler; Python'u kisa patlamalarda calistirir (ana thread dostu)
@@ -401,7 +453,7 @@ static void CmdWaitFor(const std::string& sceneName, int seconds)
     while ((GetTickCount() - start) < (DWORD)seconds * 1000)
     {
         char buf[256];
-        _snprintf(buf, sizeof(buf), "import maxlib\nmaxlib.status()\n");
+        _snprintf(buf, sizeof(buf), "%smaxlib.status()\n", BootImport().c_str());
         buf[sizeof(buf)-1] = 0;
         std::string f;
         EnqueueCommand(buf, f);
@@ -419,7 +471,7 @@ static void CmdWaitFor(const std::string& sceneName, int seconds)
             }
         }
     }
-    printf("[MAXEXEC] TIMEOUT: %s\n", sceneName.c_str());
+    printf("[MAXEXEC] TIMEOUT: %s (ipucu: status + pyerr komutlarina bak)\n", sceneName.c_str());
 }
 
 // ---------------------------------------------------------------------------
@@ -443,7 +495,7 @@ static bool InitConsole(void)
         LogLine("CONOUT$ (stderr) yeniden acilamadi");
     setvbuf(stdout, NULL, _IONBF, 0);   // buffer'siz: crash olsa bile yazar
     setvbuf(stderr, NULL, _IONBF, 0);
-    SetConsoleTitleA("MaxExecutor v1.2");
+    SetConsoleTitleA("MaxExecutor v1.3");
     HWND cw = GetConsoleWindow();
     if (cw)
     {
@@ -496,10 +548,10 @@ static std::vector<std::string> SplitArgs(const std::string& line)
 
 static void PrintHelp(void)
 {
-    printf("\n=== MaxExecutor v1.2 (timer+wndproc ana-thread drenaj) ===\n");
+    printf("\n=== MaxExecutor v1.3 (oto-yukle + kendini onaran komutlar) ===\n");
     printf("  help                        : bu yardim\n");
     printf("  status                      : anlik sahne/baglanti snapshot\n");
-    printf("  load <py-dosya>             : pylib.py'yi ANA THREAD'de yukle (ILK KOMUT BU OLSUN)\n");
+    printf("  load <py-dosya>             : pylib yukle (v1.3 zaten otomatik yukler)\n");
     printf("  selserver <srv> <ch>        : SERVER LISTESI ekraninda sunucu+CH sec (OK'a basar)\n");
     printf("  login <id> <pwd>            : login ekraninda UI doldurur + giris\n");
     printf("  charlist                    : 5 slot tablosunu doken rapor\n");
@@ -509,8 +561,9 @@ static void PrintHelp(void)
     printf("  raw <python kodu>           : serbest Python (ana thread'de)\n");
     printf("  waitfor <Scene> <sn>        : orn. waitfor GameWindow 60\n");
     printf("  log                         : maxexec.log son satirlar\n");
+    printf("  pyerr                       : pyerr.log son satirlar (Python hatalari)\n");
     printf("  exit                        : cikis\n");
-    printf("Akis: status -> load C:/MaxExec/pylib.py -> selserver 0 0 ->\n");
+    printf("Akis (load artik OTOMATIK): status -> selserver 0 0 ->\n");
     printf("  waitfor LoginWindow 15 -> login <id> <pwd> -> waitfor SelectCharacterWindow 30\n");
     printf("  -> charlist -> enter 0 -> waitfor GameWindow 60\n");
     printf("Saglik: %s (tick/drain/exec/timer/msg/py) | zincir kaniti: results\\py_probe.txt\n\n", ALIVE_FILE);
@@ -524,7 +577,7 @@ static DWORD WINAPI WorkerThread(LPVOID)
     const bool con = InitConsole();
 
     printf("\n=============================================\n");
-    printf("  MaxExecutor v1.2 - ana-thread executor\n");
+    printf("  MaxExecutor v1.3 - ana-thread executor (oto pylib yukle)\n");
     printf("  hook yok | SHM yok | arka-plan PyRun yok\n");
     printf("=============================================\n");
     if (!con)
@@ -539,15 +592,50 @@ static DWORD WINAPI WorkerThread(LPVOID)
     if (pfn_PyRun_SimpleString)
     {
         // FIX-10: PROBE - ilk drenajda ana thread'in gercekten calistigini kanitlar
-        char probe[512];
+        // FIX-18: probe ayrica sys.stderr'i pyerr.log'a baglar — butun
+        //         traceback'ler ilk andan itibaren dosyaya duser.
+        char probe[768];
         _snprintf(probe, sizeof(probe),
             "import sys, time\n"
+            "try:\n"
+            "    sys.stderr = open(r'%s', 'a', 1)\n"
+            "except:\n"
+            "    pass\n"
             "_pf = open(r'%s\\py_probe.txt', 'w')\n"
             "_pf.write('PYOK t=' + time.strftime('%%H:%%M:%%S') + ' ver=' + str(sys.version)[:12] + '\\n')\n"
-            "_pf.close()\n", RESULT_DIR);
+            "_pf.close()\n", PYERR_LOG, RESULT_DIR);
         probe[sizeof(probe)-1] = 0;
         std::string pf;
         if (EnqueueCommand(probe, pf)) LogLine("probe kuyruga yazildi: %s", pf.c_str());
+
+        // FIX-14: AUTO-LOAD — pylib.py BASE_DIR icindeyse startup'ta otomatik
+        // yuklenir. (Saha testi dersi: dosya makinede yoktu; kullanici load
+        // yazdi, sessiz IOError -> 100 x "ImportError: No module named maxlib".)
+        char pylibPath[MAX_PATH];
+        _snprintf(pylibPath, MAX_PATH, "%s\\pylib.py", BASE_DIR); pylibPath[MAX_PATH-1]=0;
+        DWORD pa = GetFileAttributesA(pylibPath);
+        if (pa != INVALID_FILE_ATTRIBUTES && !(pa & FILE_ATTRIBUTE_DIRECTORY))
+        {
+            std::string ld;
+            if (EnqueueCommand(BootImport(), ld))
+            {
+                LogLine("AUTO-LOAD: pylib.py kuyruga kondu (%s)", pylibPath);
+                printf("pylib.py      : OTOMATIK yuklenecek (v1.3 — load yazmana gerek yok)\n");
+                printf("                kanit dosyasi: %s\\last_pylib_load.txt\n", RESULT_DIR);
+            }
+        }
+        else
+        {
+            char rp[MAX_PATH];
+            _snprintf(rp, MAX_PATH, "%s\\last_load.txt", RESULT_DIR); rp[MAX_PATH-1]=0;
+            WriteFileAll(rp, "HATA: " + std::string(pylibPath) + " YOK!\n"
+                             "bundle zip icindeki pylib.py'yi " + std::string(BASE_DIR) +
+                             " klasorune kopyala.\n");
+            LogLine("UYARI: pylib.py YOK — komutlar calismaz! (%s)", pylibPath);
+            printf("pylib.py      : YOK!! (%s)\n", pylibPath);
+            printf("                bundle zip'ten pylib.py'yi %s icine kopyala.\n", BASE_DIR);
+            printf("                Kopyalamadan komut yazarsan: ImportError maxlib.\n");
+        }
     }
     for (int i = 0; i < 40 && !HookGameWindow(); ++i) Sleep(500);
     if (!g_hGameWnd) LogLine("oyun penceresi 20 sn icinde bulunamadi");
@@ -583,6 +671,17 @@ static DWORD WINAPI WorkerThread(LPVOID)
         else if (cmd == "load" && a.size() >= 2) CmdLoad(a[1]);
         else if (cmd == "raw" && ln.size() > 4) QRaw(ln.substr(4));
         else if (cmd == "waitfor" && a.size() >= 3) CmdWaitFor(a[1], atoi(a[2].c_str()));
+        else if (cmd == "pyerr")   // FIX-17: Python hatalarini konsolda gor
+        {
+            FILE* f = fopen(PYERR_LOG, "r");
+            if (!f) { printf("pyerr.log yok (henuz Python hatasi olusmadi)\n"); continue; }
+            char buf[512]; std::vector<std::string> lines;
+            while (fgets(buf, sizeof(buf), f)) lines.push_back(buf);
+            fclose(f);
+            printf("--- pyerr.log son %d satir ---\n", (int)(lines.size() > 30 ? 30 : lines.size()));
+            for (size_t i = lines.size() > 30 ? lines.size()-30 : 0; i < lines.size(); ++i)
+                printf("%s", lines[i].c_str());
+        }
         else if (cmd == "log")
         {
             FILE* f = fopen(EXEC_LOG, "r");
@@ -614,7 +713,7 @@ BOOL APIENTRY DllMain(HMODULE hMod, DWORD reason, LPVOID)
         DisableThreadLibraryCalls(hMod);
         EnsureDirs();
         CreateThread(NULL, 0, WorkerThread, NULL, 0, NULL);
-        LogLine("MaxExecutor v1.2 yuklendi (pid=%lu) — worker baslatiliyor",
+        LogLine("MaxExecutor v1.3 yuklendi (pid=%lu) — worker baslatiliyor",
                 GetCurrentProcessId());
     }
     return TRUE;
