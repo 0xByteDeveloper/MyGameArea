@@ -328,3 +328,66 @@ sonuc dosyasi olusmuyor; lasterr "henuz oyun hatasi yaklanmadi" diyor.
   isaret modulde de gorunur — DLL guard'i calisir)
 
 **Teslimat:** DLL 657KB pei-i386 + bundle 399KB; KULLANIM.md oturum-10 guncel.
+
+---
+
+## Oturum 11 — Saha Testi 6: "her komutta PYTHON HATASI" (v1.6, 2026-10-26)
+
+**Kullanici raporu (MaxExec_x.rar):** v1.5 banner aciliyor, infra yesil
+(python27 BULUNDU, pylib v3.0 uyumlu, SUBCLASS OK, timer OK) — ama
+selserver/login/status/selchar/mkchar/delchar/delcode HEP
+"!! PYTHON HATASI" veriyor. Calisanlar: newchar, joblist, lasterr (+ OnLoginFailure
+hook CALISTI: "[04:39:07] LOGIN_FAILURE: NOID (Boyle bir hesap yok)" yakalandi).
+
+**Kok neden (RAR analizi — uc bagimsiz kanit birlesiyor):**
+1. maxexec.log EXEC satirlarinda .cmd boyutlari: 255 byte (selserver/status/
+   selchar/delchar) ve 511 byte (login/mkchar/delcode) = PYFAIL; 674 byte
+   (newchar/joblist/lasterr) = CALISTI. Boyutlar KOMUT ICERIGINE bagLI DEGIL,
+   ureticiye bagli — truncate kaniti.
+2. pyerr.log kuyrugunda SyntaxError: "EOL while scanning string literal":
+   satir 10 `if _mxv < 3 and not getattr(maxlib, '_MX_` (255 kesimi),
+   satir 14 `...joblist/delcode/la` (511 kesimi) — bootstrap satir ortasinda
+   KOPUYOR.
+3. Kaynak kod: v1.5 BootImport (FIX-21 guard eklenince) ~660 karakter; ama 12
+   eski komut ureticisi hala `char buf[256]/[512]` + `_snprintf ile
+   BootImport().c_str()` yaziyordu → _snprintf sessizce kesti. std::string
+   birlesimi kullanan 3 yeni komut (newchar/joblist/lasterr) bu yuzden calisti.
+
+Lab dogrulamasi (scripts/verify_fix23.py): bootstrap'i 255/511'de kesince
+SAHA HATASI BIREBIR yeniden uretildi (ayni satir, ayni kesme noktasi);
+v1.6 uretimi 675-694 byte, lib2to3 (py2.7 gramatigi) ile hepsi GECERLI.
+
+Ek bulgular ayni RAR'dan:
+- [STATUS] satiri iki kez t=04:00:27 gosterdi → status komutu hic calismadi,
+  C++ CmdStatus 400ms sonra BAYAT last_status.txt'yi basilardi (FIX-27)
+- "delchar" argumansiz → "bilinmeyen komut (help)" — arguman kontrolu yuzeysel (FIX-24)
+- maxexec.log "v1.4 yuklendi" + konsol basligi "v1.4" — bayat dizgi (FIX-25)
+- konsol mojibake "OCo" — UTF-8 uzun cizgi, CP857 konsol (FIX-26)
+- oyunda Python print'leri konsola HIC dusmuyordu (sahit: pylib yuklenme
+  banner'lari hic gorunmedi) → probe sys.stdout'u CONOUT$'a bagladi (FIX-28),
+  pylib v3.1 _write echo ile charlist/joblist/mkchar raporlari artik CANLI
+
+**v1.6 duzeltmeleri:**
+- FIX-23: 12 komut ureticisi (login/selserver/selchar/mkchar/empireui/delchar/
+  delcode/empire/create/enter/status/waitfor) std::string birlesimine cevrildi;
+  sadece kisa cagri satiri snprintf ile uretiliyor. Truncate yapisal olarak
+  bitti. BootImport'a "buf[256/512]'ye snprintf YASAK" notu dustu.
+- FIX-24: eksik arguman → "kullanim: ..." mesajlari (dispatcher yeniden
+  yapilandi; yaniltici "bilinmeyen komut" kalkti)
+- FIX-25: bayat surum dizgileri (DllMain logu, konsol basligi, banner, help)
+  v1.6 yapildi
+- FIX-26: konsol printf dizgileri ASCII (mojibake onlendi)
+- FIX-27: CmdStatus'un bayat dosya echo'su kaldirildi (cikisi pylib canli yazar)
+- FIX-28: probe sys.stdout = open('CONOUT$','w',0) + py_probe.txt'ye
+  'stdout: CONOUT$' kanit satiri
+- pylib v3.1: _write(name, text, echo=True) — raporlar [ETIKET] ile konsola
+  yansir; _log_game_error canli [OYUN HATASI] satiri basar; status(echo)
+  parametresi (waitfor → status(0), spam yok); lasterr echo'suz (DLL
+  pretty-print ediyor); em-dash temizligi (53 adet); PYLIB_VERSION='3.1'
+- SyncEmbeddedPylib minor-farkinda: disk 3.0 < gomulu 3.1 → artik senkron
+  tetiklenir (eskiden 3>=3 geciyordu)
+
+**Teslimat:** DLL 661KB + EXE 235KB (GCC 14 mingw-w64 i686 -static, pei-i386,
+uyarisiz; bayat v1.4/v1.5 string izi 0); bundle MaxExecutor_bundle_v1.6.zip
+(391KB, pylib v3.1 dogrulamali); KULLANIM.md oturum-11 guncel (v1.6 OZET +
+2 yeni sorun giderme satiri).

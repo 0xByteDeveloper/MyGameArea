@@ -1,26 +1,36 @@
 # -*- coding: utf-8 -*-
 """
 ===========================================================================
- pylib.py — MaxExecutor Ana-Thread Komut Kutuphanesi (v3.0)
+ pylib.py - MaxExecutor Ana-Thread Komut Kutuphanesi (v3.1)
 ===========================================================================
- v3.0 DEGISIKLIKLER (giris basarili sonrasi istekler — oturum 9):
+ v3.1 DEGISIKLIKLER (oturum 11 - saha testi 6 "PYTHON HATASI" sonrasi):
+   * _write() artik raporlarini KONSOLA da basar ([CHARLIST]/[JOBLIST]/...
+     etiketiyle). DLL v1.6 probe'u sys.stdout'u CONOUT$'a baglar; boylece
+     charlist/joblist/newchar/mkchar/selchar/delchar cikislari KONSOLDA
+     CANLI gorunur - results klasorune bakmak zorunda degilsin.
+   * _log_game_error(): oyun hatasi (yanlis sifre vb.) aninda konsola da
+     duser - [OYUN HATASI] satiri, lasterr yazmadan gorunur.
+   * status(echo) parametresi: waitfor polling'i artik konsolu spam etmez.
+   * lasterr DLL tarafindan pretty-print edildigi icin echo'suz yazar.
+   * Konsola giden metinler ASCII'ye cekildi (CP857'de mojibake olmasin).
+ v3.0 DEGISIKLIKLER (giris basarili sonrasi istekler - oturum 9):
    * OTO HATA IZLEME: LoginWindow.OnLoginFailure + SelectCharacterWindow
      OnCreateFailure/OnDeleteFailure/OnDeleteSuccess hook'lari (Python-seviye,
-     kanitlanmis guvenli — LoginEventTracker/recorder v13-14 deseni).
+     kanitlanmis guvenli - LoginEventTracker/recorder v13-14 deseni).
      Yanlis sifre/arti kodlar results\last_error.txt'ye duser.
    * YENI KOMUTLAR:
        selchar <slot>     : karakter slotu sec (orn. 4. slot)
        newchar            : "karakter olustur" butonuna bas
        joblist            : sinif/cinsiyet tablosu + olusturma ekran durumu
-       mkchar <ad> <race> : UI akisi — sinif gez + cinsiyet + isim + OLUSTUR
+       mkchar <ad> <race> : UI akisi - sinif gez + cinsiyet + isim + OLUSTUR
        empirelist         : bayrak listesi + mevcut empire
-       empireui <1-3>     : bayrak sec + ILERLE (UI yolu — kanitlanmis)
+       empireui <1-3>     : bayrak sec + ILERLE (UI yolu - kanitlanmis)
        delchar <slot>     : karakter sil butonuna bas + kod dialogu ac
        delcode <kod>      : silme kodunu yaz + ONAYLA
    * login() raporuna "lasterr" ipucu eklendi.
  v2.0 DEGISIKLIKLER (saha testi 25.10 sonrasi):
    * mainStream artik FRAME YURUYUSU ile bulunur (sys._current_frames).
-     __main__.mainStream bu client'ta YOK — calisan script
+     __main__.mainStream bu client'ta YOK - calisan script
      (MaximumPyScript_Merged_calisan) bunu kanitladi; ayni teknik.
    * SAHNE: LoginWindow + serverBoard -> 'LoginWindow+ServerList'
      (server isimleri listbox + CH listesi + OK butonu ekran!)
@@ -31,7 +41,7 @@
    * enter: UI senkron (SelectSlot) + TEK DirectEnter (RC12 yasagi)
  GIL NOTU: butun fonksiyonlar ana thread'de (drain icinde) calisir;
    sadece dict/attr okumalari + dosya yazimi var; gc.get_objects YOK.
-   HOOK NOTU: Python-seviye fonksiyon atamasi (class attr) — C++ tarafinda
+   HOOK NOTU: Python-seviye fonksiyon atamasi (class attr) - C++ tarafinda
    hook YOK; bu desen LoginEventTracker_GILSafe + recorder v13/v14'te
    saha-kanitli (0 ms GIL, sadece atama).
 ===========================================================================
@@ -43,10 +53,10 @@ import os
 
 RESULT_DIR = r'C:\MaxExec\results'
 
-# SURUM ISARETI — DLL v1.5 bunu okur (FIX-19). pylib.py degistirmeden bu
+# SURUM ISARETI - DLL v1.6 bunu okur (FIX-19). pylib.py degistirmeden bu
 # satiri silme/degistirme! Eski pylib (v2.x) bu isarete sahip degil ve
 # DLL acilista KOSKOCA uyar basar.
-PYLIB_VERSION = '3.0'
+PYLIB_VERSION = '3.1'
 
 RACE_TABLE = {
     0: ('Warrior', 'E'), 1: ('Ninja', 'K'), 2: ('Sura', 'E'), 3: ('Shaman', 'K'),
@@ -56,12 +66,12 @@ RACE_TABLE = {
 JOB_NAMES = {0: 'Warrior', 1: 'Ninja', 2: 'Sura', 3: 'Shaman', 4: 'Wolfman'}
 SLOT_COUNT = 5
 
-# olusturma ekranı donusumleri (MaximumPyScript_Merged_calisan'dan — kanitli)
+# olusturma ekrani donusumleri (MaximumPyScript_Merged_calisan'dan - kanitli)
 EMPIRE_NAMES    = {0: 'None', 1: 'Shinsoo', 2: 'Chunjo', 3: 'Jinno'}
 RACE_TO_SLOT    = {0: 0, 4: 0, 1: 1, 5: 1, 2: 2, 6: 2, 3: 3, 7: 3, 8: 0}
 RACE_TO_GENDER  = {0: 0, 1: 1, 2: 0, 3: 1, 4: 1, 5: 0, 6: 1, 7: 0, 8: 0}
 
-# oyun hata kodlari (LoginEventTracker_GILSafe'dan — client'in kendi kodlari)
+# oyun hata kodlari (LoginEventTracker_GILSafe'dan - client'in kendi kodlari)
 LOGIN_FAILURE_CODES = {
     'ALREADY':  'Hesap zaten giris yapmis',   'NOID':     'Boyle bir hesap yok',
     'WRONGPWD': 'Yanlis sifre',               'FULL':     'Server dolu',
@@ -85,20 +95,30 @@ def _res_name(name):
             pass
     return os.path.join(RESULT_DIR, 'last_%s.txt' % name)
 
-def _write(name, text):
+def _write(name, text, echo=True):
+    """Sonucu results\last_<ad>.txt'ye yazar; echo=True ise KONSOLA da basar.
+    (DLL v1.6 probe'u sys.stdout'u CONOUT$'a baglayinca canli gorunur -
+    FIX-28. Yazma/yazdirma hatalari yutulur, komut zinciri bozulmaz.)"""
     try:
         f = open(_res_name(name), 'w')
         f.write(text)
         f.close()
-        return True
     except:
-        return False
+        pass
+    if echo:
+        try:
+            _ls = text.rstrip('\n').split('\n')
+            sys.stdout.write('[%s] %s\n' % (name.upper(), _ls[0]))
+            for _l in _ls[1:]:
+                sys.stdout.write('%s\n' % _l)
+        except:
+            pass
 
 def _fmt_error(e):
     return '%s: %s' % (type(e).__name__, str(e))
 
 # ---------------------------------------------------------------------------
-# OTO HATA IZLEME — oyun hatalarini results\last_error.txt'ye dusurur
+# OTO HATA IZLEME - oyun hatalarini results\last_error.txt'ye dusurur
 # (LoginEventTracker_GILSafe + recorder v13/v14'te saha-kanitli desen)
 # ---------------------------------------------------------------------------
 _HOOKS_OK = []
@@ -110,12 +130,17 @@ def _log_game_error(kind, detail):
         f.close()
     except:
         pass
+    # v3.1: canli bildirim - hata olur olmaz konsola duser (lasterr'siz)
+    try:
+        sys.stdout.write('[OYUN HATASI] %s: %s\n' % (kind, detail))
+    except:
+        pass
 
 def _install_error_hooks():
-    """Python-seviye class hook'lari (idempotent — _mx_hooked bayragi).
+    """Python-seviye class hook'lari (idempotent - _mx_hooked bayragi).
     Kurulamayan modul varsa sessiz gecer; status() her cagrida tekrar dener."""
     try:
-        # 1) LoginWindow.OnLoginFailure(error) — yanlis sifre vb.
+        # 1) LoginWindow.OnLoginFailure(error) - yanlis sifre vb.
         intro = sys.modules.get('introLogin', None) or sys.modules.get('intrologin', None)
         if intro is not None:
             LW = getattr(intro, 'LoginWindow', None)
@@ -176,10 +201,11 @@ def lasterr_text():
         return 'henuz oyun hatasi yaklanmadi\n'
 
 def lasterr():
-    _write('lasterr', lasterr_text())
+    # v3.1: echo'suz - DLL komutu last_error.txt'yi zaten pretty-print eder
+    _write('lasterr', lasterr_text(), echo=False)
 
 # ---------------------------------------------------------------------------
-# mainStream — FRAME YURUYUSU (calisan script teknigi, hooksuz)
+# mainStream - FRAME YURUYUSU (calisan script teknigi, hooksuz)
 # ---------------------------------------------------------------------------
 _MS_CACHE = None
 
@@ -216,7 +242,7 @@ def _get_ms():
     return _find_ms_from_frames()
 
 # ---------------------------------------------------------------------------
-# sahne cozumleme (hooksuz — tip adi + attr okumasi)
+# sahne cozumleme (hooksuz - tip adi + attr okumasi)
 # ---------------------------------------------------------------------------
 def _phase_window():
     ms = _get_ms()
@@ -274,7 +300,7 @@ def _pw_by_type(*tnames):
     return None
 
 # ---------------------------------------------------------------------------
-# 1) SERVERLIST — sunucu listesi oku (kullanici: "ilk listbox server isimleri")
+# 1) SERVERLIST - sunucu listesi oku (kullanici: "ilk listbox server isimleri")
 # ---------------------------------------------------------------------------
 def serverlist():
     try:
@@ -311,7 +337,7 @@ def serverlist():
         _write('server', 'HATA ' + _fmt_error(e) + '\n')
 
 # ---------------------------------------------------------------------------
-# 2) SELSERVER — server+CH sec, OK butonuna bas (calisan scriptin yolu)
+# 2) SELSERVER - server+CH sec, OK butonuna bas (calisan scriptin yolu)
 # ---------------------------------------------------------------------------
 def selserver(srv, ch):
     try:
@@ -356,7 +382,7 @@ def selserver(srv, ch):
         _write('server', 'HATA ' + _fmt_error(e) + '\n')
 
 # ---------------------------------------------------------------------------
-# 3) LOGIN — UI yolu once (calisan script), paket yolu yedek
+# 3) LOGIN - UI yolu once (calisan script), paket yolu yedek
 # ---------------------------------------------------------------------------
 def login(user, pwd):
     try:
@@ -401,7 +427,7 @@ def login(user, pwd):
         _write('login', 'HATA ' + _fmt_error(e) + '\n')
 
 # ---------------------------------------------------------------------------
-# 4) CHARLIST — 5 slot tablosu (net slot data)
+# 4) CHARLIST - 5 slot tablosu (net slot data)
 # ---------------------------------------------------------------------------
 def charlist():
     try:
@@ -441,7 +467,7 @@ def charlist():
         _write('charlist', 'HATA ' + _fmt_error(e) + '\n')
 
 # ---------------------------------------------------------------------------
-# 5) EMPIRE (ilk karakter icin) — paket yolu
+# 5) EMPIRE (ilk karakter icin) - paket yolu
 # ---------------------------------------------------------------------------
 def empire(n):
     try:
@@ -455,7 +481,7 @@ def empire(n):
         _write('empire', 'HATA ' + _fmt_error(e) + '\n')
 
 # ---------------------------------------------------------------------------
-# 6) CREATE — paket yolu (statlar server'da; 30 sn cooldown var)
+# 6) CREATE - paket yolu (statlar server'da; 30 sn cooldown var)
 # ---------------------------------------------------------------------------
 def create(slot, name, race, shape):
     try:
@@ -478,7 +504,7 @@ def create(slot, name, race, shape):
         _write('create', 'HATA ' + _fmt_error(e) + '\n')
 
 # ---------------------------------------------------------------------------
-# 7) ENTER — UI senkron + TEK DirectEnter (RC12: cift giris NPC'leri oldurur)
+# 7) ENTER - UI senkron + TEK DirectEnter (RC12: cift giris NPC'leri oldurur)
 # ---------------------------------------------------------------------------
 def enter(slot):
     try:
@@ -498,7 +524,7 @@ def enter(slot):
         try:
             import net
             net.DirectEnter(slot)
-            log.append('OK: DirectEnter(%d) — TEK giris (UI StartGame CAGRILMADI)' % slot)
+            log.append('OK: DirectEnter(%d) - TEK giris (UI StartGame CAGRILMADI)' % slot)
             log.append('Beklenen: waitfor GameWindow 60')
             _write('enter', '\n'.join(log) + '\n')
         except Exception, e:
@@ -507,7 +533,7 @@ def enter(slot):
         _write('enter', 'HATA ' + _fmt_error(e) + '\n')
 
 # ---------------------------------------------------------------------------
-# 9) SELCHAR — karakter slotu sec (orn. 4. slotu secmek)
+# 9) SELCHAR - karakter slotu sec (orn. 4. slotu secmek)
 # ---------------------------------------------------------------------------
 def selchar(slot):
     try:
@@ -520,7 +546,7 @@ def selchar(slot):
             sw.SelectSlot(slot)
             log.append('OK: SelectSlot(%d)' % slot)
         except Exception, e:
-            log.append('UYARI: SelectSlot hatasi (%s) — slot attr atanacak' % _fmt_error(e))
+            log.append('UYARI: SelectSlot hatasi (%s) - slot attr atanacak' % _fmt_error(e))
             try:
                 sw.slot = slot
                 log.append('OK: slot=%d attr atandi' % slot)
@@ -540,8 +566,8 @@ def selchar(slot):
         _write('selchar', 'HATA ' + _fmt_error(e) + '\n')
 
 # ---------------------------------------------------------------------------
-# 10) NEWCHAR — "karakter olustur" butonuna bas
-# (btnCreate instance attr None olabilir — ElementDictionary + dir() yedekli,
+# 10) NEWCHAR - "karakter olustur" butonuna bas
+# (btnCreate instance attr None olabilir - ElementDictionary + dir() yedekli,
 #  kanitlanmis _click_create_button deseni)
 # ---------------------------------------------------------------------------
 def newchar():
@@ -596,7 +622,7 @@ def newchar():
         _write('newchar', 'HATA ' + _fmt_error(e) + '\n')
 
 # ---------------------------------------------------------------------------
-# 11) JOBLIST — sinif/cinsiyet tablosu + olusturma ekran durumu
+# 11) JOBLIST - sinif/cinsiyet tablosu + olusturma ekran durumu
 # ---------------------------------------------------------------------------
 def joblist():
     try:
@@ -623,13 +649,13 @@ def joblist():
                 pass
         else:
             lines.append('')
-            lines.append('(olusturma ekrani kapali — newchar ile ac)')
+            lines.append('(olusturma ekrani kapali - newchar ile ac)')
         _write('joblist', '\n'.join(lines) + '\n')
     except Exception, e:
         _write('joblist', 'HATA ' + _fmt_error(e) + '\n')
 
 # ---------------------------------------------------------------------------
-# 12) MKCHAR — UI akisiyla karakter olustur (sinif gez + cinsiyet + isim + OLUSTUR)
+# 12) MKCHAR - UI akisiyla karakter olustur (sinif gez + cinsiyet + isim + OLUSTUR)
 # (kanitlanmis do_create_character deseni; paket yolu yedek)
 # ---------------------------------------------------------------------------
 def mkchar(name, race):
@@ -645,7 +671,7 @@ def mkchar(name, race):
                                                  RACE_TABLE[race][0], RACE_TABLE[race][1])]
         ccw = _pw_by_type('CreateCharacterWindow')
         if ccw is None:
-            _write('mkchar', '\n'.join(log + ['HATA: CreateCharacterWindow acik degil — once newchar']) + '\n')
+            _write('mkchar', '\n'.join(log + ['HATA: CreateCharacterWindow acik degil - once newchar']) + '\n')
             return
         # a) sinif slotuna gez (Warrior->Ninja->Sura->Shaman)
         target_slot = RACE_TO_SLOT.get(race, 3)
@@ -725,7 +751,7 @@ def mkchar(name, race):
             btn.CallEvent()
             log.append('OK: OLUSTUR butonuna basildi')
         else:
-            log.append('UYARI: olustur butonu bulunamadi — sadece paket yolu')
+            log.append('UYARI: olustur butonu bulunamadi - sadece paket yolu')
         # e) paket yolu yedek (UI butonu yetmezse sunucuya gider)
         time.sleep(1.0)
         slot = -1
@@ -756,7 +782,7 @@ def mkchar(name, race):
             net.SendCreateCharacterPacket(slot, name, race, target_gender, use_emp, 0, 0, 0)
             log.append('OK: SendCreateCharacterPacket(slot=%d, race=%d, shape=%d)' % (slot, race, target_gender))
             log.append('NOT: UI butonu + paket ikisi de gonderildi (cift kayit riski dusuk;')
-            log.append('     server ayni isim/second reddeder — 30 sn sonra charlist ile kontrol)')
+            log.append('     server ayni isim/second reddeder - 30 sn sonra charlist ile kontrol)')
         except Exception, e2:
             log.append('UYARI: paket yolu hatasi: %s' % _fmt_error(e2))
         log.append('Kontrol: waitfor SelectCharacterWindow 15 -> charlist')
@@ -766,7 +792,7 @@ def mkchar(name, race):
         _write('mkchar', 'HATA ' + _fmt_error(e) + '\n')
 
 # ---------------------------------------------------------------------------
-# 13) EMPIRELIST — bayrak listesi + mevcut empire
+# 13) EMPIRELIST - bayrak listesi + mevcut empire
 # ---------------------------------------------------------------------------
 def empirelist():
     try:
@@ -797,7 +823,7 @@ def empirelist():
                     except:
                         pass
                 if cnt == 0:
-                    lines.append('  (ElementDictionary\'de EmpireButton yok — OnSelectEmpire ile secilecek)')
+                    lines.append('  (ElementDictionary\'de EmpireButton yok - OnSelectEmpire ile secilecek)')
             except:
                 pass
         lines.append('')
@@ -815,7 +841,7 @@ def empirelist():
         _write('empirelist', 'HATA ' + _fmt_error(e) + '\n')
 
 # ---------------------------------------------------------------------------
-# 14) EMPIREUI — bayrak sec + ILERLE (kanitlanmis do_select_empire deseni)
+# 14) EMPIREUI - bayrak sec + ILERLE (kanitlanmis do_select_empire deseni)
 # ---------------------------------------------------------------------------
 def empireui(n):
     try:
@@ -827,7 +853,7 @@ def empireui(n):
             _write('empireui', 'HATA: bayrak ekrani acik degil (SCENE=%s)\n' % _scene_name())
             return
         log = ['SCENE=%s' % _scene_name(), 'hedef empire=%d (%s)' % (n, EMPIRE_NAMES.get(n, '?'))]
-        # a) OnSelectEmpire — bayragi isaretle
+        # a) OnSelectEmpire - bayragi isaretle
         try:
             ew.OnSelectEmpire(n)
             time.sleep(0.5)
@@ -856,13 +882,13 @@ def empireui(n):
         except:
             pass
         if not clicked:
-            log.append('(EmpireButton bulunamadi/eslesmedi — OnSelectEmpire yeterli olabilir)')
-        # c) ILERLE — ClickSelectButton
+            log.append('(EmpireButton bulunamadi/eslesmedi - OnSelectEmpire yeterli olabilir)')
+        # c) ILERLE - ClickSelectButton
         done = False
         try:
             ew.ClickSelectButton()
             done = True
-            log.append('OK: ClickSelectButton() — ilerlendi')
+            log.append('OK: ClickSelectButton() - ilerlendi')
         except Exception, e:
             log.append('UYARI: ClickSelectButton hatasi: %s' % _fmt_error(e))
         if not done:
@@ -871,7 +897,7 @@ def empireui(n):
                 sb = ed.get('select_button', None)
                 if sb is not None and hasattr(sb, 'CallEvent'):
                     sb.CallEvent()
-                    log.append('OK: select_button.CallEvent() — ilerlendi')
+                    log.append('OK: select_button.CallEvent() - ilerlendi')
             except:
                 pass
         # d) paket yolu yedegi (ekran gecmezse)
@@ -892,8 +918,8 @@ def empireui(n):
         _write('empireui', 'HATA ' + _fmt_error(e) + '\n')
 
 # ---------------------------------------------------------------------------
-# 15) DELCHAR — karakter sil akisi: slot sec + silme sorusu + kod dialogu AC
-# (kanitlanmis chardeleter v8 deseni — CallEvent YOK, dogrudan metodlar)
+# 15) DELCHAR - karakter sil akisi: slot sec + silme sorusu + kod dialogu AC
+# (kanitlanmis chardeleter v8 deseni - CallEvent YOK, dogrudan metodlar)
 # ---------------------------------------------------------------------------
 def delchar(slot):
     try:
@@ -923,14 +949,14 @@ def delchar(slot):
         # 2) silme sorusu dialogu
         try:
             sw.PopupDeleteQuestion()
-            log.append('OK: PopupDeleteQuestion() — "karakteri sil" sorusu')
+            log.append('OK: PopupDeleteQuestion() - "karakteri sil" sorusu')
         except Exception, e:
             log.append('UYARI: PopupDeleteQuestion hatasi: %s' % _fmt_error(e))
         time.sleep(0.5)
         # 3) kod dialogu
         try:
             sw.InputPrivateCode()
-            log.append('OK: InputPrivateCode() — kod dialogu ACILDI')
+            log.append('OK: InputPrivateCode() - kod dialogu ACILDI')
             log.append('SONRA: delcode <silme-kodu> yaz')
         except Exception, e:
             log.append('HATA: InputPrivateCode hatasi: %s' % _fmt_error(e))
@@ -947,7 +973,7 @@ def delchar(slot):
         _write('delchar', 'HATA ' + _fmt_error(e) + '\n')
 
 # ---------------------------------------------------------------------------
-# 16) DELCODE — silme kodunu yaz + ONAYLA (chardeleter v8 — inputValue EditLine)
+# 16) DELCODE - silme kodunu yaz + ONAYLA (chardeleter v8 - inputValue EditLine)
 # ---------------------------------------------------------------------------
 def delcode(code):
     try:
@@ -965,10 +991,10 @@ def delcode(code):
                 pass
             pib = getattr(sw, 'privateInputBoard', None)
         if pib is None:
-            _write('delcode', '\n'.join(log + ['HATA: kod dialogu acik degil — once delchar <slot>']) + '\n')
+            _write('delcode', '\n'.join(log + ['HATA: kod dialogu acik degil - once delchar <slot>']) + '\n')
             return
         log.append('kod dialogu: %s' % type(pib).__name__)
-        # EditLine bul (inputValue oncelikli — chardeleter kaniti)
+        # EditLine bul (inputValue oncelikli - chardeleter kaniti)
         edit = None
         for attr in ('inputValue', 'inputBoard', 'editLine', 'edit', 'input', 'textEdit'):
             obj = getattr(pib, attr, None)
@@ -1008,7 +1034,7 @@ def delcode(code):
         # ONAYLA
         try:
             sw.AcceptInputPrivateCode()
-            log.append('OK: AcceptInputPrivateCode() — ONAYLANDI')
+            log.append('OK: AcceptInputPrivateCode() - ONAYLANDI')
         except Exception, e:
             log.append('HATA: AcceptInputPrivateCode hatasi: %s' % _fmt_error(e))
         time.sleep(1.0)
@@ -1017,11 +1043,11 @@ def delcode(code):
     except Exception, e:
         _write('delcode', 'HATA ' + _fmt_error(e) + '\n')
 # ---------------------------------------------------------------------------
-# 8) STATUS — sahne + baglanti + stream bilgisi (+ lazy hook kurulumu)
+# 8) STATUS - sahne + baglanti + stream bilgisi (+ lazy hook kurulumu)
 # ---------------------------------------------------------------------------
 def status_text():
     if len(_HOOKS_OK) < 4:
-        _install_error_hooks()   # moduller sonra yuklenmis olabilir — tekrar dene
+        _install_error_hooks()   # moduller sonra yuklenmis olabilir - tekrar dene
     try:
         import net
         try:
@@ -1037,11 +1063,12 @@ def status_text():
         'yakalandi' if ms is not None else 'YOK',
         time.strftime('%H:%M:%S'))
 
-def status():
-    _write('status', status_text())
+def status(echo=True):
+    # v3.1: waitfor polling'i echo=0 ile cagirir - konsol spami olmaz
+    _write('status', status_text(), echo=echo)
 
 # ---------------------------------------------------------------------------
-# modul kaydi — DLL snippet'leri `import maxlib; maxlib.xxx()` der
+# modul kaydi - DLL snippet'leri `import maxlib; maxlib.xxx()` der
 # ---------------------------------------------------------------------------
 import types as _types
 import sys as _sys
@@ -1057,10 +1084,12 @@ _sys.modules['maxlib'] = _maxlib
 # ---------------------------------------------------------------------------
 # yukleme raporu
 # ---------------------------------------------------------------------------
-_install_error_hooks()   # oto hata izleme — yanlis sifre vb. last_error.txt'ye
+_install_error_hooks()   # oto hata izleme - yanlis sifre vb. last_error.txt'ye
 _write('pylib_load',
-       'pylib v3.0 yuklendi (ANA THREAD)\n'
-       'hata izleme hooklari: %s\n' % (', '.join(_HOOKS_OK) if _HOOKS_OK else 'henuz kurulamadi (status ile tekrar denenir)')
+       'pylib v%s yuklendi (ANA THREAD)' % PYLIB_VERSION + chr(10) +
+       'hata izleme hooklari: %s' % (', '.join(_HOOKS_OK) if _HOOKS_OK else 'henuz kurulamadi (status ile tekrar denenir)') + chr(10)
        + status_text())
-print '[maxlib] v3.0 yuklendi — surum isareti PYLIB_VERSION=' + PYLIB_VERSION + ' (DLL v1.5 el sikismasi gecer)'
-print '[maxlib] yeni: selchar/newchar/joblist/mkchar/empirelist/empireui/delchar/delcode/lasterr'
+try:
+    sys.stdout.write('[MAXLIB] pylib v%s aktif - komutlar hazir (DLL v1.6 cifti)' % PYLIB_VERSION + chr(10))
+except:
+    pass

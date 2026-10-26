@@ -66,7 +66,32 @@
 //            scripts/embed_pylib.py uretir). Diskteki pylib eksik/eskiyse
 //            DLL otomatik yazar (eskisi yedeklenir) - artik SADECE DLL
 //            guncellemek yeterli, pylib.py'yi elle tasimak zorunlu degil.
+//  v1.6 (oturum 11 - saha testi 6: "her komutta PYTHON HATASI" kok nedeni):
+//    KOK NEDEN: v1.5, BootImport'a FIX-21 surum guard'ini ekleyince bootstrap
+//            ~630 karaktere buyudu; ama ESKI komut ureticileri hala
+//            char buf[256]/[512] + _snprintf ile kod uretiyordu. _snprintf
+//            sessizce kesti -> 255/511 byte'lik .cmd dosyalari SATIR
+//            ORTASINDA kopuk Python kodu iceriyordu -> SyntaxError
+//            ("EOL while scanning string literal") -> selserver/login/
+//            status/selchar/mkchar/delchar/delcode PYFAIL. Kanit:
+//            maxexec.log'ta 255/511 byte = PATLADI; 674 byte (std::string
+//            ile uretilen newchar/joblist/lasterr) = CALISTI.
+//    FIX-23: Butun komut ureticileri std::string birlestirmeye cevrildi;
+//            sabit tampon + _snprintf devri kapandi (truncate imkansiz).
+//    FIX-24: Eksik argumanli komutlara "kullanim: ..." mesaji (eskiden
+//            yaniltici "bilinmeyen komut" dustu).
+//    FIX-25: Bayat surum dizgileri (konsol basligi + DllMain logu hala
+//            "v1.4" diyordu - saha logunda sikici karisiklik yaratıyordu).
+//    FIX-26: Konsol printf dizgileri ASCII'ye cekildi (CP857'de uzun cizgi
+//            karakteri mojibake olarak gorunuyordu).
+//    FIX-27: status artik bayat last_status.txt'yi gostermiyor (eski kod
+//            400ms sonra dosyayi okuyup basiyordu; komut fail olsa bile
+//            39 dk onceki sonuc gorunuyordu - saha kanitli).
+//    FIX-28: PROBE sys.stdout'u CONOUT$'a baglar - oyun Python'inin print
+//            cikisi artik konsola duser; pylib v3.1 rapor yankisi (charlist/
+//            joblist/mkchar canli cikisi) bunun uzerinden calisir.
 // ============================================================================
+
 //  xgodmod4 gereksinimleri:
 //    * Python fonksiyon hook'u  YOK  (monkey-patch yok)
 //    * Shared memory            YOK  (dosya kuyrugu kullanir)
@@ -104,7 +129,7 @@
 #include <stdarg.h>
 #include <string>
 #include <vector>
-#include "pylib_embedded.h"   // FIX-22: gomulu pylib v3.0 (otomatik uretilir)
+#include "pylib_embedded.h"   // FIX-22: gomulu pylib (v3.1, otomatik uretilir)
 
 // ---------------------------------------------------------------------------
 // Sabitler
@@ -379,6 +404,10 @@ static std::string BootImport(void)
     // FIX-15: kendini onaran import + FIX-21: surum guard'i.
     // Diskteki pylib eskiyse (v2.x) pyerr.log'a ACIKLAMALI uyari duser;
     // yeni komutlarin AttributeError'leri boylece kendini aciklar.
+    // NOT (FIX-23): bu metin ~630 karakterdir; ASLA char buf[256/512]
+    // icine _snprintf ile yazma - v1.5 tam bunu yapip 255/511 byte'lik
+    // kopuk .cmd'ler uretti. Kullananlar std::string birlestirsin:
+    //   QRaw(BootImport() + "maxlib.xxx(...)")
     char buf[1024];
     _snprintf(buf, sizeof(buf),
         "try:\n"
@@ -394,7 +423,7 @@ static std::string BootImport(void)
         "    maxlib._MX_OLD_WARNED = True\n"
         "    try:\n"
         "        import sys\n"
-        "        sys.stderr.write('!!! PYLIB ESKI v' + str(getattr(maxlib, 'PYLIB_VERSION', '?')) + ' - DLL v1.5: selchar/newchar/mkchar/delchar/empirelist/empireui/joblist/delcode/lasterr komutlari pylib v3.0 ister! C:\\MaxExec\\pylib.py dosyasini yenisiyle degistir (bundle zip icinde) !!!\\n')\n"
+        "        sys.stderr.write('!!! PYLIB ESKI v' + str(getattr(maxlib, 'PYLIB_VERSION', '?')) + ' - DLL v1.6: selchar/newchar/mkchar/delchar/empirelist/empireui/joblist/delcode/lasterr komutlari pylib v3.0 ister! C:\\MaxExec\\pylib.py dosyasini yenisiyle degistir (bundle zip icinde) !!!\\n')\n"
         "    except Exception:\n"
         "        pass\n", BASE_DIR);
     buf[sizeof(buf)-1] = 0;
@@ -438,20 +467,20 @@ static void CmdLoad(const std::string& path)
 
 static void CmdLogin(const std::string& id, const std::string& pwd)
 {
-    char buf[512];
-    _snprintf(buf, sizeof(buf),
-        "%s"
-        "maxlib.login(r'%s', r'%s')\n", BootImport().c_str(), id.c_str(), pwd.c_str());
-    buf[sizeof(buf)-1] = 0;
-    QRaw(buf);
+    // FIX-23: cagri satiri kisa tamponda uretilir, bootstrap std::string
+    // ile birlestirilir - _snprintf'un BootImport'i kesmesi artik imkansiz.
+    char call[512];
+    _snprintf(call, sizeof(call), "maxlib.login(r'%s', r'%s')\n", id.c_str(), pwd.c_str());
+    call[sizeof(call)-1] = 0;
+    QRaw(BootImport() + call);
 }
 
 static void CmdSelServer(int srv, int ch)
 {
-    char buf[256];
-    _snprintf(buf, sizeof(buf), "%smaxlib.selserver(%d, %d)\n", BootImport().c_str(), srv, ch);
-    buf[sizeof(buf)-1] = 0;
-    QRaw(buf);
+    char call[64];   // FIX-23
+    _snprintf(call, sizeof(call), "maxlib.selserver(%d, %d)\n", srv, ch);
+    call[sizeof(call)-1] = 0;
+    QRaw(BootImport() + call);
 }
 
 static void CmdServerList(void)
@@ -461,10 +490,10 @@ static void CmdServerList(void)
 
 static void CmdSelChar(int slot)
 {
-    char buf[256];
-    _snprintf(buf, sizeof(buf), "%smaxlib.selchar(%d)\n", BootImport().c_str(), slot);
-    buf[sizeof(buf)-1] = 0;
-    QRaw(buf);
+    char call[64];   // FIX-23
+    _snprintf(call, sizeof(call), "maxlib.selchar(%d)\n", slot);
+    call[sizeof(call)-1] = 0;
+    QRaw(BootImport() + call);
 }
 
 static void CmdNewChar(void)
@@ -479,10 +508,10 @@ static void CmdJobList(void)
 
 static void CmdMkChar(const std::string& name, int race)
 {
-    char buf[512];
-    _snprintf(buf, sizeof(buf), "%smaxlib.mkchar(r'%s', %d)\n", BootImport().c_str(), name.c_str(), race);
-    buf[sizeof(buf)-1] = 0;
-    QRaw(buf);
+    char call[128];   // FIX-23
+    _snprintf(call, sizeof(call), "maxlib.mkchar(r'%s', %d)\n", name.c_str(), race);
+    call[sizeof(call)-1] = 0;
+    QRaw(BootImport() + call);
 }
 
 static void CmdEmpireList(void)
@@ -492,26 +521,26 @@ static void CmdEmpireList(void)
 
 static void CmdEmpireUI(int n)
 {
-    char buf[256];
-    _snprintf(buf, sizeof(buf), "%smaxlib.empireui(%d)\n", BootImport().c_str(), n);
-    buf[sizeof(buf)-1] = 0;
-    QRaw(buf);
+    char call[64];   // FIX-23
+    _snprintf(call, sizeof(call), "maxlib.empireui(%d)\n", n);
+    call[sizeof(call)-1] = 0;
+    QRaw(BootImport() + call);
 }
 
 static void CmdDelChar(int slot)
 {
-    char buf[256];
-    _snprintf(buf, sizeof(buf), "%smaxlib.delchar(%d)\n", BootImport().c_str(), slot);
-    buf[sizeof(buf)-1] = 0;
-    QRaw(buf);
+    char call[64];   // FIX-23
+    _snprintf(call, sizeof(call), "maxlib.delchar(%d)\n", slot);
+    call[sizeof(call)-1] = 0;
+    QRaw(BootImport() + call);
 }
 
 static void CmdDelCode(const std::string& code)
 {
-    char buf[512];
-    _snprintf(buf, sizeof(buf), "%smaxlib.delcode(r'%s')\n", BootImport().c_str(), code.c_str());
-    buf[sizeof(buf)-1] = 0;
-    QRaw(buf);
+    char call[128];   // FIX-23
+    _snprintf(call, sizeof(call), "maxlib.delcode(r'%s')\n", code.c_str());
+    call[sizeof(call)-1] = 0;
+    QRaw(BootImport() + call);
 }
 
 static void CmdLastErr(void)
@@ -534,10 +563,10 @@ static void CmdLastErr(void)
         }
         for (size_t i = lines.size() > 25 ? lines.size()-25 : 0; i < lines.size(); ++i)
             printf("  %s\n", lines[i].c_str());
-        if (lines.empty()) printf("  (bos — henuz oyun hatasi yaklanmadi)\n");
+        if (lines.empty()) printf("  (bos - henuz oyun hatasi yaklanmadi)\n");
     }
     else
-        printf("[LASTERR] last_error.txt yok — henuz oyun hatasi yaklanmadi\n");
+        printf("[LASTERR] last_error.txt yok - henuz oyun hatasi yaklanmadi\n");
 }
 
 static void CmdCharlist(void)
@@ -547,42 +576,35 @@ static void CmdCharlist(void)
 
 static void CmdEmpire(int e)
 {
-    char buf[256];
-    _snprintf(buf, sizeof(buf), "%smaxlib.empire(%d)\n", BootImport().c_str(), e);
-    buf[sizeof(buf)-1] = 0;
-    QRaw(buf);
+    char call[64];   // FIX-23
+    _snprintf(call, sizeof(call), "maxlib.empire(%d)\n", e);
+    call[sizeof(call)-1] = 0;
+    QRaw(BootImport() + call);
 }
 
 static void CmdCreate(int slot, const std::string& name, int race, int shape)
 {
-    char buf[512];
-    _snprintf(buf, sizeof(buf),
-        "%s"
-        "maxlib.create(%d, r'%s', %d, %d)\n", BootImport().c_str(), slot, name.c_str(), race, shape);
-    buf[sizeof(buf)-1] = 0;
-    QRaw(buf);
+    char call[160];   // FIX-23
+    _snprintf(call, sizeof(call), "maxlib.create(%d, r'%s', %d, %d)\n", slot, name.c_str(), race, shape);
+    call[sizeof(call)-1] = 0;
+    QRaw(BootImport() + call);
 }
 
 static void CmdEnter(int slot)
 {
-    char buf[256];
-    _snprintf(buf, sizeof(buf), "%smaxlib.enter(%d)\n", BootImport().c_str(), slot);
-    buf[sizeof(buf)-1] = 0;
-    QRaw(buf);
+    char call[64];   // FIX-23
+    _snprintf(call, sizeof(call), "maxlib.enter(%d)\n", slot);
+    call[sizeof(call)-1] = 0;
+    QRaw(BootImport() + call);
 }
 
 static void CmdStatus(void)
 {
-    char buf[256];
-    _snprintf(buf, sizeof(buf), "%smaxlib.status()\n", BootImport().c_str());
-    buf[sizeof(buf)-1] = 0;
-    QRaw(buf);
-    Sleep(400);  // ana thread'in islemesine sure ver
-    std::string s;
-    if (ReadFileAll(std::string(RESULT_DIR) + "\\last_status.txt", s))
-        printf("[STATUS] %s", s.c_str());
-    else
-        printf("[STATUS] sonuc dosyasi yok — `pyerr` komutuna bak (import hatasi mi var?)\n");
+    // FIX-23 + FIX-27: eskiden komut 256 byte'lik tampona sigmayip PATLIYORDU
+    // (SyntaxError); ustelik 400 ms sonra last_status.txt okunup basilirdi ki
+    // o BAYAT icerikti (saha testinde 39 dk onceki sonuc iki kez gorundu).
+    // Artik cikisi pylib v3.1 canli yaziyor (FIX-28 konsol stdout baglanti).
+    QRaw(BootImport() + "maxlib.status()\n");
 }
 
 // C++ TARAFINDA bekler; Python'u kisa patlamalarda calistirir (ana thread dostu)
@@ -593,11 +615,8 @@ static void CmdWaitFor(const std::string& sceneName, int seconds)
     DWORD start = GetTickCount();
     while ((GetTickCount() - start) < (DWORD)seconds * 1000)
     {
-        char buf[256];
-        _snprintf(buf, sizeof(buf), "%smaxlib.status()\n", BootImport().c_str());
-        buf[sizeof(buf)-1] = 0;
         std::string f;
-        EnqueueCommand(buf, f);
+        EnqueueCommand(BootImport() + "maxlib.status(0)\n", f);   // FIX-23 (status(0): konsol yankisi kapali, spam yok)
         PostMessage(g_hGameWnd, WM_APP_MAXEXEC, 0, 0);
 
         Sleep(700);
@@ -636,7 +655,7 @@ static bool InitConsole(void)
         LogLine("CONOUT$ (stderr) yeniden acilamadi");
     setvbuf(stdout, NULL, _IONBF, 0);   // buffer'siz: crash olsa bile yazar
     setvbuf(stderr, NULL, _IONBF, 0);
-    SetConsoleTitleA("MaxExecutor v1.4");
+    SetConsoleTitleA("MaxExecutor v1.6");
     HWND cw = GetConsoleWindow();
     if (cw)
     {
@@ -689,7 +708,7 @@ static std::vector<std::string> SplitArgs(const std::string& line)
 
 static void PrintHelp(void)
 {
-    printf("\n=== MaxExecutor v1.5 (karakter islemleri + hata izleme + surum kilidi) ===\n");
+    printf("\n=== MaxExecutor v1.6 (karakter islemleri + hata izleme + canli konsol cikisi) ===\n");
     printf("  help                        : bu yardim\n");
     printf("  status                      : anlik sahne/baglanti snapshot\n");
     printf("  serverlist                  : server/CH listbox icerigi\n");
@@ -772,9 +791,15 @@ static void SyncEmbeddedPylib(void)
     char diskVer[32];
     bool hasDisk = ReadPylibVersion(pylibPath, diskVer);
     int diskMaj  = hasDisk ? atoi(diskVer) : 0;
-    int embMaj   = atoi(EMBEDDED_PYLIB_VERSION);
-    if (hasDisk && diskMaj >= embMaj)
-        return;   // disk zaten yeni/esit — dokunma
+    int diskMin  = 0;
+    if (hasDisk) { const char* d = strchr(diskVer, '.'); if (d) diskMin = atoi(d+1); }
+    const char* edot = strchr(EMBEDDED_PYLIB_VERSION, '.');
+    int embMaj = atoi(EMBEDDED_PYLIB_VERSION);
+    int embMin = edot ? atoi(edot+1) : 0;
+    // v1.6: minor-farkinda karsilastirma - disk v3.0 / gomulu v3.1 ise
+    // senkron TETIKLENIR (eskiden 3>=3 geciyordu, eski dosya kalabiliyordu)
+    if (hasDisk && (diskMaj > embMaj || (diskMaj == embMaj && diskMin >= embMin)))
+        return;   // disk zaten yeni/esit - dokunma
     if (hasDisk)
     {
         char bak[MAX_PATH];
@@ -807,7 +832,7 @@ static DWORD WINAPI WorkerThread(LPVOID)
     const bool con = InitConsole();
 
     printf("\n=============================================\n");
-    printf("  MaxExecutor v1.5 - ana-thread executor (surum kilidi + hata gorunurlugu)\n");
+    printf("  MaxExecutor v1.6 - ana-thread executor (komut tamponu fix + canli konsol)\n");
     printf("  hook yok | SHM yok | arka-plan PyRun yok\n");
     printf("=============================================\n");
     if (!con)
@@ -824,15 +849,20 @@ static DWORD WINAPI WorkerThread(LPVOID)
         // FIX-10: PROBE - ilk drenajda ana thread'in gercekten calistigini kanitlar
         // FIX-18: probe ayrica sys.stderr'i pyerr.log'a baglar — butun
         //         traceback'ler ilk andan itibaren dosyaya duser.
-        char probe[768];
+        char probe[896];
         _snprintf(probe, sizeof(probe),
             "import sys, time\n"
             "try:\n"
             "    sys.stderr = open(r'%s', 'a', 1)\n"
             "except:\n"
             "    pass\n"
+            "try:\n"
+            "    sys.stdout = open(r'CONOUT$', 'w', 0)\n"
+            "except:\n"
+            "    pass\n"
             "_pf = open(r'%s\\py_probe.txt', 'w')\n"
             "_pf.write('PYOK t=' + time.strftime('%%H:%%M:%%S') + ' ver=' + str(sys.version)[:24] + '\\n')\n"
+            "_pf.write('stdout: ' + str(getattr(sys.stdout, 'name', '?')) + '\\n')\n"
             "_pf.close()\n", PYERR_LOG, RESULT_DIR);
         probe[sizeof(probe)-1] = 0;
         std::string pf;
@@ -863,7 +893,7 @@ static DWORD WINAPI WorkerThread(LPVOID)
                 char rp[MAX_PATH];
                 _snprintf(rp, MAX_PATH, "%s\\last_warning.txt", RESULT_DIR); rp[MAX_PATH-1]=0;
                 WriteFileAll(rp, std::string("! PYLIB ESI SURUM: v") + vShow +
-                    "  (DLL v1.5 pylib v3.0 ister)\n"
+                    "  (DLL v1.6 pylib v3.0 ister)\n"
                     "Yeni pylib.py'yi " + std::string(BASE_DIR) + " icine kopyala (bundle zip / GitHub).\n"
                     "ESKI pylib ILE: selchar/newchar/mkchar/delchar/empirelist/empireui/"
                     "joblist/delcode/lasterr CALISMAZ (AttributeError).\n");
@@ -910,28 +940,81 @@ static DWORD WINAPI WorkerThread(LPVOID)
         std::vector<std::string> a = SplitArgs(ln);
         const std::string& cmd = a[0];
 
+        // FIX-24: eksik arguman -> yaniltici "bilinmeyen komut" yerine kullanim mesaji
         if      (cmd == "help")  PrintHelp();
         else if (cmd == "exit")  break;
         else if (cmd == "status") CmdStatus();
         else if (cmd == "charlist") CmdCharlist();
-        else if (cmd == "login" && a.size() >= 3) CmdLogin(a[1], a[2]);
-        else if (cmd == "selserver" && a.size() >= 3) CmdSelServer(atoi(a[1].c_str()), atoi(a[2].c_str()));
-        else if (cmd == "empire" && a.size() >= 2) CmdEmpire(atoi(a[1].c_str()));
-        else if (cmd == "create" && a.size() >= 5) CmdCreate(atoi(a[1].c_str()), a[2], atoi(a[3].c_str()), atoi(a[4].c_str()));
-        else if (cmd == "enter" && a.size() >= 2) CmdEnter(atoi(a[1].c_str()));
-        else if (cmd == "selchar" && a.size() >= 2) CmdSelChar(atoi(a[1].c_str()));
+        else if (cmd == "login")
+        {
+            if (a.size() >= 3) CmdLogin(a[1], a[2]);
+            else printf("kullanim: login <id> <sifre>\n");
+        }
+        else if (cmd == "selserver")
+        {
+            if (a.size() >= 3) CmdSelServer(atoi(a[1].c_str()), atoi(a[2].c_str()));
+            else printf("kullanim: selserver <server> <kanal>   (orn. selserver 0 0)\n");
+        }
+        else if (cmd == "empire")
+        {
+            if (a.size() >= 2) CmdEmpire(atoi(a[1].c_str()));
+            else printf("kullanim: empire <1-3>   (1=Shinsoo 2=Chunjo 3=Jinno)\n");
+        }
+        else if (cmd == "create")
+        {
+            if (a.size() >= 5) CmdCreate(atoi(a[1].c_str()), a[2], atoi(a[3].c_str()), atoi(a[4].c_str()));
+            else printf("kullanim: create <slot> <ad> <race> <shape>\n");
+        }
+        else if (cmd == "enter")
+        {
+            if (a.size() >= 2) CmdEnter(atoi(a[1].c_str()));
+            else printf("kullanim: enter <slot>\n");
+        }
+        else if (cmd == "selchar")
+        {
+            if (a.size() >= 2) CmdSelChar(atoi(a[1].c_str()));
+            else printf("kullanim: selchar <slot 0-4>\n");
+        }
         else if (cmd == "newchar") CmdNewChar();
         else if (cmd == "joblist") CmdJobList();
-        else if (cmd == "mkchar" && a.size() >= 3) CmdMkChar(a[1], atoi(a[2].c_str()));
+        else if (cmd == "mkchar")
+        {
+            if (a.size() >= 3) CmdMkChar(a[1], atoi(a[2].c_str()));
+            else printf("kullanim: mkchar <isim> <race 0-8>   (orn. mkchar Isim 3 = Shaman(K))\n");
+        }
         else if (cmd == "empirelist") CmdEmpireList();
-        else if (cmd == "empireui" && a.size() >= 2) CmdEmpireUI(atoi(a[1].c_str()));
-        else if (cmd == "delchar" && a.size() >= 2) CmdDelChar(atoi(a[1].c_str()));
-        else if (cmd == "delcode" && a.size() >= 2) CmdDelCode(a[1]);
+        else if (cmd == "empireui")
+        {
+            if (a.size() >= 2) CmdEmpireUI(atoi(a[1].c_str()));
+            else printf("kullanim: empireui <1-3>   (1=Shinsoo 2=Chunjo 3=Jinno)\n");
+        }
+        else if (cmd == "delchar")
+        {
+            if (a.size() >= 2) CmdDelChar(atoi(a[1].c_str()));
+            else printf("kullanim: delchar <slot 0-4>   (sonra delcode <silme-kodu>)\n");
+        }
+        else if (cmd == "delcode")
+        {
+            if (a.size() >= 2) CmdDelCode(a[1]);
+            else printf("kullanim: delcode <silme-kodu>   (once delchar <slot>)\n");
+        }
         else if (cmd == "serverlist") CmdServerList();
         else if (cmd == "lasterr") CmdLastErr();
-        else if (cmd == "load" && a.size() >= 2) CmdLoad(a[1]);
-        else if (cmd == "raw" && ln.size() > 4) QRaw(ln.substr(4));
-        else if (cmd == "waitfor" && a.size() >= 3) CmdWaitFor(a[1], atoi(a[2].c_str()));
+        else if (cmd == "load")
+        {
+            if (a.size() >= 2) CmdLoad(a[1]);
+            else printf("kullanim: load <py-dosyasi>   (v1.3+ zaten otomatik)\n");
+        }
+        else if (cmd == "raw")
+        {
+            if (ln.size() > 4) QRaw(ln.substr(4));
+            else printf("kullanim: raw <python kodu>   (orn. raw import sys)\n");
+        }
+        else if (cmd == "waitfor")
+        {
+            if (a.size() >= 3) CmdWaitFor(a[1], atoi(a[2].c_str()));
+            else printf("kullanim: waitfor <SahneAdi> <saniye>   (orn. waitfor GameWindow 60)\n");
+        }
         else if (cmd == "pyerr")   // FIX-17: Python hatalarini konsolda gor
         {
             FILE* f = fopen(PYERR_LOG, "r");
@@ -974,7 +1057,7 @@ BOOL APIENTRY DllMain(HMODULE hMod, DWORD reason, LPVOID)
         DisableThreadLibraryCalls(hMod);
         EnsureDirs();
         CreateThread(NULL, 0, WorkerThread, NULL, 0, NULL);
-        LogLine("MaxExecutor v1.4 yuklendi (pid=%lu) — worker baslatiliyor",
+        LogLine("MaxExecutor v1.6 yuklendi (pid=%lu) — worker baslatiliyor",
                 GetCurrentProcessId());
     }
     return TRUE;

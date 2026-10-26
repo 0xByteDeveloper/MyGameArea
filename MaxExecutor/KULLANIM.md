@@ -2,21 +2,23 @@
 
 > Paket içeriği, kurulum, komutlar, giriş akışı, sorun giderme — hepsi bu dosyada.
 > Mimari gerekçe için: `reports/DEV_REAL_BINARY_TEST.md` (RC18/RC19) + `reports/DEV_GIL_ANALYSIS.md` (RC1-RC17).
-> Son güncelleme: **Oturum 10 — v1.5 / pylib v3.0** (sürüm kilidi + gömülü pylib + hata görünürlüğü)
+> Son güncelleme: **Oturum 11 — v1.6 / pylib v3.1** (komut tamponu kök-fix + canlı konsol çıktısı)
 >
 > **v1.3 ÖZET — saha testi 26.10 dersi:** kuyruk/drenaj/ana-thread zinciri ÇALIŞIYORDU (kanıt: `results\py_probe.txt` oluştu, `alive.txt` aktti) ama makinede **`C:\MaxExec\pylib.py` dosyası yoktu**. `load` sessiz IOError yedi, `maxlib` hiç kurulmadı; her `status`/`login`/`waitfor` komutu pyerr.log'a "ImportError: No module named maxlib" yazdı (100+ kez). **v1.3 pylib.py'yi otomatik yükler** — dosya yoksa baştan uyarır.
 
 > **v1.5 ÖZET — saha testi 5 dersi (oturum 10):** makinede DLL v1.4 vardı ama `pylib.py` hâlâ **v2.0** idi (eski bundle'dan). Yeni komutlar (selchar/mkchar/delchar...) sessiz `AttributeError` yedi — konsol hiçbir şey söylemedi, hatalar yalnız pyerr.log'daydı. v1.5 bunu kökten bitirir: **pylib v3.0 artık DLL'İN İÇİNE GÖMÜLÜ** — diskteki pylib eksik/eskiyse DLL otomatik yazar (eskisini pylib_eski_vX.py olarak yedekler), sürüm uyumsuzluğu varsa açılışta KOSKOCA uyarı basar, Python hatası olursa konsol artık `!! PYTHON HATASI — detay: pyerr` diye BAĞIRIR (sessiz hata devri kapandı).
 
+> **v1.6 ÖZET — saha testi 6 dersi (oturum 11):** v1.5'in hata görünürlüğü asıl problemi ortaya çıkardı: **neredeyse her komut `PYTHON HATASI` veriyordu.** Kök neden: v1.5, komutların import-bootstrap'ına sürüm-koruması ekleyince metin ~660 karaktere büyüdü; ama eski komut üreticileri hâlâ `char buf[256]/[512]` + `_snprintf` ile kod üretiyordu → kuyruktaki .cmd dosyaları **satır ortasında kopuk Python kodu** içeriyordu (255/511 byte) → `SyntaxError: EOL while scanning string literal` → komut hiç çalışmıyordu. Kanıt zinciri: maxexec.log'ta 674 byte'lık komutlar (newchar/joblist/lasterr — std::string ile üretilenler) ÇALIŞTI; 255/511 byte'lıklar PATLADI; pyerr.log'daki kesik satırlar birebir bu kesime noktasına denk geliyor. **v1.6: tüm üreticiler std::string'e çevrildi (FIX-23) — kesilme yapısal olarak imkânsız.** Bonuslar: Python `print`'leri konsola düşüyor (FIX-28), `charlist`/`joblist`/`mkchar`/`selchar` raporları CANLI görünüyor (pylib v3.1 yankısı), oyun hataları (yanlış şifre vb.) olduğu AN konsola `[OYUN HATASI]` satırı düşüyor, eksik argümanlı komutlar `kullanim:` mesajı veriyor, `status` bayat dosya göstermiyor (FIX-27).
+
 ---
 
-## 1. PAKET İÇİĞİNDE NE VAR?
+## 1. PAKET İÇİNDE NE VAR?
 
 | Dosya | Ne işe yarar | Nereden geldi |
 |---|---|---|
 | `bin/MaxExecutor.dll` | **Ana proje.** Oyun içine enjekte edilen 32-bit DLL. Ana thread'de (WndProc + SetTimer) Python çalıştırır. Hook YOK, SHM YOK, arka-plan PyRun YOK. **v1.2: SetTimer drenajı + sayaçlar + probe. v1.3: pylib.py otomatik yükleme + kendini onaran komut bootstrap'i + `pyerr` komutu.** | Bu repo — derlendi (GCC 14 mingw-w64 i686, `-static`) |
 | `bin/MaxInject.exe` | DLL enjektörü. `metin2client.exe` sürecini bulur, DLL'i LoadLibrary ile yükler. | Bu repo — derlendi |
-| `pylib.py` | DLL içine yüklenen Python komut kütüphanesi (maxlib): login/charlist/empire/create/enter/status | Bu repo |
+| `pylib.py` | DLL içine yüklenen Python komut kütüphanesi (maxlib): login/charlist/selchar/newchar/mkchar/delchar/delcode/lasterr... **v3.1: raporlar konsola da yansır** | Bu repo |
 | `MaximumPyScript_STABLE.py` | Eski mimarinin (SHM'li v17) RC12/RC13/RC14 yamalı hali. Alternatif yol. | Bu repo |
 | `MaxExecutor.cpp` / `MaxInject.cpp` | Kaynak kodlar (değişiklik yaparsan yeniden derlersin) | Bu repo |
 | `README.md` | Mimari açıklama (İngilizce başlıklı ama içerik Türkçe) | Bu repo |
@@ -44,15 +46,15 @@
    - Başka isimli client: `MaxInject.exe metin2.exe`
    - PID ile: `MaxInject.exe 12345`
    - Farklı DLL yolu: `MaxInject.exe metin2client.exe D:\yer\MaxExecutor.dll`
-4. **Konsol açılır** — "MaxExecutor v1.3" başlıklı siyah pencere (oyunun ÜSTÜNDE kalır, TOPMOST).
+4. **Konsol açılır** — "MaxExecutor v1.6" başlıklı siyah pencere (oyunun ÜSTÜNDE kalır, TOPMOST).
    İlk satırlarda şunları görmelisin:
    ```
    python27.dll : BULUNDU [initialized]
-   pylib.py      : v3.0 (uyumlu) - otomatik yuklenecek, load yazmana gerek yok
+   pylib.py      : v3.1 (uyumlu) - otomatik yuklenecek, load yazmana gerek yok
    oyun penceresi: SUBCLASS EDILDI (hwnd=0x...)
    ana-thread timer: KURULDU
    ```
-   > `pylib.py : GUNCELLENDI -> v3.0 (DLL icinden yazildi)` görürsen: diskteki pylib eskiymiş, v1.5 gömülü kopyayı yazdı — ekstra bir şey yapmana gerek yok.
+   > `pylib.py : GUNCELLENDI -> v3.1 (DLL icinden yazildi)` görürsen: diskteki pylib eskiymiş, v1.6 gömülü kopyayı yazdı — ekstra bir şey yapmana gerek yok.
    > `!! PYLIB ESI` uyarısı görürsen: pylib yazılamadı demektir (yazma hatası) — o zaman elle kopyala.
    > `python27.dll : YOK` ise oyunun Python'u henüz başlamamıştır → konsolda bekle,
    > oyun login ekranına gelince `status` yazarak tekrar dene (DLL her 0.5 sn'de yeniden dener, 20 sn boyunca).
@@ -210,6 +212,8 @@ eski Controller (win32apiMetin2Py / cppcmpr) zincirini kullanacaksan çalıştı
 
 | Belirti | Sebep | Çözüm |
 |---|---|---|
+| **HER KOMUTA `!! PYTHON HATASI`** (v1.5 saha bulgusu 6) | v1.5 hatası: bootstrap ~660 karaktere büyüdü ama eski üreticiler `char buf[256/512]` + `_snprintf` kullanıyordu → .cmd dosyaları satır ortasında kopuk Python kodu (255/511 byte) → SyntaxError. Kanıt: maxexec.log'taki byte boyutları + pyerr.log'daki kesik satırlar | **v1.6 kullan** — tüm üreticiler std::string (FIX-23). Ayrıca pyerr.log'da `EOL while scanning string literal` görüyorsan ve maxexec.log'ta EXEC satırı 255/511 byte diyorsa → kesinlikle v1.5'tesin, v1.6 DLL'i kopyala |
+| **newchar/joblist çalışıyor ama selchar/mkchar/delchar HATASI** (v1.5 saha bulgusu) | Aynı kök neden: çalışanlar std::string üreticili, patlayanlar sabit tamponluydu | v1.6 (FIX-23) — yukarıdaki satır |
 | **`AttributeError: 'module' object has no attribute 'selchar'`** (ya da herhangi bir yeni komut sessiz kalıyor) | **Diskteki pylib.py eski (v2.0) — DLL yeni** (saha testi 5: DLL v1.4 + pylib v2.0). Yeni komutlar pylib v3.0 ister | **v1.5 kullan: gömülü pylib otomatik yazar** (pylib_eski_*.py yedeği alınır). v1.4'te isen: bundle'daki yeni pylib.py'yi elle kopyala. v1.5'te bu durum ASLA sessiz kalamaz: açılışta `!! PYLIB ESI` uyarısı + komut hatasında `!! PYTHON HATASI — detay: pyerr` konsol satırı + `results\last_warning.txt` / `last_pyfail.txt` |
 | **`ImportError: No module named maxlib`** (pyerr.log'da tekrar tekrar; status → "sonuc dosyasi yok") | **`C:\MaxExec\pylib.py` makinede yok** — v1.2 saha bulgusu: `load` sessiz IOError yedi, maxlib kurulmadı, her komut import hatası yedi. Zincir kendisi sağlamdı (py_probe.txt oluştu) | bundle zip'teki `pylib.py`'yi `C:\MaxExec` içine kopyala. **v1.3 otomatik yükler + dosya yoksa konsolda "pylib.py : YOK!!" der; komutlar kendini onarır** |
 | **`load` komutu "dosya YOK" diyor** | Yanlış/eksik yol | `load C:/MaxExec/pylib.py` — ya da hiç yazma; v1.3 otomatik yükler |
