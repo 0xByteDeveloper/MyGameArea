@@ -1,8 +1,21 @@
 # -*- coding: utf-8 -*-
 """
 ===========================================================================
- pylib.py - MaxExecutor Ana-Thread Komut Kutuphanesi (v3.1)
+ pylib.py - MaxExecutor Ana-Thread Komut Kutuphanesi (v3.2)
 ===========================================================================
+ v3.2 DEGISIKLIKLER (saha testi 7 "enter takiliyor + sahte CREATE_FAILURE"):
+   * enter(): UI START yolu ONCELIKLI - SelectSlot + StartGame()/startButton
+     (MaximumPyScript_Merged_calisan yolu + kullanici dogrulamasi). Saha
+     kaniti: DirectEnter YENI olusan karakterde server tarafindan reddediliyor
+     (loading acilip login ekranina geri atiyor), eski karakterde calisiyor.
+     DirectEnter artik sadece UI yolu bulunamazsa YEDEK.
+   * mkchar(): paket yolu artik SADECE OLUSTUR butonu bulunamazsa yollanir.
+     Kanit: cift paket (buton + direkt) -> 1 basari + 1 CREATE_FAILURE: 0
+     ("0 karakter yaratilamaz") - karakter zaten olusmustu, 2. paket
+     reddedildi. Sahte hata kokten biter.
+   * enter(): UI yolu secildiginde DirectEnter CAGRILMAZ (RC12 cift-giris
+     yasagi: UI StartGame paketi kendisi yollar, ustune bir de DirectEnter
+     NPC yukleme hatasi yapar).
  v3.1 DEGISIKLIKLER (oturum 11 - saha testi 6 "PYTHON HATASI" sonrasi):
    * _write() artik raporlarini KONSOLA da basar ([CHARLIST]/[JOBLIST]/...
      etiketiyle). DLL v1.6 probe'u sys.stdout'u CONOUT$'a baglar; boylece
@@ -53,10 +66,10 @@ import os
 
 RESULT_DIR = r'C:\MaxExec\results'
 
-# SURUM ISARETI - DLL v1.6 bunu okur (FIX-19). pylib.py degistirmeden bu
+# SURUM ISARETI - DLL v1.7 bunu okur (FIX-19). pylib.py degistirmeden bu
 # satiri silme/degistirme! Eski pylib (v2.x) bu isarete sahip degil ve
 # DLL acilista KOSKOCA uyar basar.
-PYLIB_VERSION = '3.1'
+PYLIB_VERSION = '3.2'
 
 RACE_TABLE = {
     0: ('Warrior', 'E'), 1: ('Ninja', 'K'), 2: ('Sura', 'E'), 3: ('Shaman', 'K'),
@@ -504,12 +517,19 @@ def create(slot, name, race, shape):
         _write('create', 'HATA ' + _fmt_error(e) + '\n')
 
 # ---------------------------------------------------------------------------
-# 7) ENTER - UI senkron + TEK DirectEnter (RC12: cift giris NPC'leri oldurur)
+# 7) ENTER - UI START yolu ONCELIKLI (v3.2 - saha testi 7 fix)
+#    Saha kaniti: DirectEnter yeni olusan karakterde server tarafindan
+#    reddediliyor (loading acilip login ekranina geri atiyor), eski
+#    karakterde calisiyor. Calisan script + kullanici dogrulamasi: once
+#    SelectSlot + StartGame. DirectEnter YEDEK (UI yolu bulunamazsa).
+#    RC12 cift-giris yasagi korunur: UI StartGame paketi kendisi yollar,
+#    ustune bir de DirectEnter cagirmak NPC yukleme hatasi yapar.
 # ---------------------------------------------------------------------------
 def enter(slot):
     try:
         log = []
         sw = _pw_by_type('SelectCharacterWindow')
+        ui_ok = False
         if sw is not None:
             try:
                 if hasattr(sw, 'SelectSlot'):
@@ -521,14 +541,51 @@ def enter(slot):
                 sw.slot = slot
             except:
                 pass
+            # a) StartGame metodu (start butonunun handler'i - calisan script yolu)
+            try:
+                if hasattr(sw, 'StartGame'):
+                    sw.StartGame()
+                    log.append('OK: StartGame() - UI giris yolu')
+                    ui_ok = True
+            except:
+                pass
+            # b) start butonu attr'si
+            if not ui_ok:
+                for attr in ('startButton', 'btnStart', 'btn_start', 'StartButton'):
+                    b = getattr(sw, attr, None)
+                    if b is not None and hasattr(b, 'CallEvent'):
+                        b.CallEvent()
+                        log.append('OK: %s.CallEvent() - UI giris yolu' % attr)
+                        ui_ok = True
+                        break
+            # c) ElementDictionary yedegi
+            if not ui_ok:
+                ed = getattr(sw, 'ElementDictionary', None) or {}
+                for key in ('start_button', 'btnStart', 'startButton'):
+                    b = ed.get(key, None)
+                    if b is not None and hasattr(b, 'CallEvent'):
+                        b.CallEvent()
+                        log.append('OK: start butonu (ElementDictionary: %s)' % key)
+                        ui_ok = True
+                        break
+        if ui_ok:
+            log.append('NOT: DirectEnter cagrilmadi (UI paketi kendisi yollar - cift giris yasagi)')
+            log.append('Beklenen: waitfor GameWindow 60')
+            _write('enter', '\n'.join(log) + '\n')
+            return
+        # d) YEDEK: UI yolu bulunamadiysa paket yolu (eski davranis)
+        if sw is None:
+            log.append('UYARI: SelectCharacterWindow bulunamadi (SCENE=%s) - paket yolu' % _scene_name())
+        else:
+            log.append('UYARI: StartGame/start butonu bulunamadi - paket yolu')
         try:
             import net
             net.DirectEnter(slot)
-            log.append('OK: DirectEnter(%d) - TEK giris (UI StartGame CAGRILMADI)' % slot)
+            log.append('OK: DirectEnter(%d) - YEDEK paket yolu' % slot)
             log.append('Beklenen: waitfor GameWindow 60')
-            _write('enter', '\n'.join(log) + '\n')
         except Exception, e:
-            _write('enter', 'HATA DirectEnter: ' + _fmt_error(e) + '\n')
+            log.append('HATA DirectEnter: ' + _fmt_error(e))
+        _write('enter', '\n'.join(log) + '\n')
     except Exception, e:
         _write('enter', 'HATA ' + _fmt_error(e) + '\n')
 
@@ -656,7 +713,8 @@ def joblist():
 
 # ---------------------------------------------------------------------------
 # 12) MKCHAR - UI akisiyla karakter olustur (sinif gez + cinsiyet + isim + OLUSTUR)
-# (kanitlanmis do_create_character deseni; paket yolu yedek)
+# (v3.2 fix: paket yolu SADECE buton bulunamazsa - cift paket sahte
+#  CREATE_FAILURE uretir; saha testi 7 kaniti)
 # ---------------------------------------------------------------------------
 def mkchar(name, race):
     try:
@@ -752,39 +810,45 @@ def mkchar(name, race):
             log.append('OK: OLUSTUR butonuna basildi')
         else:
             log.append('UYARI: olustur butonu bulunamadi - sadece paket yolu')
-        # e) paket yolu yedek (UI butonu yetmezse sunucuya gider)
-        time.sleep(1.0)
-        slot = -1
-        try:
-            import net
-            for i in range(SLOT_COUNT):
-                pid = 0
-                try:
-                    pid = net.GetAccountCharacterSlotDataInteger(i, net.ACCOUNT_CHARACTER_SLOT_ID)
-                except:
-                    pid = 0
-                if not pid:
-                    slot = i
-                    break
-        except:
-            pass
-        if slot < 0:
-            slot = 0
-        try:
-            import net
-            use_emp = 0
+        # e) paket yolu SADECE buton bulunamadiysa (v3.2 fix)
+        #    UI OLUSTUR butonu paketi KENDISI yollar (kanit: cift paket ->
+        #    1 basari + 1 CREATE_FAILURE: 0 - karakter zaten olusmustu, 2.
+        #    paket reddedildi). Buton bastiktan sonra bir de paket yollamak
+        #    SAHTE hata uretir - artik yollanmiyor.
+        if btn is None:
+            log.append('UYARI: buton yok - paket yolu deneniyor')
+            time.sleep(1.0)
+            slot = -1
             try:
-                eid = net.GetEmpireID()
-                if eid > 0:
-                    use_emp = eid
+                import net
+                for i in range(SLOT_COUNT):
+                    pid = 0
+                    try:
+                        pid = net.GetAccountCharacterSlotDataInteger(i, net.ACCOUNT_CHARACTER_SLOT_ID)
+                    except:
+                        pid = 0
+                    if not pid:
+                        slot = i
+                        break
             except:
                 pass
-            net.SendCreateCharacterPacket(slot, name, race, target_gender, use_emp, 0, 0, 0)
-            log.append('OK: SendCreateCharacterPacket(slot=%d, race=%d, shape=%d)' % (slot, race, target_gender))
-            log.append('NOT: UI butonu + paket ikisi de gonderildi (cift kayit riski dusuk;')
-            log.append('     server ayni isim/second reddeder - 30 sn sonra charlist ile kontrol)')
-        except Exception, e2:
-            log.append('UYARI: paket yolu hatasi: %s' % _fmt_error(e2))
+            if slot < 0:
+                slot = 0
+            try:
+                import net
+                use_emp = 0
+                try:
+                    eid = net.GetEmpireID()
+                    if eid > 0:
+                        use_emp = eid
+                except:
+                    pass
+                net.SendCreateCharacterPacket(slot, name, race, target_gender, use_emp, 0, 0, 0)
+                log.append('OK: SendCreateCharacterPacket(slot=%d, race=%d, shape=%d) - paket yolu' % (slot, race, target_gender))
+            except Exception, e2:
+                log.append('HATA: paket yolu hatasi: %s' % _fmt_error(e2))
+        else:
+            log.append('OK: paket yolu atlandi (buton kendisi yollar - cift paket sahte CREATE_FAILURE yapar)')
         log.append('Kontrol: waitfor SelectCharacterWindow 15 -> charlist')
         log.append('Hata olursa: lasterr (CREATE_FAILURE yakalanir)')
         _write('mkchar', '\n'.join(log) + '\n')
@@ -1090,6 +1154,6 @@ _write('pylib_load',
        'hata izleme hooklari: %s' % (', '.join(_HOOKS_OK) if _HOOKS_OK else 'henuz kurulamadi (status ile tekrar denenir)') + chr(10)
        + status_text())
 try:
-    sys.stdout.write('[MAXLIB] pylib v%s aktif - komutlar hazir (DLL v1.6 cifti)' % PYLIB_VERSION + chr(10))
+    sys.stdout.write('[MAXLIB] pylib v%s aktif - komutlar hazir (DLL v1.7 cifti)' % PYLIB_VERSION + chr(10))
 except:
     pass

@@ -391,3 +391,52 @@ Ek bulgular ayni RAR'dan:
 uyarisiz; bayat v1.4/v1.5 string izi 0); bundle MaxExecutor_bundle_v1.6.zip
 (391KB, pylib v3.1 dogrulamali); KULLANIM.md oturum-11 guncel (v1.6 OZET +
 2 yeni sorun giderme satiri).
+
+---
+
+## Oturum 12 — v1.7 / pylib v3.2: UI giris yolu + temiz karakter olusturma
+
+**Kullanici saha raporu (saha testi 7):** "calisanlar var calismayanlar var" ->
+buyuk sonuc arsivi (MaxExec_buyuk_sonuc.rar) analizi: v1.6 TEMIZ — 30 EXEC,
+pyfail=0, alive.txt saglikli (tick=151M, drain=1079). Python seviyesinde hicbir
+hata YOK; kalan iki sorun OYUN seviyesindeydi:
+
+1) **enter oyuna sokmuyor:** net.DirectEnter YENI olusan karakterde (YeniIsm,
+   slot 0) 2 kez reddedildi (loading aciliyor -> login ekranina geri atiyor,
+   CONN=0); eski karakterde (raynare, slot 2) CALISTI (tam oyun yuklemesi,
+   2 kez). Kullanicinin oyun-ici START butonu ile girisi calisiyordu
+   (EXEC kaydi olmayan 2. tam yukleme = manuel UI giris). Referans kanit:
+   MaximumPyScript_Merged_calisan.py do_enter_game: SelectSlot + sw.slot +
+   **sw.StartGame()** ONCELIKLI, DirectEnter yedek.
+
+2) **mkchar sonrasi sahte CREATE_FAILURE: 0 ("0 karakter yaratilamaz"):**
+   karakter olusmustu (charlist dogruladi). Kok neden: CIFT PAKET — UI
+   OLUSTUR butonu paketi KENDISI yolluyor + pylib ek 1 sn sonra direkt
+   SendCreateCharacterPacket yolluyordu. 1. paket basari, 2. paket reddi
+   (isim/slot dolu) -> sahte hata. Matematik: cift paket + 1 basari +
+   1 CREATE_FAILURE + UI butonunun paket yolladiginin kesin kaniti.
+
+**Cozum (v1.7 / pylib v3.2):**
+- FIX-29 pylib v3.2 enter(): UI START yolu ONCELIKLI — SelectSlot(slot) +
+  sw.slot + [a] sw.StartGame() metodu, [b] startButton/btnStart/btn_start/
+  StartButton attr taramasi, [c] ElementDictionary yedegi; hepsi yoksa
+  [d] DirectEnter YEDEK (eski davranis). UI yolu secilince DirectEnter
+  HIC CAGRILMAZ (RC12 cift-giris yasagi korunur).
+- FIX-30 pylib v3.2 mkchar(): paket yolu SADECE OLUSTUR butonu bulunamazsa;
+  buton basildiysa paket atlanir ("paket yolu atlandi" raporu).
+- FIX-31 v1.7 surum dizgileri (konsol basligi, banner, help, DllMain logu,
+  BootImport guard metni, last_warning metni); enter help'i: "UI START yolu
+  (DirectEnter yedek)".
+- pylib_embedded.h v3.2 olarak yeniden uretildi (scripts/embed_pylib.py;
+  lib2to3 sozdizim dogrulamali).
+- syserr.txt (kullanici ekledi): sadece efekt dosyasi log'lari (.mse yok) —
+  zararsiz, oyunun kendi kaydi; aksiyon gerektirmez.
+
+**Araclar:** workspace resetlendi -> repo GitHub'dan klonlandi (c955174);
+mingw yerine **zig 0.11.0** indirildi (tools/zig, root-less);
+`zig c++ -target x86-windows-gnu -shared -O2 -Wall` → PE32 i386 DLL, kendi
+kaynak kodunda 0 uyarı.
+
+**Teslimat:** bin/MaxExecutor.dll 553KB + bin/MaxInject.exe 222KB (PE32 i386);
+bundle MaxExecutor_bundle_v1.7.zip (434KB, pylib v3.2 dogrulamali); KULLANIM.md
+oturum-12 guncel (v1.7 OZET + enter/mkchar aciklamalari + mimari tablo).

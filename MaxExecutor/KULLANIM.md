@@ -2,7 +2,9 @@
 
 > Paket içeriği, kurulum, komutlar, giriş akışı, sorun giderme — hepsi bu dosyada.
 > Mimari gerekçe için: `reports/DEV_REAL_BINARY_TEST.md` (RC18/RC19) + `reports/DEV_GIL_ANALYSIS.md` (RC1-RC17).
-> Son güncelleme: **Oturum 11 — v1.6 / pylib v3.1** (komut tamponu kök-fix + canlı konsol çıktısı)
+> Son güncelleme: **Oturum 12 — v1.7 / pylib v3.2** (UI giriş yolu + temiz karakter oluşturma)
+>
+> **v1.7 ÖZET — saha testi 7 dersi (oturum 12):** v1.6'nın 30 komutu da temiz çalıştı (pyfail=0) ve iki gerçek oyun-düzeyi bulgu çıktı. **(1) `enter` oyuna sokmuyor:** `net.DirectEnter` YENİ oluşturulan karakterde sunucu tarafından reddediliyor (loading penceresi açılıp login ekranına geri atıyor); eski karakterlerde (raynare) çalışıyor. Oyunun kendi START butonu ise çalışıyor — kullanıcı doğrulaması + MaximumPyScript_Merged_calisan kanıtı. **v1.7 `enter`: önce SelectSlot + StartGame/startButton (UI yolu); DirectEnter sadece UI yolu bulunamazsa YEDEK.** Çift-giriş yasağı (RC12) korunur: UI yolu seçilince DirectEnter hiç çağrılmaz. **(2) mkchar'dan sahte CREATE_FAILURE:** çift paket gidiyordu — UI OLUSTUR butonu paketi kendisi yolluyor + pylib bir de direkt SendCreateCharacterPacket yolluyordu → 1. paket başarı, 2. paket `CREATE_FAILURE: 0 (0 karakter yaratılamaz)`. Karakter zaten oluşmuştu; sahte hataydı. **v1.7 mkchar: paket yolu SADECE buton bulunamazsa.**
 >
 > **v1.3 ÖZET — saha testi 26.10 dersi:** kuyruk/drenaj/ana-thread zinciri ÇALIŞIYORDU (kanıt: `results\py_probe.txt` oluştu, `alive.txt` aktti) ama makinede **`C:\MaxExec\pylib.py` dosyası yoktu**. `load` sessiz IOError yedi, `maxlib` hiç kurulmadı; her `status`/`login`/`waitfor` komutu pyerr.log'a "ImportError: No module named maxlib" yazdı (100+ kez). **v1.3 pylib.py'yi otomatik yükler** — dosya yoksa baştan uyarır.
 
@@ -16,9 +18,9 @@
 
 | Dosya | Ne işe yarar | Nereden geldi |
 |---|---|---|
-| `bin/MaxExecutor.dll` | **Ana proje.** Oyun içine enjekte edilen 32-bit DLL. Ana thread'de (WndProc + SetTimer) Python çalıştırır. Hook YOK, SHM YOK, arka-plan PyRun YOK. **v1.2: SetTimer drenajı + sayaçlar + probe. v1.3: pylib.py otomatik yükleme + kendini onaran komut bootstrap'i + `pyerr` komutu.** | Bu repo — derlendi (GCC 14 mingw-w64 i686, `-static`) |
+| `bin/MaxExecutor.dll` | **Ana proje.** Oyun içine enjekte edilen 32-bit DLL. Ana thread'de (WndProc + SetTimer) Python çalıştırır. Hook YOK, SHM YOK, arka-plan PyRun YOK. **v1.2: SetTimer drenajı + sayaçlar + probe. v1.3: pylib.py otomatik yükleme + kendini onaran komut bootstrap'i + `pyerr` komutu.** | Bu repo — derlendi (32-bit PE, `-O2 -static`; mingw-w64 i686 veya zig cc `x86-windows-gnu`) |
 | `bin/MaxInject.exe` | DLL enjektörü. `metin2client.exe` sürecini bulur, DLL'i LoadLibrary ile yükler. | Bu repo — derlendi |
-| `pylib.py` | DLL içine yüklenen Python komut kütüphanesi (maxlib): login/charlist/selchar/newchar/mkchar/delchar/delcode/lasterr... **v3.1: raporlar konsola da yansır** | Bu repo |
+| `pylib.py` | DLL içine yüklenen Python komut kütüphanesi (maxlib): login/charlist/selchar/newchar/mkchar/delchar/delcode/lasterr... **v3.2: enter UI START yolu + mkchar tek paket** | Bu repo |
 | `MaximumPyScript_STABLE.py` | Eski mimarinin (SHM'li v17) RC12/RC13/RC14 yamalı hali. Alternatif yol. | Bu repo |
 | `MaxExecutor.cpp` / `MaxInject.cpp` | Kaynak kodlar (değişiklik yaparsan yeniden derlersin) | Bu repo |
 | `README.md` | Mimari açıklama (İngilizce başlıklı ama içerik Türkçe) | Bu repo |
@@ -46,15 +48,15 @@
    - Başka isimli client: `MaxInject.exe metin2.exe`
    - PID ile: `MaxInject.exe 12345`
    - Farklı DLL yolu: `MaxInject.exe metin2client.exe D:\yer\MaxExecutor.dll`
-4. **Konsol açılır** — "MaxExecutor v1.6" başlıklı siyah pencere (oyunun ÜSTÜNDE kalır, TOPMOST).
+4. **Konsol açılır** — "MaxExecutor v1.7" başlıklı siyah pencere (oyunun ÜSTÜNDE kalır, TOPMOST).
    İlk satırlarda şunları görmelisin:
    ```
    python27.dll : BULUNDU [initialized]
-   pylib.py      : v3.1 (uyumlu) - otomatik yuklenecek, load yazmana gerek yok
+   pylib.py      : v3.2 (uyumlu) - otomatik yuklenecek, load yazmana gerek yok
    oyun penceresi: SUBCLASS EDILDI (hwnd=0x...)
    ana-thread timer: KURULDU
    ```
-   > `pylib.py : GUNCELLENDI -> v3.1 (DLL icinden yazildi)` görürsen: diskteki pylib eskiymiş, v1.6 gömülü kopyayı yazdı — ekstra bir şey yapmana gerek yok.
+   > `pylib.py : GUNCELLENDI -> v3.2 (DLL icinden yazildi)` görürsen: diskteki pylib eskiymiş, v1.7 gömülü kopyayı yazdı — ekstra bir şey yapmana gerek yok.
    > `!! PYLIB ESI` uyarısı görürsen: pylib yazılamadı demektir (yazma hatası) — o zaman elle kopyala.
    > `python27.dll : YOK` ise oyunun Python'u henüz başlamamıştır → konsolda bekle,
    > oyun login ekranına gelince `status` yazarak tekrar dene (DLL her 0.5 sn'de yeniden dener, 20 sn boyunca).
@@ -83,7 +85,7 @@ waitfor LoginWindow 15                  (3) login (id/şifre) ekranına düşün
 login kullaniciadim sifrem              (4) id+şifre doldur + giriş
 waitfor SelectCharacterWindow 30        (5) karakter seçme ekranı
 charlist                                (6) 5 slot tablosu
-enter 0                                 (7) 1. slotla oyuna gir (TEK DirectEnter)
+enter 0                                 (7) 1. slotla oyuna gir (UI START yolu)
 waitfor GameWindow 60                   (8) oyun + NPC spawn
 status                                  (9) son durum
 pyerr                                   (*)  Python hatası olduysa son 30 satırı konsola döker
@@ -116,7 +118,7 @@ Sonuç dosyaları `C:\MaxExec\results\` altında: `py_probe.txt` (zincir kanıt�
 ```
 charlist              tabloya bak (hangi slotlar dolu/bos)
 selchar 4             4. slotu SEÇ (isaretler; girmez)
-enter 2               2. slotla OYUNA GİR (TEK DirectEnter)
+enter 2               2. slotla OYUNA GİR (UI START yolu - StartGame butonu)
 ```
 
 ### b) Yeni karakter oluşturma (2 ekran: bayrak → sınıf/cinsiyet/isim)
@@ -134,6 +136,8 @@ waitfor CreateCharacterWindow 10
 olusturma ekraninda:
 joblist               sinif/cinsiyet tablosu (race 0-8) + ekran durumu
 mkchar YeniIsim 3     sinif gez + cinsiyet + isim + OLUSTUR'a bas
+                      (v3.2: paket yolu SADECE buton bulunamazsa - cift paket
+                       sahte CREATE_FAILURE: 0 uretiyordu, artik yok)
                       race=3 -> Shaman(K); race=7 -> Shaman(E); 0=Warrior(E)...
 waitfor SelectCharacterWindow 15
 charlist              yeni karakter slotta mi? (30 sn create cooldown olabilir)
@@ -186,7 +190,7 @@ raw print(net.GetMainActorVID())     → çıktı C:\MaxExec\results\last_error.
 | SendAttackPacket'a prolog hook → MazeProtector/decrypt çakışması (RC18) | Fonksiyon hook'u YOK |
 | SHM bayt dilimi komutlar | Atomik dosya kuyruğu (`.tmp` → `MoveFile`) |
 | `gc.get_objects()` heap taraması (RC2) | Yok |
-| Çift giriş StartGame+DirectEnter → NPC yok (RC12) | Tek giriş (`maxlib.enter` = tek DirectEnter) |
+| Çift giriş StartGame+DirectEnter → NPC yok (RC12) | Tek giriş: UI yolu seçilince DirectEnter ÇAĞRILMAZ (v3.2); DirectEnter yalnız UI bulunamazsa tek başına |
 
 Worker thread yalnız **dosya yazar + PostMessage** atar; Python'a hiç dokunmaz. Drain her mesajda
 en fazla **4 komut** işler ve render'a nefes verir (`MAX_CMDS_PER_DRAIN`).

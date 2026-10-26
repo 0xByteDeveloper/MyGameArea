@@ -90,6 +90,23 @@
 //    FIX-28: PROBE sys.stdout'u CONOUT$'a baglar - oyun Python'inin print
 //            cikisi artik konsola duser; pylib v3.1 rapor yankisi (charlist/
 //            joblist/mkchar canli cikisi) bunun uzerinden calisir.
+//  v1.7 (oturum 12 - saha testi 7: "enter takiliyor + sahte CREATE_FAILURE"):
+//    Saha kaniti 1: enter/DirectEnter YENI olusan karakterde server
+//            tarafindan reddediliyor (loading acilip login ekranina geri
+//            atiyor), eski karakterde calisiyor. Kullanici dogrulamasi:
+//            oyunun kendi START butonu (UI yolu) calisiyor.
+//    Saha kaniti 2: mkchar sonrasi CREATE_FAILURE: 0 "0 karakter
+//            yaratilamaz" - ama karakter olusuyordu. Kok neden: cift paket
+//            (UI OLUSTUR butonu + pylib'in direkt SendCreateCharacterPacket
+//            cagrisi). 1. paket basarili, 2. paket reddedildi -> sahte hata.
+//    FIX-29 (pylib v3.2): enter() UI START yolu ONCELIKLI (SelectSlot +
+//            StartGame/startButton - MaximumPyScript_Merged_calisan yolu);
+//            DirectEnter sadece UI yolu bulunamazsa YEDEK. RC12 cift-giris
+//            yasagi korunur.
+//    FIX-30 (pylib v3.2): mkchar() paket yolu SADECE buton bulunamazsa;
+//            buton bastiysa paket atlanir (cift paket = sahte CREATE_FAILURE).
+//    FIX-31: surum dizgileri + help metni v1.7'ye cekildi; enter help'i
+//            yeni yolu anlatir.
 // ============================================================================
 
 //  xgodmod4 gereksinimleri:
@@ -129,7 +146,7 @@
 #include <stdarg.h>
 #include <string>
 #include <vector>
-#include "pylib_embedded.h"   // FIX-22: gomulu pylib (v3.1, otomatik uretilir)
+#include "pylib_embedded.h"   // FIX-22: gomulu pylib (v3.2, otomatik uretilir)
 
 // ---------------------------------------------------------------------------
 // Sabitler
@@ -423,7 +440,7 @@ static std::string BootImport(void)
         "    maxlib._MX_OLD_WARNED = True\n"
         "    try:\n"
         "        import sys\n"
-        "        sys.stderr.write('!!! PYLIB ESKI v' + str(getattr(maxlib, 'PYLIB_VERSION', '?')) + ' - DLL v1.6: selchar/newchar/mkchar/delchar/empirelist/empireui/joblist/delcode/lasterr komutlari pylib v3.0 ister! C:\\MaxExec\\pylib.py dosyasini yenisiyle degistir (bundle zip icinde) !!!\\n')\n"
+        "        sys.stderr.write('!!! PYLIB ESKI v' + str(getattr(maxlib, 'PYLIB_VERSION', '?')) + ' - DLL v1.7: selchar/newchar/mkchar/delchar/empirelist/empireui/joblist/delcode/lasterr komutlari pylib v3.0 ister! C:\\MaxExec\\pylib.py dosyasini yenisiyle degistir (bundle zip icinde) !!!\\n')\n"
         "    except Exception:\n"
         "        pass\n", BASE_DIR);
     buf[sizeof(buf)-1] = 0;
@@ -655,7 +672,7 @@ static bool InitConsole(void)
         LogLine("CONOUT$ (stderr) yeniden acilamadi");
     setvbuf(stdout, NULL, _IONBF, 0);   // buffer'siz: crash olsa bile yazar
     setvbuf(stderr, NULL, _IONBF, 0);
-    SetConsoleTitleA("MaxExecutor v1.6");
+    SetConsoleTitleA("MaxExecutor v1.7");
     HWND cw = GetConsoleWindow();
     if (cw)
     {
@@ -708,7 +725,7 @@ static std::vector<std::string> SplitArgs(const std::string& line)
 
 static void PrintHelp(void)
 {
-    printf("\n=== MaxExecutor v1.6 (karakter islemleri + hata izleme + canli konsol cikisi) ===\n");
+    printf("\n=== MaxExecutor v1.7 (UI giris yolu + temiz karakter olusturma) ===\n");
     printf("  help                        : bu yardim\n");
     printf("  status                      : anlik sahne/baglanti snapshot\n");
     printf("  serverlist                  : server/CH listbox icerigi\n");
@@ -716,7 +733,7 @@ static void PrintHelp(void)
     printf("  login <id> <pwd>            : login ekraninda UI doldurur + giris\n");
     printf("  charlist                    : 5 slot tablosunu doken rapor\n");
     printf("  selchar <slot>              : karakter slotu SEC (0-4)\n");
-    printf("  enter <slot>                : oyuna giris - TEK DirectEnter\n");
+    printf("  enter <slot>                : oyuna giris - UI START yolu (DirectEnter yedek)\n");
     printf("  -- karakter olusturma --\n");
     printf("  newchar                     : olustur butonuna bas (bayrak/olusturma acar)\n");
     printf("  empirelist                  : bayrak listesi + mevcut empire\n");
@@ -832,7 +849,7 @@ static DWORD WINAPI WorkerThread(LPVOID)
     const bool con = InitConsole();
 
     printf("\n=============================================\n");
-    printf("  MaxExecutor v1.6 - ana-thread executor (komut tamponu fix + canli konsol)\n");
+    printf("  MaxExecutor v1.7 - ana-thread executor (UI giris yolu + temiz olusturma)\n");
     printf("  hook yok | SHM yok | arka-plan PyRun yok\n");
     printf("=============================================\n");
     if (!con)
@@ -893,7 +910,7 @@ static DWORD WINAPI WorkerThread(LPVOID)
                 char rp[MAX_PATH];
                 _snprintf(rp, MAX_PATH, "%s\\last_warning.txt", RESULT_DIR); rp[MAX_PATH-1]=0;
                 WriteFileAll(rp, std::string("! PYLIB ESI SURUM: v") + vShow +
-                    "  (DLL v1.6 pylib v3.0 ister)\n"
+                    "  (DLL v1.7 pylib v3.0 ister)\n"
                     "Yeni pylib.py'yi " + std::string(BASE_DIR) + " icine kopyala (bundle zip / GitHub).\n"
                     "ESKI pylib ILE: selchar/newchar/mkchar/delchar/empirelist/empireui/"
                     "joblist/delcode/lasterr CALISMAZ (AttributeError).\n");
@@ -1057,7 +1074,7 @@ BOOL APIENTRY DllMain(HMODULE hMod, DWORD reason, LPVOID)
         DisableThreadLibraryCalls(hMod);
         EnsureDirs();
         CreateThread(NULL, 0, WorkerThread, NULL, 0, NULL);
-        LogLine("MaxExecutor v1.6 yuklendi (pid=%lu) — worker baslatiliyor",
+        LogLine("MaxExecutor v1.7 yuklendi (pid=%lu) — worker baslatiliyor",
                 GetCurrentProcessId());
     }
     return TRUE;
