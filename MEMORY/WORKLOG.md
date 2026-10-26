@@ -294,3 +294,37 @@
   delchar/delcode/serverlist/lasterr (CmdLastErr son 25 satiri konsola doker)
 - PrintHelp v1.4 tablosu (giris/olusturma/silme akislari)
 - DLL 604KB pei-i386, uyarisiz derleme
+
+---
+
+## Oturum 10 — Saha Testi 5: "yeni komutlar calismiyor" (v1.5)
+
+**Kullanicidan:** MaxExec_calismayanlar.rar — v1.4 konsol ciktisi: selchar/newchar/
+mkchar/delchar/delcode/empirelist/empireui/joblist kuyruga yaziliyor ama hicbir
+sonuc dosyasi olusmuyor; lasterr "henuz oyun hatasi yaklanmadi" diyor.
+
+**Kok neden (RAR analizi):**
+- pyerr.log kuyrugu: `AttributeError: 'module' object has no attribute 'selchar'`
+  (x5), newchar/mkchar/lasterr/delchar ayni sekilde — DLL v1.4 NEW, pylib.py DISKTE
+  v2.0 (eski bundle'dan; 427 satir, yeni fonksiyonlar yok)
+- last_pylib_load.txt: "pylib **v2.0** yuklendi" — oto-yukleme ESKI dosyayi yuklemis
+- DLL v1.4 dispatch saglamdi; Python tarafi eskiydi. Zincir sorunu YOK.
+- Yanlis sifre yakalanamamasi da ayni neden: OnLoginFailure hook'unu pylib v3.0
+  kurar — v2.0 yukluyken hook hic kurulmadi (last_error.txt hic olusmadi)
+
+**v1.5 duzeltmeleri:**
+- FIX-19 SURUM EL SIKISMASI: acilista C++ pylib.py'yi okur, PYLIB_VERSION isareti
+  <3 ise KOSKOCA konsol uyarisi + results\last_warning.txt + log kaydi
+- FIX-20 PyRun rc KONTROL: rc!=0 -> konsol "!! PYTHON HATASI - detay: pyerr" +
+  last_pyfail.txt + alive.txt'ye pyfail= sayaci. Sessiz Python hatasi devri KAPANDI
+- FIX-21 BootImport guard: her komut oncesi surum <3 ise pyerr.log'a aciklamali
+  uyari (AttributeError yaninda "PYLIB ESKI" satiri gorunur, dedup'lu)
+- FIX-22 GOMULU PYLIB: pylib v3.0 (44858 bayt) DLL icine gomuldu
+  (scripts/embed_pylib.py -> pylib_embedded.h; SHA1 roundtrip dogrulandi).
+  Diskteki pylib eksik/eskiyse DLL otomatik yazar (eskisi pylib_eski_vX.py
+  yedegi) — artik SADECE DLL guncellemek yeterli
+- probe versiyon dilimi [:12] -> [:24] (kafa karistirici kesilme giderildi)
+- pylib.py: PYLIB_VERSION='3.0' isareti eklendi (maxlib kaydi globals'i kopyalar,
+  isaret modulde de gorunur — DLL guard'i calisir)
+
+**Teslimat:** DLL 657KB pei-i386 + bundle 399KB; KULLANIM.md oturum-10 guncel.

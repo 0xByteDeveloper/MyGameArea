@@ -47,6 +47,25 @@
 //    + lasterr: oyun hatalarini (yanlis sifre vb.) konsola doker —
 //      pylib'in OnLoginFailure/OnCreateFailure/OnDelete* hooklari
 //      results\last_error.txt'ye yazar.
+//  v1.5 (oturum 10 - saha testi 5: "yeni komutlar calismiyor" kok nedeni):
+//    KOK NEDEN: makinede DLL v1.4 vardi ama pylib.py hala v2.0 idi (eski
+//    bundle'dan kopyalanmisti). selchar/newchar/mkchar/delchar -> sessiz
+//    AttributeError: pyerr.log'a duser, konsol SUSAR, kimse fark etmez.
+//    Bu durum artik IMKANSIZ hale getirildi:
+//    FIX-19: SURUM EL SIKISMASI - acilista C++ pylib.py'yi okuyup
+//            PYLIB_VERSION isaretini cikarir; <3 ise konsolda KOSKOCA
+//            uyar + results\last_warning.txt + maxexec.log'a kayit.
+//    FIX-20: PyRun_SimpleString DONUS DEGERI KONTROL - rc!=0 ise konsola
+//            "!! PYTHON HATASI - detay: pyerr" basilir + last_pyfail.txt
+//            yazilir + alive.txt'ye pyfail sayaci eklenir. Sessiz Python
+//            hatasi devri kapandi.
+//    FIX-21: BootImport surum guard'i - diskteki pylib eskiyse her komut
+//            oncesi pyerr.log'a ACIKLAMALI uyari satiri (AttributeError
+//            yaninda "PYLIB ESKI - yeni pylib.py kopyala" yazar).
+//    FIX-22: GOMULU PYLIB - pylib v3.0 DLL ICINE gomulu (pylib_embedded.h,
+//            scripts/embed_pylib.py uretir). Diskteki pylib eksik/eskiyse
+//            DLL otomatik yazar (eskisi yedeklenir) - artik SADECE DLL
+//            guncellemek yeterli, pylib.py'yi elle tasimak zorunlu degil.
 // ============================================================================
 //  xgodmod4 gereksinimleri:
 //    * Python fonksiyon hook'u  YOK  (monkey-patch yok)
@@ -85,6 +104,7 @@
 #include <stdarg.h>
 #include <string>
 #include <vector>
+#include "pylib_embedded.h"   // FIX-22: gomulu pylib v3.0 (otomatik uretilir)
 
 // ---------------------------------------------------------------------------
 // Sabitler
@@ -188,6 +208,7 @@ static volatile LONG g_nMsg = 0;     // WndProc'un aldigi WM_APP_MAXEXEC sayisi
 static volatile LONG g_nTimer = 0;   // TimerProc cagrilari (oyun pompasi kaniti)
 static volatile LONG g_nDrain = 0;   // DrainQueue cagrilari
 static volatile LONG g_nExec = 0;    // gercekten PyRun edilen komutlar
+static volatile LONG g_nPyFail = 0;  // FIX-20: PyRun'in -1 dondurdugu komutlar
 
 static void InitPaths(void)
 {
@@ -213,11 +234,11 @@ static void InitPaths(void)
 
 static void Heartbeat(void)
 {
-    char buf[160];
-    sprintf(buf, "tick=%lu drain=%ld exec=%ld timer=%ld msg=%ld py=%d",
+    char buf[192];
+    sprintf(buf, "tick=%lu drain=%ld exec=%ld timer=%ld msg=%ld py=%d pyfail=%ld",
             (unsigned long)GetTickCount(),
             (long)g_nDrain, (long)g_nExec, (long)g_nTimer, (long)g_nMsg,
-            pfn_PyRun_SimpleString ? 1 : 0);
+            pfn_PyRun_SimpleString ? 1 : 0, (long)g_nPyFail);   // FIX-20
     WriteFileAll(ALIVE_FILE, buf);
 }
 
@@ -248,9 +269,23 @@ static void DrainQueue(void)
         {
             LogLine("EXEC %s (%u byte)", fd.cFileName, (unsigned)code.size());
             // >>> ANA THREAD'DE PYTHON CALISTIRMA (GIL zaten ana thread'de) <<<
-            pfn_PyRun_SimpleString(code.c_str());
+            int rc = pfn_PyRun_SimpleString(code.c_str());
             InterlockedIncrement(&g_nExec);
             ++done;
+            // FIX-20: traceback pyerr.log'da olur ama sahibi KONSOLDA da
+            // gormek zorunda - sessiz Python hatasi devri kapandi.
+            if (rc != 0)
+            {
+                InterlockedIncrement(&g_nPyFail);
+                LogLine("PYFAIL %s (rc=%d)", fd.cFileName, rc);
+                char fp[MAX_PATH];
+                _snprintf(fp, MAX_PATH, "%s\\last_pyfail.txt", RESULT_DIR); fp[MAX_PATH-1]=0;
+                WriteFileAll(fp, std::string("PYTHON HATASI: ") + fd.cFileName +
+                    "\nDetay: pyerr komutunu yaz (pyerr.log son satirlari).\n"
+                    "En sik neden: ESKI pylib.py - v3.0 ile degistir (bundle zip)!\n");
+                printf("[MAXEXEC] !! PYTHON HATASI (%s) - detay icin: pyerr\n", fd.cFileName);
+                fflush(stdout);
+            }
         }
         DeleteFileA(full.c_str());
     } while (FindNextFileA(h, &fd));
@@ -341,13 +376,27 @@ static void QRaw(const std::string& code)
 // ---------------------------------------------------------------------------
 static std::string BootImport(void)
 {
-    char buf[512];
+    // FIX-15: kendini onaran import + FIX-21: surum guard'i.
+    // Diskteki pylib eskiyse (v2.x) pyerr.log'a ACIKLAMALI uyari duser;
+    // yeni komutlarin AttributeError'leri boylece kendini aciklar.
+    char buf[1024];
     _snprintf(buf, sizeof(buf),
         "try:\n"
         "    import maxlib\n"
         "except Exception:\n"
         "    exec(open(r'%s\\pylib.py').read())\n"
-        "    import maxlib\n", BASE_DIR);
+        "    import maxlib\n"
+        "try:\n"
+        "    _mxv = int(str(getattr(maxlib, 'PYLIB_VERSION', '0')).split('.')[0])\n"
+        "except Exception:\n"
+        "    _mxv = 0\n"
+        "if _mxv < 3 and not getattr(maxlib, '_MX_OLD_WARNED', False):\n"
+        "    maxlib._MX_OLD_WARNED = True\n"
+        "    try:\n"
+        "        import sys\n"
+        "        sys.stderr.write('!!! PYLIB ESKI v' + str(getattr(maxlib, 'PYLIB_VERSION', '?')) + ' - DLL v1.5: selchar/newchar/mkchar/delchar/empirelist/empireui/joblist/delcode/lasterr komutlari pylib v3.0 ister! C:\\MaxExec\\pylib.py dosyasini yenisiyle degistir (bundle zip icinde) !!!\\n')\n"
+        "    except Exception:\n"
+        "        pass\n", BASE_DIR);
     buf[sizeof(buf)-1] = 0;
     return std::string(buf);
 }
@@ -640,7 +689,7 @@ static std::vector<std::string> SplitArgs(const std::string& line)
 
 static void PrintHelp(void)
 {
-    printf("\n=== MaxExecutor v1.4 (karakter islemleri + hata izleme) ===\n");
+    printf("\n=== MaxExecutor v1.5 (karakter islemleri + hata izleme + surum kilidi) ===\n");
     printf("  help                        : bu yardim\n");
     printf("  status                      : anlik sahne/baglanti snapshot\n");
     printf("  serverlist                  : server/CH listbox icerigi\n");
@@ -675,6 +724,81 @@ static void PrintHelp(void)
     printf("Saglik: %s | oyun hatalari: results\\last_error.txt\n\n", ALIVE_FILE);
 }
 
+// ---------------------------------------------------------------------------
+// FIX-19: pylib surum okuyucu - diskteki pylib.py'den PYLIB_VERSION isaretini
+// ceker. Isaret yoksa (v2.0 ve oncesi) yanlis doner -> eski kabul edilir.
+// ---------------------------------------------------------------------------
+static bool ReadPylibVersion(const char* path, char outVer[32])
+{
+    outVer[0] = 0;
+    FILE* f = fopen(path, "rb");
+    if (!f) return false;
+    char buf[16384];
+    size_t n = fread(buf, 1, sizeof(buf) - 1, f);
+    fclose(f);
+    buf[n] = 0;
+    const char* p = strstr(buf, "PYLIB_VERSION");
+    if (!p) return false;
+    p = strstr(p, "=");
+    if (!p) return false;
+    ++p;
+    while (*p == ' ' || *p == '\t') ++p;
+    if (*p == '\'' || *p == '"')
+    {
+        char q = *p; ++p;
+        int i = 0;
+        while (*p && *p != q && *p != '\n' && i < 30) outVer[i++] = *p++;
+        outVer[i] = 0;
+    }
+    else
+    {
+        int i = 0;
+        while (((*p >= '0' && *p <= '9') || *p == '.') && i < 30) outVer[i++] = *p++;
+        outVer[i] = 0;
+    }
+    return outVer[0] != 0;
+}
+
+// ---------------------------------------------------------------------------
+// FIX-22: GOMULU PYLIB SENKRONU — DLL icinde tasiyan pylib kopyasini diske
+// yazar. Diskteki pylib eksikse olusturur, eskiyse gunceller (eskisini
+// pylib_eski_vX.py olarak yedekler). 'DLL yeni ama pylib eski' hatasi
+// artik otomatik iyilesir — elle dosya kopyalama zorunlulugu kalkti.
+// ---------------------------------------------------------------------------
+static void SyncEmbeddedPylib(void)
+{
+    char pylibPath[MAX_PATH];
+    _snprintf(pylibPath, MAX_PATH, "%s\\pylib.py", BASE_DIR); pylibPath[MAX_PATH-1]=0;
+    char diskVer[32];
+    bool hasDisk = ReadPylibVersion(pylibPath, diskVer);
+    int diskMaj  = hasDisk ? atoi(diskVer) : 0;
+    int embMaj   = atoi(EMBEDDED_PYLIB_VERSION);
+    if (hasDisk && diskMaj >= embMaj)
+        return;   // disk zaten yeni/esit — dokunma
+    if (hasDisk)
+    {
+        char bak[MAX_PATH];
+        _snprintf(bak, MAX_PATH, "%s\\pylib_eski_v%s.py", BASE_DIR,
+                  diskVer[0] ? diskVer : "2x"); bak[MAX_PATH-1]=0;
+        if (CopyFileA(pylibPath, bak, FALSE))
+            LogLine("pylib sync: eski dosya yedeklendi -> %s", bak);
+    }
+    std::string emb((const char*)EMBEDDED_PYLIB_DATA, EMBEDDED_PYLIB_SIZE);
+    if (WriteFileAll(pylibPath, emb))
+    {
+        LogLine("pylib sync: gomulu pylib v%s diske yazildi (eskisi: %s)",
+                EMBEDDED_PYLIB_VERSION, hasDisk ? diskVer : "yok");
+        printf("pylib.py      : GUNCELLENDI -> v%s (DLL icinden yazildi%s)\n",
+               EMBEDDED_PYLIB_VERSION,
+               hasDisk ? ", eski dosya pylib_eski_*.py olarak yedeklendi" : "");
+    }
+    else
+    {
+        LogLine("pylib sync HATA: %s yazilamadi", pylibPath);
+        printf("pylib.py      : GUNCELLENEMEDI (yazma hatasi!) - elle kopyala\n");
+    }
+}
+
 static DWORD WINAPI WorkerThread(LPVOID)
 {
     InitPaths();                                  // FIX-12: basedir.txt (D:\ destegi)
@@ -683,7 +807,7 @@ static DWORD WINAPI WorkerThread(LPVOID)
     const bool con = InitConsole();
 
     printf("\n=============================================\n");
-    printf("  MaxExecutor v1.4 - ana-thread executor (karakter islemleri)\n");
+    printf("  MaxExecutor v1.5 - ana-thread executor (surum kilidi + hata gorunurlugu)\n");
     printf("  hook yok | SHM yok | arka-plan PyRun yok\n");
     printf("=============================================\n");
     if (!con)
@@ -708,26 +832,47 @@ static DWORD WINAPI WorkerThread(LPVOID)
             "except:\n"
             "    pass\n"
             "_pf = open(r'%s\\py_probe.txt', 'w')\n"
-            "_pf.write('PYOK t=' + time.strftime('%%H:%%M:%%S') + ' ver=' + str(sys.version)[:12] + '\\n')\n"
+            "_pf.write('PYOK t=' + time.strftime('%%H:%%M:%%S') + ' ver=' + str(sys.version)[:24] + '\\n')\n"
             "_pf.close()\n", PYERR_LOG, RESULT_DIR);
         probe[sizeof(probe)-1] = 0;
         std::string pf;
         if (EnqueueCommand(probe, pf)) LogLine("probe kuyruga yazildi: %s", pf.c_str());
 
-        // FIX-14: AUTO-LOAD — pylib.py BASE_DIR icindeyse startup'ta otomatik
-        // yuklenir. (Saha testi dersi: dosya makinede yoktu; kullanici load
-        // yazdi, sessiz IOError -> 100 x "ImportError: No module named maxlib".)
+        // FIX-14: AUTO-LOAD + FIX-19: SURUM EL SIKISMASI + FIX-22: GOMULU SENKRON
+        // (Saha testi 5 dersi: DLL yeni ama pylib eski olabiliyordu - v1.5
+        //  artik gomulu kopyayi diske yazar, el sikismasi da dogrular.)
+        SyncEmbeddedPylib();
         char pylibPath[MAX_PATH];
         _snprintf(pylibPath, MAX_PATH, "%s\\pylib.py", BASE_DIR); pylibPath[MAX_PATH-1]=0;
         DWORD pa = GetFileAttributesA(pylibPath);
         if (pa != INVALID_FILE_ATTRIBUTES && !(pa & FILE_ATTRIBUTE_DIRECTORY))
         {
+            char ver[32];
+            bool okVer = ReadPylibVersion(pylibPath, ver) && atoi(ver) >= 3;
             std::string ld;
             if (EnqueueCommand(BootImport(), ld))
-            {
                 LogLine("AUTO-LOAD: pylib.py kuyruga kondu (%s)", pylibPath);
-                printf("pylib.py      : OTOMATIK yuklenecek (v1.3 — load yazmana gerek yok)\n");
+            if (okVer)
+            {
+                printf("pylib.py      : v%s (uyumlu) - otomatik yuklenecek, load yazmana gerek yok\n", ver);
                 printf("                kanit dosyasi: %s\\last_pylib_load.txt\n", RESULT_DIR);
+            }
+            else
+            {
+                const char* vShow = ver[0] ? ver : "2.x (isaret yok)";
+                char rp[MAX_PATH];
+                _snprintf(rp, MAX_PATH, "%s\\last_warning.txt", RESULT_DIR); rp[MAX_PATH-1]=0;
+                WriteFileAll(rp, std::string("! PYLIB ESI SURUM: v") + vShow +
+                    "  (DLL v1.5 pylib v3.0 ister)\n"
+                    "Yeni pylib.py'yi " + std::string(BASE_DIR) + " icine kopyala (bundle zip / GitHub).\n"
+                    "ESKI pylib ILE: selchar/newchar/mkchar/delchar/empirelist/empireui/"
+                    "joblist/delcode/lasterr CALISMAZ (AttributeError).\n");
+                LogLine("UYARI: pylib ESI v%s - v3.0 gerekli! (%s)", vShow, pylibPath);
+                printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+                printf("!! PYLIB ESI: diskteki pylib.py = v%s  (gereken: v3.0)\n", vShow);
+                printf("!! Yeni pylib.py'yi %s icine kopyala (bundle zip icinde var)\n", BASE_DIR);
+                printf("!! Eski pylib ile yeni komutlar CALISMAZ (selchar/mkchar/delchar..)\n");
+                printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
             }
         }
         else

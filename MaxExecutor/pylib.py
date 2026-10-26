@@ -43,6 +43,11 @@ import os
 
 RESULT_DIR = r'C:\MaxExec\results'
 
+# SURUM ISARETI — DLL v1.5 bunu okur (FIX-19). pylib.py degistirmeden bu
+# satiri silme/degistirme! Eski pylib (v2.x) bu isarete sahip degil ve
+# DLL acilista KOSKOCA uyar basar.
+PYLIB_VERSION = '3.0'
+
 RACE_TABLE = {
     0: ('Warrior', 'E'), 1: ('Ninja', 'K'), 2: ('Sura', 'E'), 3: ('Shaman', 'K'),
     4: ('Warrior', 'K'), 5: ('Ninja', 'E'), 6: ('Sura', 'K'), 7: ('Shaman', 'E'),
@@ -1057,5 +1062,5 @@ _write('pylib_load',
        'pylib v3.0 yuklendi (ANA THREAD)\n'
        'hata izleme hooklari: %s\n' % (', '.join(_HOOKS_OK) if _HOOKS_OK else 'henuz kurulamadi (status ile tekrar denenir)')
        + status_text())
-print '[maxlib] v3.0 yuklendi — selserver/login/charlist/enter/status/serverlist'
+print '[maxlib] v3.0 yuklendi — surum isareti PYLIB_VERSION=' + PYLIB_VERSION + ' (DLL v1.5 el sikismasi gecer)'
 print '[maxlib] yeni: selchar/newchar/joblist/mkchar/empirelist/empireui/delchar/delcode/lasterr'
