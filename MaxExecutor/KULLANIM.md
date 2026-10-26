@@ -93,6 +93,66 @@ pyerr                                   (*)  Python hatası olduysa son 30 satı
 
 Sonuç dosyaları `C:\MaxExec\results\` altında: `py_probe.txt` (zincir kanıtı), `last_status.txt`, `last_server.txt`, `last_login.txt`, `last_charlist.txt`, `last_enter.txt`, `last_error.txt`, `last_pylib_load.txt`.
 
+### SAHA DOĞRULAMALI SENARYOLAR (v1.7, oturum 12 testi: HEPSİ ÇALIŞTI ✓)
+
+> Bu iki akış gerçek sunucuda uçtan uca test edildi (giriş → bayrak → oluşturma → oyuna giriş → silme).
+> `waitfor` sahne adını `SCENE=` çıktısıyla eşleştirir (substring). Bu sunucuda bayrak ekranının
+> sahne adı **ReselectEmpireWindow**'dur (SelectEmpireWindow.py yüklenir ama sahne adı böyle raporlanır).
+
+**SENARYO A — BAYRAK SEÇMELİ** (hesapta 0 karakter / ilk karakter; testte tam olarak bu akış çalıştı):
+```
+status
+selserver 0 0
+waitfor LoginWindow 15
+login <id> <sifre>
+waitfor SelectCharacterWindow 30
+charlist
+newchar                        bayrak ekranı açılır (ilk karakter)
+waitfor ReselectEmpireWindow 10
+empirelist                     mevcut empire + bayrak tablosu
+empireui 2                     1=Shinsoo 2=Chunjo 3=Jinno -> OLUSTURMA ekranı açılır
+waitfor CreateCharacterWindow 10
+joblist                        sinif/cinsiyet tablosu + ekran durumu
+mkchar Isim 5                  sinif gez + cinsiyet + isim + OLUSTUR (tek paket)
+waitfor SelectCharacterWindow 15
+charlist                       yeni karakter slotta mi?
+selchar 0
+enter 0                        UI START yolu (StartGame) -> oyun yüklenir
+waitfor GameWindow 60
+status
+```
+
+**SENARYO B — BAYRAK SEÇMESİZ** (empire kayıtlı; `newchar` direkt olusturma ekranını açar):
+```
+status
+selserver 0 0
+waitfor LoginWindow 15
+login <id> <sifre>
+waitfor SelectCharacterWindow 30
+charlist
+newchar                        bayrak atlanir, direkt CreateCharacterWindow
+waitfor CreateCharacterWindow 10
+joblist
+mkchar YeniIsim 5
+waitfor SelectCharacterWindow 15
+charlist
+selchar 0
+enter 0
+waitfor GameWindow 60
+status
+```
+
+**SİLME AKIŞI** (test edildi: delchar → delcode → 0 karakter → sonraki newchar bayrak ekranını açtı):
+```
+charlist
+delchar <slot>                 silme sorusu + kod dialogu ACAR
+delcode <kod>                  kodu yazar + ONAYLAR
+waitfor SelectCharacterWindow 10
+charlist                       slot BOS mu?
+lasterr                        DELETE_SUCCESS/DELETE_FAILURE kaydi
+```
+> Not: `chardel` diye bir komut YOK — doğrusu `delchar` (saha testinde 3 kez karıştırıldı).
+
 ### ZİNCİR KOPTU MU? (bir şey olmuyorsa 30 sn bekle, sonra bak)
 
 | Kontrol | Ne demek |

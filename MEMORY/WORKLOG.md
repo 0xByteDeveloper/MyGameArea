@@ -440,3 +440,24 @@ kaynak kodunda 0 uyarı.
 **Teslimat:** bin/MaxExecutor.dll 553KB + bin/MaxInject.exe 222KB (PE32 i386);
 bundle MaxExecutor_bundle_v1.7.zip (434KB, pylib v3.2 dogrulamali); KULLANIM.md
 oturum-12 guncel (v1.7 OZET + enter/mkchar aciklamalari + mimari tablo).
+
+### Oturum 12 devam — saha dogrulama: v1.7 HEPSI CALISTI (kullanici raporu)
+
+Kullanici testi (yeni oturum logu) — tum komutlar dogrulandi:
+- enter 0 (UI START yolu) -> StartGame() cagrildi, DirectEnter CAGRILMADI,
+  YENI karakter (Isim, race 5) tam oyun yuklemesi ile girdi (2 kez). v1.7'nin
+  ana fix'i saha dogrulandi.
+- mkchar Isim 5 -> "OK: paket yolu atlandi (buton kendisi yollar...)" raporu
+  gorundu, SAHTE CREATE_FAILURE YOK. FIX-30 dogrulandi.
+- delchar 0 + delcode 111111/1111111 -> silme tamalandi (0 karakter ->
+  sonraki newchar BAYRAK ekranini acti).
+- newchar -> NEW EMPIRE WINDOW; empirelist -> SCENE=ReselectEmpireWindow
+  (bu sunucunun bayrak ekran sahnesi); empireui 2 -> OnSelectEmpire(2) +
+  ClickSelectButton + yedek paket -> CreateCharacterWindow acildi.
+- Bilinen tek sikinti: kullanici 3 kez "chardel" yazdi (dogrusu delchar) -
+  dokumante edildi.
+
+KULLANIM.md'ye "SAHA DOGRULAMALI SENARYOLAR" bolumu eklendi:
+Senaryo A (bayrak secmeli, waitfor'lu), Senaryo B (bayrak secsiz, waitfor'lu),
+Silme akisi. waitfor'in substring eslestirmesi ve ReselectEmpireWindow
+sahne adi notu dokumante edildi. Kod degisikligi YOK, rebuild YOK.
