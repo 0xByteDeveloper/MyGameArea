@@ -28,7 +28,8 @@ Metin2 client'ın yapısı bunu zorunlu kılar:
 | Dosya | Görev |
 |---|---|
 | `MaxExecutor.cpp` | DLL: konsol + pencere subclass + kuyruk dökücü (WndProc) |
-| `pylib.py` | Ana-thread komut kütüphanesi (`maxlib`) — login/charlist/empire/create/enter/status |
+| `PLUSMAXGOD_PyScript.py` | Ana-thread komut kütüphanesi (`maxlib`) v4.0 — menü (login/charlist/...) + oyun-ici (stat/inv/tp/chat/...) + kesif (pyfiles/pydumpall/plusquest) |
+| `pylib.py` | Eski v3.2 adı — YEDEK yol olarak kabul edilir (BootImport otomatik yükseltir) |
 | `MaximumPyScript_STABLE.py` | v17'nin cerrahi stabilize hali (geçiş dönemi için, SHM mimarisiyle — RC12/RC13/RC14 yamalı) |
 
 ## 3. DERLEME
@@ -43,9 +44,10 @@ Metin2 client'ın yapısı bunu zorunlu kılar:
 
 ```
 C:\MaxExec\
-    pylib.py          <- repodan kopyala
+    PLUSMAXGOD_PyScript.py   <- gerekmez: DLL gömülü kopyayı otomatik yazar/yükseltir
     queue\            <- DLL kendisi açar
     results\          <- DLL kendisi açar
+    dump\             <- v1.8: py dump + PLUSQuest_live.txt
 ```
 DLL'i alışkanlık olduran loader'ınla (Kaynak.cpp v6 loader'ın veya mevcut loader'ın) oyuna enjekte et. Konsol açılır.
 
@@ -53,7 +55,7 @@ DLL'i alışkanlık olduran loader'ınla (Kaynak.cpp v6 loader'ın veya mevcut l
 
 ```
 status                                   -> sahne/bağlantı snapshot (sonuc: results\last_status.txt)
-load C:\MaxExec\pylib.py                 -> maxlib'i ANA THREAD'de yükle (İLK KOMUT)
+                                            (pylib v4.0 otomatik yüklenir; load artık gerekmez)
 login <id> <pwd>                         -> net.SetLoginInfo + Connect (auth → key → game-login zinciri client'ta otomatik)
 waitfor SelectCharacterWindow 30         -> karakter seçim ekranı geldi mi?
 charlist                                 -> 5 slot: isim/level/sınıf/cinsiyet/guild (results\last_charlist.txt)

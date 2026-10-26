@@ -107,6 +107,23 @@
 //            buton bastiysa paket atlanir (cift paket = sahte CREATE_FAILURE).
 //    FIX-31: surum dizgileri + help metni v1.7'ye cekildi; enter help'i
 //            yeni yolu anlatir.
+//  v1.8 "PLUSMAXGOD" (oturum 13 - kullanici raporu: HEPSI CALISTI):
+//    Kullanici talebi: (1) giris sonrasi oyun-ici komutlar (envanter, chat,
+//    hareket/pozisyon), (2) oyuna ait tum python dosyalarini cekme+inceleme,
+//    (3) fonksiyon katalogu PLUSQuest. pylib v4.0 = PLUSMAXGOD_PyScript.py
+//    (kanit havuzu: nighttown koleksiyonu 4000+ kullanim + cycu.py).
+//    FIX-32: BootImport surum-ongoer oldu - eski maxlib (v3.x) yuklu ise
+//            diskteki PLUSMAXGOD_PyScript.py ile YERINDE exec edilir
+//            (yukseiltme); o yoksa eski pylib.py yedek yolu. Surum guard'i
+//            majou 4 ister. std::string uretim (FIX-23 dersi korunur).
+//    FIX-33: PLUSMAXGOD komut ailesi - oyun-ici: stat pos inv equip skill
+//            near chat whisper ride revive logout back zoom use pickup drop
+//            goto tp key attack | kesif: pyfiles pydump pydumpall pyscan
+//            plusquest. Hepsinin pylib karsiligi kanitli API'ler.
+//    FIX-34: C:\MaxExec\dump klasoru (py dump + PLUSQuest_live.txt);
+//            basedir.txt ile tasinabilir (BASE_DIR\dump).
+//    FIX-35: SyncEmbeddedPylib yeni dosya adini yazar (PLUSMAXGOD_PyScript.py),
+//            eskisini PLUSMAXGOD_eski_v<surum>.py olarak yedekler.
 // ============================================================================
 
 //  xgodmod4 gereksinimleri:
@@ -157,6 +174,7 @@ static const UINT_PTR TIMER_ID_MAXEXEC = 0x7A1;          // SetTimer kimligi
 static char BASE_DIR[MAX_PATH]   = "C:\\MaxExec";
 static char QUEUE_DIR[MAX_PATH]  = "C:\\MaxExec\\queue";
 static char RESULT_DIR[MAX_PATH] = "C:\\MaxExec\\results";
+static char DUMP_DIR[MAX_PATH]   = "C:\\MaxExec\\dump";      // FIX-34 (v1.8)
 static char ALIVE_FILE[MAX_PATH] = "C:\\MaxExec\\alive.txt";
 static char EXEC_LOG[MAX_PATH]   = "C:\\MaxExec\\maxexec.log";
 static char PYERR_LOG[MAX_PATH]  = "C:\\MaxExec\\pyerr.log";
@@ -269,6 +287,7 @@ static void InitPaths(void)
     }
     _snprintf(QUEUE_DIR,  MAX_PATH, "%s\\queue",     BASE_DIR);  QUEUE_DIR[MAX_PATH-1]=0;
     _snprintf(RESULT_DIR, MAX_PATH, "%s\\results",   BASE_DIR);  RESULT_DIR[MAX_PATH-1]=0;
+    _snprintf(DUMP_DIR,   MAX_PATH, "%s\\dump",      BASE_DIR);  DUMP_DIR[MAX_PATH-1]=0;
     _snprintf(ALIVE_FILE, MAX_PATH, "%s\\alive.txt", BASE_DIR);  ALIVE_FILE[MAX_PATH-1]=0;
     _snprintf(EXEC_LOG,   MAX_PATH, "%s\\maxexec.log", BASE_DIR); EXEC_LOG[MAX_PATH-1]=0;
     _snprintf(PYERR_LOG,  MAX_PATH, "%s\\pyerr.log",  BASE_DIR);  PYERR_LOG[MAX_PATH-1]=0;
@@ -324,7 +343,7 @@ static void DrainQueue(void)
                 _snprintf(fp, MAX_PATH, "%s\\last_pyfail.txt", RESULT_DIR); fp[MAX_PATH-1]=0;
                 WriteFileAll(fp, std::string("PYTHON HATASI: ") + fd.cFileName +
                     "\nDetay: pyerr komutunu yaz (pyerr.log son satirlari).\n"
-                    "En sik neden: ESKI pylib.py - v3.0 ile degistir (bundle zip)!\n");
+                    "En sik neden: ESKI pylib - PLUSMAXGOD v4.0 ile degistir (bundle zip / GitHub)!\n");
                 printf("[MAXEXEC] !! PYTHON HATASI (%s) - detay icin: pyerr\n", fd.cFileName);
                 fflush(stdout);
             }
@@ -411,40 +430,77 @@ static void QRaw(const std::string& code)
 }
 
 // ---------------------------------------------------------------------------
-// FIX-15: kendini onaran import bootstrap — maxlib sys.modules'te yoksa
-// pylib.py'yi exec edip tekrar dener. load atlandiysa ya da modul dustuysa
-// ilk komut kendini iyilestirir. (Pyerr.log'a dusen "No module named maxlib"
-// saldirisinin panzehiri.)
+// FIX-15: kendini onaran import + FIX-32 (v1.8): SURUM-ONGOER bootstrap.
+// Eski maxlib (v3.x) yuklu ise diskteki PLUSMAXGOD_PyScript.py ile YERINDE
+// exec edilir (yukseiltme - kullanici hicbir sey yapmaz); o dosya yoksa
+// eski pylib.py denenir (yine de calisir ama guard KOSKOCA uyari basar).
+// NOT (FIX-23 dersi): metin std::string ile uretilir - tampon kesmesi
+// imkansiz. Cagiranlar: QRaw(BootImport() + "maxlib.xxx(...)")
 // ---------------------------------------------------------------------------
 static std::string BootImport(void)
 {
-    // FIX-15: kendini onaran import + FIX-21: surum guard'i.
-    // Diskteki pylib eskiyse (v2.x) pyerr.log'a ACIKLAMALI uyari duser;
-    // yeni komutlarin AttributeError'leri boylece kendini aciklar.
-    // NOT (FIX-23): bu metin ~630 karakterdir; ASLA char buf[256/512]
-    // icine _snprintf ile yazma - v1.5 tam bunu yapip 255/511 byte'lik
-    // kopuk .cmd'ler uretti. Kullananlar std::string birlestirsin:
-    //   QRaw(BootImport() + "maxlib.xxx(...)")
-    char buf[1024];
-    _snprintf(buf, sizeof(buf),
-        "try:\n"
-        "    import maxlib\n"
-        "except Exception:\n"
-        "    exec(open(r'%s\\pylib.py').read())\n"
-        "    import maxlib\n"
-        "try:\n"
-        "    _mxv = int(str(getattr(maxlib, 'PYLIB_VERSION', '0')).split('.')[0])\n"
-        "except Exception:\n"
-        "    _mxv = 0\n"
-        "if _mxv < 3 and not getattr(maxlib, '_MX_OLD_WARNED', False):\n"
-        "    maxlib._MX_OLD_WARNED = True\n"
-        "    try:\n"
-        "        import sys\n"
-        "        sys.stderr.write('!!! PYLIB ESKI v' + str(getattr(maxlib, 'PYLIB_VERSION', '?')) + ' - DLL v1.7: selchar/newchar/mkchar/delchar/empirelist/empireui/joblist/delcode/lasterr komutlari pylib v3.0 ister! C:\\MaxExec\\pylib.py dosyasini yenisiyle degistir (bundle zip icinde) !!!\\n')\n"
-        "    except Exception:\n"
-        "        pass\n", BASE_DIR);
-    buf[sizeof(buf)-1] = 0;
-    return std::string(buf);
+    std::string s;
+    s += "try:\n"
+         "    import maxlib\n"
+         "    _mxv = int(str(getattr(maxlib, 'PYLIB_VERSION', '0')).split('.')[0])\n"
+         "except Exception:\n"
+         "    _mxv = 0\n";
+    s += "if _mxv < 4:\n"
+         "    try:\n"
+         "        exec(open(r'" + std::string(BASE_DIR) + "\\\\PLUSMAXGOD_PyScript.py').read())\n"
+         "    except Exception:\n"
+         "        try:\n"
+         "            exec(open(r'" + std::string(BASE_DIR) + "\\\\pylib.py').read())\n"
+         "        except Exception:\n"
+         "            pass\n";
+    s += "import maxlib\n"
+         "try:\n"
+         "    _mxv = int(str(getattr(maxlib, 'PYLIB_VERSION', '0')).split('.')[0])\n"
+         "except Exception:\n"
+         "    _mxv = 0\n"
+         "if _mxv < 4 and not getattr(maxlib, '_MX_OLD_WARNED', False):\n"
+         "    maxlib._MX_OLD_WARNED = True\n"
+         "    try:\n"
+         "        import sys\n"
+         "        sys.stderr.write('!!! PYLIB ESKI v' + str(getattr(maxlib, 'PYLIB_VERSION', '?')) + ' - DLL v1.8 PLUSMAXGOD v4.0 ister! "
+         "C:\\\\MaxExec\\\\PLUSMAXGOD_PyScript.py dosyasini yenisiyle degistir (bundle zip / GitHub) !!!\\\\n')\n"
+         "    except Exception:\n"
+         "        pass\n";
+    return s;
+}
+
+// FIX-33 (v1.8): guvenli python dizgi-literal uretici (chat/whisper/pyscan
+// icin - kullanici girdisinde tirnak/backslash/newline olabilir). Raw string
+// DEGIL normal tek-tirnak literal: kacis kurallari tam uygulanir.
+static std::string PyStr(const std::string& in)
+{
+    std::string o = "'";
+    for (size_t i = 0; i < in.size(); ++i)
+    {
+        unsigned char c = (unsigned char)in[i];
+        switch (c)
+        {
+            case '\\': o += "\\\\"; break;
+            case '\'': o += "\\'";  break;
+            case '\n': o += "\\n";  break;
+            case '\r': o += "\\r";  break;
+            case '\t': o += "\\t";  break;
+            default:   o += (char)c; break;
+        }
+    }
+    o += "'";
+    return o;
+}
+
+static std::string JoinArgs(const std::vector<std::string>& a, size_t from)
+{
+    std::string o;
+    for (size_t i = from; i < a.size(); ++i)
+    {
+        if (i > from) o += " ";
+        o += a[i];
+    }
+    return o;
 }
 
 static void CmdLoad(const std::string& path)
@@ -624,6 +680,102 @@ static void CmdStatus(void)
     QRaw(BootImport() + "maxlib.status()\n");
 }
 
+// ---------------------------------------------------------------------------
+// FIX-33 (v1.8): PLUSMAXGOD komut ailesi ureticileri - oyun-ici + kesif.
+// Her biri BootImport() + tek satir maxlib cagrisi (FIX-23 std::string).
+// ---------------------------------------------------------------------------
+static void CmdStat(void)   { QRaw(BootImport() + "maxlib.stat()\n"); }
+static void CmdPos(void)    { QRaw(BootImport() + "maxlib.pos()\n"); }
+static void CmdEquip(void)  { QRaw(BootImport() + "maxlib.equip()\n"); }
+static void CmdSkill(void)  { QRaw(BootImport() + "maxlib.skill()\n"); }
+static void CmdNear(void)   { QRaw(BootImport() + "maxlib.near()\n"); }
+static void CmdRide(void)   { QRaw(BootImport() + "maxlib.ride()\n"); }
+static void CmdRevive(void) { QRaw(BootImport() + "maxlib.revive()\n"); }
+static void CmdLogout(void) { QRaw(BootImport() + "maxlib.logout()\n"); }
+static void CmdBack(void)   { QRaw(BootImport() + "maxlib.back()\n"); }
+static void CmdPickup(void) { QRaw(BootImport() + "maxlib.pickup()\n"); }
+static void CmdPyFiles(void)   { QRaw(BootImport() + "maxlib.pyfiles()\n"); }
+static void CmdPyDumpAll(void) { QRaw(BootImport() + "maxlib.pydumpall()\n"); }
+static void CmdPlusQuest(void) { QRaw(BootImport() + "maxlib.plusquest()\n"); }
+
+static void CmdChat(const std::string& msg)
+{
+    QRaw(BootImport() + "maxlib.chat(" + PyStr(msg) + ")\n");
+}
+
+static void CmdWhisper(const std::string& who, const std::string& msg)
+{
+    QRaw(BootImport() + "maxlib.whisper(" + PyStr(who) + ", " + PyStr(msg) + ")\n");
+}
+
+static void CmdZoom(int dist)
+{
+    char call[64];
+    _snprintf(call, sizeof(call), "maxlib.zoom(%d)\n", dist);
+    call[sizeof(call)-1] = 0;
+    QRaw(BootImport() + call);
+}
+
+static void CmdUse(int slot)
+{
+    char call[64];
+    _snprintf(call, sizeof(call), "maxlib.use(%d)\n", slot);
+    call[sizeof(call)-1] = 0;
+    QRaw(BootImport() + call);
+}
+
+static void CmdDrop(int slot, int count)
+{
+    char call[80];
+    _snprintf(call, sizeof(call), "maxlib.drop(%d, %d)\n", slot, count);
+    call[sizeof(call)-1] = 0;
+    QRaw(BootImport() + call);
+}
+
+static void CmdGoto(int x, int y)
+{
+    char call[80];
+    _snprintf(call, sizeof(call), "maxlib.goto(%d, %d)\n", x, y);
+    call[sizeof(call)-1] = 0;
+    QRaw(BootImport() + call);
+}
+
+static void CmdTp(int x, int y)
+{
+    char call[80];
+    _snprintf(call, sizeof(call), "maxlib.tp(%d, %d)\n", x, y);
+    call[sizeof(call)-1] = 0;
+    QRaw(BootImport() + call);
+}
+
+static void CmdKey(const std::string& dik, const std::string& down)
+{
+    QRaw(BootImport() + "maxlib.key(" + PyStr(dik) + ", " + PyStr(down) + ")\n");
+}
+
+static void CmdAttack(const std::string& mode)
+{
+    QRaw(BootImport() + "maxlib.attack(" + PyStr(mode) + ")\n");
+}
+
+static void CmdInv(int page)
+{
+    char call[64];
+    _snprintf(call, sizeof(call), "maxlib.inv(%d)\n", page);
+    call[sizeof(call)-1] = 0;
+    QRaw(BootImport() + call);
+}
+
+static void CmdPyDump(const std::string& name)
+{
+    QRaw(BootImport() + "maxlib.pydump(" + PyStr(name) + ")\n");
+}
+
+static void CmdPyScan(const std::string& mod)
+{
+    QRaw(BootImport() + "maxlib.pyscan(" + PyStr(mod) + ")\n");
+}
+
 // C++ TARAFINDA bekler; Python'u kisa patlamalarda calistirir (ana thread dostu)
 static void CmdWaitFor(const std::string& sceneName, int seconds)
 {
@@ -672,7 +824,7 @@ static bool InitConsole(void)
         LogLine("CONOUT$ (stderr) yeniden acilamadi");
     setvbuf(stdout, NULL, _IONBF, 0);   // buffer'siz: crash olsa bile yazar
     setvbuf(stderr, NULL, _IONBF, 0);
-    SetConsoleTitleA("MaxExecutor v1.7");
+    SetConsoleTitleA("MaxExecutor v1.8 PLUSMAXGOD");
     HWND cw = GetConsoleWindow();
     if (cw)
     {
@@ -725,39 +877,59 @@ static std::vector<std::string> SplitArgs(const std::string& line)
 
 static void PrintHelp(void)
 {
-    printf("\n=== MaxExecutor v1.7 (UI giris yolu + temiz karakter olusturma) ===\n");
+    printf("\n=== MaxExecutor v1.8 PLUSMAXGOD (oyun-ici + py kesif komutlari) ===\n");
     printf("  help                        : bu yardim\n");
     printf("  status                      : anlik sahne/baglanti snapshot\n");
+    printf("  -- giris akisi (menu) --\n");
     printf("  serverlist                  : server/CH listbox icerigi\n");
     printf("  selserver <srv> <ch>        : server+CH sec, OK'a bas\n");
     printf("  login <id> <pwd>            : login ekraninda UI doldurur + giris\n");
     printf("  charlist                    : 5 slot tablosunu doken rapor\n");
     printf("  selchar <slot>              : karakter slotu SEC (0-4)\n");
     printf("  enter <slot>                : oyuna giris - UI START yolu (DirectEnter yedek)\n");
-    printf("  -- karakter olusturma --\n");
-    printf("  newchar                     : olustur butonuna bas (bayrak/olusturma acar)\n");
-    printf("  empirelist                  : bayrak listesi + mevcut empire\n");
-    printf("  empireui <1-3>              : bayrak sec + ILERLE (1=Shinsoo 2=Chunjo 3=Jinno)\n");
-    printf("  joblist                     : sinif/cinsiyet tablosu (race 0-8)\n");
-    printf("  mkchar <ad> <race>          : UI akisiyla OLUSTUR (sinif+cinsiyet+isim+enter)\n");
-    printf("  -- karakter silme --\n");
-    printf("  delchar <slot>              : slotu sec + silme sorusu + kod dialogu ACAR\n");
-    printf("  delcode <kod>               : silme kodunu yazar + ONAYLAR\n");
+    printf("  newchar | empirelist | empireui <1-3> | joblist | mkchar <ad> <race>\n");
+    printf("  delchar <slot> | delcode <kod>\n");
+    printf("  -- OYUN-ICI (oyundayken: waitfor GameWindow 60 sonrasi) --\n");
+    printf("  stat                        : seviye/HP/SP/EXP/race/grup/empire raporu\n");
+    printf("  pos                         : x/y/z + harita adi raporu\n");
+    printf("  inv <sayfa>                 : envanter raporu (sayfa 0/1/..)\n");
+    printf("  equip                       : ekipman raporu\n");
+    printf("  skill                       : beceri raporu (seviye/cooldown)\n");
+    printf("  near                        : yakin varlik taramasi (40'a kadar)\n");
+    printf("  chat <mesaj>                : sohbet/slash paketi (orn. chat /ride)\n");
+    printf("  cmd <slash-komut>           : chat'in /'lu kisa hali (orn. cmd /ride)\n");
+    printf("  whisper <kim> <mesaj>       : ozel mesaj\n");
+    printf("  ride | revive | logout | back | pickup : hizli eylemler\n");
+    printf("  zoom <mesafe>               : kamera menzili (orn. zoom 12000)\n");
+    printf("  use <slot>                  : envanter slotundaki esyayi kullan\n");
+    printf("  drop <slot> <adet>          : esya birak (DESTRUKTIF - dikkat!)\n");
+    printf("  goto <x> <y>                : konuma YURU (yol izler)\n");
+    printf("  tp <x> <y>                  : konuma ISINLAN (anlik)\n");
+    printf("  key <DIK> <0/1>             : tus simule (UP LEFT SPACE F5 ...)\n");
+    printf("  attack <0/1>                : saldiri basili/birak\n");
+    printf("  -- KESIF (oyunun py dosyalari) --\n");
+    printf("  pyfiles                     : 5 yontemle py dosyalarini bul\n");
+    printf("  pydump <ad>                 : tek py dosyasini dump klasorune dok\n");
+    printf("  pydumpall                   : BUTUN py'leri dump klasorune + INDEX.txt\n");
+    printf("  pyscan <modul>              : modulun fonksiyonlarini listele\n");
+    printf("  plusquest | pyscanall       : yuklu TUM modulleri tara -> PLUSQuest_live\n");
     printf("  -- hata takibi --\n");
     printf("  lasterr                     : OYUN hatalari (yanlis sifre vb.)\n");
     printf("  pyerr                       : PYTHON hatalari (traceback)\n");
     printf("  log                         : maxexec.log son satirlari\n");
-    printf("  load <py-dosya>             : pylib yukle (v1.3+ zaten otomatik)\n");
+    printf("  load <py-dosya>             : pylib yukle (genelde gerekmez - oto)\n");
     printf("  raw <python kodu>           : serbest Python (ana thread'de)\n");
     printf("  waitfor <Scene> <sn>        : orn. waitfor GameWindow 60\n");
     printf("  exit                        : cikis\n");
     printf("GIRIS AKISI: status -> selserver 0 0 -> waitfor LoginWindow 15 ->\n");
-    printf("  login <id> <pwd> -> waitfor SelectCharacterWindow 30 -> charlist\n");
-    printf("YENI KARAKTER: newchar -> status -> (bayrak geldiyse empirelist ->\n");
-    printf("  empireui 1 -> waitfor CreateCharacterWindow 10) -> joblist ->\n");
-    printf("  mkchar Isim 3 -> waitfor SelectCharacterWindow 15 -> charlist\n");
-    printf("SILME: charlist -> delchar <slot> -> delcode <silme-kodu> -> lasterr\n");
-    printf("Saglik: %s | oyun hatalari: results\\last_error.txt\n\n", ALIVE_FILE);
+    printf("  login <id> <pwd> -> waitfor SelectCharacterWindow 30 -> charlist ->\n");
+    printf("  selchar 0 -> enter 0 -> waitfor GameWindow 60 -> stat -> pos -> inv\n");
+    printf("YENI KARAKTER: newchar -> (bayrak: empirelist -> empireui 1) ->\n");
+    printf("  joblist -> mkchar Isim 3 -> waitfor SelectCharacterWindow 15 -> charlist\n");
+    printf("KESIF AKISI: pyfiles -> pydumpall (dump klasoru) -> plusquest ->\n");
+    printf("  C:\\MaxExec\\dump klasorunu AI'ya gonder (PLUSQuest.md guncellenir)\n");
+    printf("Saglik: %s | oyun hatalari: results\\last_error.txt\n", ALIVE_FILE);
+    printf("dump klasoru: %s | plusquest cikti: %s\\PLUSQuest_live.txt\n\n", DUMP_DIR, DUMP_DIR);
 }
 
 // ---------------------------------------------------------------------------
@@ -804,7 +976,7 @@ static bool ReadPylibVersion(const char* path, char outVer[32])
 static void SyncEmbeddedPylib(void)
 {
     char pylibPath[MAX_PATH];
-    _snprintf(pylibPath, MAX_PATH, "%s\\pylib.py", BASE_DIR); pylibPath[MAX_PATH-1]=0;
+    _snprintf(pylibPath, MAX_PATH, "%s\\PLUSMAXGOD_PyScript.py", BASE_DIR); pylibPath[MAX_PATH-1]=0;
     char diskVer[32];
     bool hasDisk = ReadPylibVersion(pylibPath, diskVer);
     int diskMaj  = hasDisk ? atoi(diskVer) : 0;
@@ -820,7 +992,7 @@ static void SyncEmbeddedPylib(void)
     if (hasDisk)
     {
         char bak[MAX_PATH];
-        _snprintf(bak, MAX_PATH, "%s\\pylib_eski_v%s.py", BASE_DIR,
+        _snprintf(bak, MAX_PATH, "%s\\PLUSMAXGOD_eski_v%s.py", BASE_DIR,
                   diskVer[0] ? diskVer : "2x"); bak[MAX_PATH-1]=0;
         if (CopyFileA(pylibPath, bak, FALSE))
             LogLine("pylib sync: eski dosya yedeklendi -> %s", bak);
@@ -828,16 +1000,16 @@ static void SyncEmbeddedPylib(void)
     std::string emb((const char*)EMBEDDED_PYLIB_DATA, EMBEDDED_PYLIB_SIZE);
     if (WriteFileAll(pylibPath, emb))
     {
-        LogLine("pylib sync: gomulu pylib v%s diske yazildi (eskisi: %s)",
+        LogLine("pylib sync: gomulu PLUSMAXGOD v%s diske yazildi (eskisi: %s)",
                 EMBEDDED_PYLIB_VERSION, hasDisk ? diskVer : "yok");
-        printf("pylib.py      : GUNCELLENDI -> v%s (DLL icinden yazildi%s)\n",
+        printf("PLUSMAXGOD_PyScript.py : GUNCELLENDI -> v%s (DLL icinden yazildi%s)\n",
                EMBEDDED_PYLIB_VERSION,
-               hasDisk ? ", eski dosya pylib_eski_*.py olarak yedeklendi" : "");
+               hasDisk ? ", eski dosya PLUSMAXGOD_eski_*.py olarak yedeklendi" : "");
     }
     else
     {
         LogLine("pylib sync HATA: %s yazilamadi", pylibPath);
-        printf("pylib.py      : GUNCELLENEMEDI (yazma hatasi!) - elle kopyala\n");
+        printf("PLUSMAXGOD_PyScript.py : GUNCELLENEMEDI (yazma hatasi!) - elle kopyala\n");
     }
 }
 
@@ -849,7 +1021,8 @@ static DWORD WINAPI WorkerThread(LPVOID)
     const bool con = InitConsole();
 
     printf("\n=============================================\n");
-    printf("  MaxExecutor v1.7 - ana-thread executor (UI giris yolu + temiz olusturma)\n");
+    printf("  MaxExecutor v1.8 PLUSMAXGOD - ana-thread executor\n");
+    printf("  oyun-ici komutlar + py kesif (pylib v4.0 cifti)\n");
     printf("  hook yok | SHM yok | arka-plan PyRun yok\n");
     printf("=============================================\n");
     if (!con)
@@ -890,35 +1063,35 @@ static DWORD WINAPI WorkerThread(LPVOID)
         //  artik gomulu kopyayi diske yazar, el sikismasi da dogrular.)
         SyncEmbeddedPylib();
         char pylibPath[MAX_PATH];
-        _snprintf(pylibPath, MAX_PATH, "%s\\pylib.py", BASE_DIR); pylibPath[MAX_PATH-1]=0;
+        _snprintf(pylibPath, MAX_PATH, "%s\\PLUSMAXGOD_PyScript.py", BASE_DIR); pylibPath[MAX_PATH-1]=0;
         DWORD pa = GetFileAttributesA(pylibPath);
         if (pa != INVALID_FILE_ATTRIBUTES && !(pa & FILE_ATTRIBUTE_DIRECTORY))
         {
             char ver[32];
-            bool okVer = ReadPylibVersion(pylibPath, ver) && atoi(ver) >= 3;
+            bool okVer = ReadPylibVersion(pylibPath, ver) && atoi(ver) >= 4;
             std::string ld;
             if (EnqueueCommand(BootImport(), ld))
-                LogLine("AUTO-LOAD: pylib.py kuyruga kondu (%s)", pylibPath);
+                LogLine("AUTO-LOAD: PLUSMAXGOD_PyScript.py kuyruga kondu (%s)", pylibPath);
             if (okVer)
             {
-                printf("pylib.py      : v%s (uyumlu) - otomatik yuklenecek, load yazmana gerek yok\n", ver);
-                printf("                kanit dosyasi: %s\\last_pylib_load.txt\n", RESULT_DIR);
+                printf("PLUSMAXGOD_PyScript.py : v%s (uyumlu) - otomatik yuklenecek\n", ver);
+                printf("                        oyun-ici: stat pos inv equip skill near chat goto tp |\n");
+                printf("                        kesif: pyfiles pydumpall pyscan plusquest\n");
             }
             else
             {
-                const char* vShow = ver[0] ? ver : "2.x (isaret yok)";
+                const char* vShow = ver[0] ? ver : "2.x/3.x (isaret yok/eski)";
                 char rp[MAX_PATH];
                 _snprintf(rp, MAX_PATH, "%s\\last_warning.txt", RESULT_DIR); rp[MAX_PATH-1]=0;
                 WriteFileAll(rp, std::string("! PYLIB ESI SURUM: v") + vShow +
-                    "  (DLL v1.7 pylib v3.0 ister)\n"
-                    "Yeni pylib.py'yi " + std::string(BASE_DIR) + " icine kopyala (bundle zip / GitHub).\n"
-                    "ESKI pylib ILE: selchar/newchar/mkchar/delchar/empirelist/empireui/"
-                    "joblist/delcode/lasterr CALISMAZ (AttributeError).\n");
-                LogLine("UYARI: pylib ESI v%s - v3.0 gerekli! (%s)", vShow, pylibPath);
+                    "  (DLL v1.8 PLUSMAXGOD v4.0 ister)\n"
+                    "Yeni PLUSMAXGOD_PyScript.py'yi " + std::string(BASE_DIR) + " icine kopyala (bundle zip / GitHub).\n"
+                    "ESKI pylib ILE: stat/pos/inv/equip/skill/near/chat/goto/tp/pyfiles/pydumpall/plusquest CALISMAZ.\n");
+                LogLine("UYARI: pylib ESI v%s - PLUSMAXGOD v4.0 gerekli! (%s)", vShow, pylibPath);
                 printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-                printf("!! PYLIB ESI: diskteki pylib.py = v%s  (gereken: v3.0)\n", vShow);
-                printf("!! Yeni pylib.py'yi %s icine kopyala (bundle zip icinde var)\n", BASE_DIR);
-                printf("!! Eski pylib ile yeni komutlar CALISMAZ (selchar/mkchar/delchar..)\n");
+                printf("!! PYLIB ESI: diskteki PLUSMAXGOD_PyScript.py = v%s  (gereken: v4.0)\n", vShow);
+                printf("!! Yeni PLUSMAXGOD_PyScript.py'yi %s icine kopyala (bundle zip)\n", BASE_DIR);
+                printf("!! Eski pylib ile v4.0 komutlari CALISMAZ (stat/inv/tp/pyfiles..)\n");
                 printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
             }
         }
@@ -927,11 +1100,11 @@ static DWORD WINAPI WorkerThread(LPVOID)
             char rp[MAX_PATH];
             _snprintf(rp, MAX_PATH, "%s\\last_load.txt", RESULT_DIR); rp[MAX_PATH-1]=0;
             WriteFileAll(rp, "HATA: " + std::string(pylibPath) + " YOK!\n"
-                             "bundle zip icindeki pylib.py'yi " + std::string(BASE_DIR) +
+                             "bundle zip icindeki PLUSMAXGOD_PyScript.py'yi " + std::string(BASE_DIR) +
                              " klasorune kopyala.\n");
-            LogLine("UYARI: pylib.py YOK — komutlar calismaz! (%s)", pylibPath);
-            printf("pylib.py      : YOK!! (%s)\n", pylibPath);
-            printf("                bundle zip'ten pylib.py'yi %s icine kopyala.\n", BASE_DIR);
+            LogLine("UYARI: PLUSMAXGOD_PyScript.py YOK — komutlar calismaz! (%s)", pylibPath);
+            printf("PLUSMAXGOD_PyScript.py : YOK!! (%s)\n", pylibPath);
+            printf("                bundle zip'ten PLUSMAXGOD_PyScript.py'yi %s icine kopyala.\n", BASE_DIR);
             printf("                Kopyalamadan komut yazarsan: ImportError maxlib.\n");
         }
     }
@@ -1015,6 +1188,88 @@ static DWORD WINAPI WorkerThread(LPVOID)
             if (a.size() >= 2) CmdDelCode(a[1]);
             else printf("kullanim: delcode <silme-kodu>   (once delchar <slot>)\n");
         }
+        // ---- FIX-33 (v1.8): PLUSMAXGOD komut ailesi ----
+        else if (cmd == "stat") CmdStat();
+        else if (cmd == "pos") CmdPos();
+        else if (cmd == "equip") CmdEquip();
+        else if (cmd == "skill") CmdSkill();
+        else if (cmd == "near") CmdNear();
+        else if (cmd == "ride") CmdRide();
+        else if (cmd == "revive") CmdRevive();
+        else if (cmd == "logout") CmdLogout();
+        else if (cmd == "back") CmdBack();
+        else if (cmd == "pickup") CmdPickup();
+        else if (cmd == "pyfiles") CmdPyFiles();
+        else if (cmd == "pydumpall") CmdPyDumpAll();
+        else if (cmd == "plusquest" || cmd == "pyscanall") CmdPlusQuest();
+        else if (cmd == "inv")
+        {
+            CmdInv(a.size() >= 2 ? atoi(a[1].c_str()) : 0);
+        }
+        else if (cmd == "chat")
+        {
+            if (a.size() >= 2) CmdChat(JoinArgs(a, 1));
+            else printf("kullanim: chat <mesaj>   (orn. chat merhaba | chat /ride)\n");
+        }
+        else if (cmd == "cmd")
+        {
+            if (a.size() >= 2)
+            {
+                std::string j = JoinArgs(a, 1);
+                if (j[0] != '/') j = "/" + j;
+                CmdChat(j);
+            }
+            else printf("kullanim: cmd <slash-komut>   (orn. cmd /ride | cmd /logout)\n");
+        }
+        else if (cmd == "whisper")
+        {
+            if (a.size() >= 3) CmdWhisper(a[1], JoinArgs(a, 2));
+            else printf("kullanim: whisper <kim> <mesaj>\n");
+        }
+        else if (cmd == "zoom")
+        {
+            if (a.size() >= 2) CmdZoom(atoi(a[1].c_str()));
+            else printf("kullanim: zoom <mesafe>   (orn. zoom 12000)\n");
+        }
+        else if (cmd == "use")
+        {
+            if (a.size() >= 2) CmdUse(atoi(a[1].c_str()));
+            else printf("kullanim: use <slot>   (slot: inv raporundan)\n");
+        }
+        else if (cmd == "drop")
+        {
+            if (a.size() >= 3) CmdDrop(atoi(a[1].c_str()), atoi(a[2].c_str()));
+            else printf("kullanim: drop <slot> <adet>   (DESTRUKTIF - dikkat!)\n");
+        }
+        else if (cmd == "goto")
+        {
+            if (a.size() >= 3) CmdGoto(atoi(a[1].c_str()), atoi(a[2].c_str()));
+            else printf("kullanim: goto <x> <y>   (once pos yaz)\n");
+        }
+        else if (cmd == "tp")
+        {
+            if (a.size() >= 3) CmdTp(atoi(a[1].c_str()), atoi(a[2].c_str()));
+            else printf("kullanim: tp <x> <y>   (once pos yaz)\n");
+        }
+        else if (cmd == "key")
+        {
+            if (a.size() >= 2) CmdKey(a[1], a.size() >= 3 ? a[2] : "1");
+            else printf("kullanim: key <DIK> <0/1>   (orn. key UP 1, key LEFT 0)\n");
+        }
+        else if (cmd == "attack")
+        {
+            CmdAttack(a.size() >= 2 ? a[1] : "1");
+        }
+        else if (cmd == "pydump")
+        {
+            if (a.size() >= 2) CmdPyDump(a[1]);
+            else printf("kullanim: pydump <dosya-ad>   (orn. pydump intrologin | adaylar: pyfiles)\n");
+        }
+        else if (cmd == "pyscan")
+        {
+            if (a.size() >= 2) CmdPyScan(a[1]);
+            else printf("kullanim: pyscan <modul>   (orn. pyscan player | pyscan net)\n");
+        }
         else if (cmd == "serverlist") CmdServerList();
         else if (cmd == "lasterr") CmdLastErr();
         else if (cmd == "load")
@@ -1064,6 +1319,7 @@ static DWORD WINAPI WorkerThread(LPVOID)
 static void EnsureDirs(void)
 {
     MkDirp(BASE_DIR); MkDirp(QUEUE_DIR); MkDirp(RESULT_DIR);
+    MkDirp(DUMP_DIR);                    // FIX-34: py dump + PLUSQuest_live
 }
 
 BOOL APIENTRY DllMain(HMODULE hMod, DWORD reason, LPVOID)
@@ -1074,7 +1330,7 @@ BOOL APIENTRY DllMain(HMODULE hMod, DWORD reason, LPVOID)
         DisableThreadLibraryCalls(hMod);
         EnsureDirs();
         CreateThread(NULL, 0, WorkerThread, NULL, 0, NULL);
-        LogLine("MaxExecutor v1.7 yuklendi (pid=%lu) — worker baslatiliyor",
+        LogLine("MaxExecutor v1.8 PLUSMAXGOD yuklendi (pid=%lu) — worker baslatiliyor",
                 GetCurrentProcessId());
     }
     return TRUE;

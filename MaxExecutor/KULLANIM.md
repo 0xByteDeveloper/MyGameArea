@@ -2,7 +2,9 @@
 
 > Paket içeriği, kurulum, komutlar, giriş akışı, sorun giderme — hepsi bu dosyada.
 > Mimari gerekçe için: `reports/DEV_REAL_BINARY_TEST.md` (RC18/RC19) + `reports/DEV_GIL_ANALYSIS.md` (RC1-RC17).
-> Son güncelleme: **Oturum 12 — v1.7 / pylib v3.2** (UI giriş yolu + temiz karakter oluşturma)
+> Son güncelleme: **Oturum 13 — v1.8 PLUSMAXGOD / pylib v4.0 (PLUSMAXGOD_PyScript.py)**
+>
+> **v1.8 ÖZET — oturum 13 (kullanıcı raporu: v1.7 HEPSİ ÇALIŞTI ✓):** Saha doğrulaması sonrası iki yeni yetenek ailesi eklendi. **(A) OYUN-İÇİ KOMUTLAR:** `stat` (seviye/HP/SP/EXP), `pos` (x/y/z + harita), `inv <sayfa>` (envanter), `equip` (ekipman), `skill` (beceriler), `near` (yakın varlıklar), `chat <mesaj>` / `cmd /komut` (sohbet), `whisper`, `ride/revive/logout/back/pickup`, `zoom <mesafe>`, `use <slot>`, `drop <slot> <adet>` (DİKKAT), `goto <x> <y>` (yürü), `tp <x> <y>` (ışınla), `key <DIK> <0/1>`, `attack <0/1>`. Hepsi kanıtlı API'ler — nighttown koleksiyonu 4000+ kullanım + cycu.py. **(B) KESİF KOMUTLARI:** `pyfiles` (5 yöntemle py dosyalarını bul), `pydump <ad>` (tek dosyayı dök), `pydumpall` (HEPSİNİ `C:\MaxExec\dump`'a + INDEX.txt), `pyscan <modul>` (modülün fonksiyonları), `plusquest` (tüm modülleri tara → PLUSQuest_live.txt). **Eski AI doğrulaması:** `app.GetFileList` bu istemcide YOK (0 kanıt) — asıl okuma yolu `app.OpenTextFile` (kanıtlı, cycu.py). **(C) YENİ ADLANDIRMA:** pylib artık diskte **PLUSMAXGOD_PyScript.py** olarak yaşar (DLL v1.8 otomatik yazar/yükseltir; eski pylib.py hâlâ yedek yol olarak kabul edilir — BootImport yerinde yükseltir). Katalog: **PLUSQuest.md** (repo kökünde).
 >
 > **v1.7 ÖZET — saha testi 7 dersi (oturum 12):** v1.6'nın 30 komutu da temiz çalıştı (pyfail=0) ve iki gerçek oyun-düzeyi bulgu çıktı. **(1) `enter` oyuna sokmuyor:** `net.DirectEnter` YENİ oluşturulan karakterde sunucu tarafından reddediliyor (loading penceresi açılıp login ekranına geri atıyor); eski karakterlerde (raynare) çalışıyor. Oyunun kendi START butonu ise çalışıyor — kullanıcı doğrulaması + MaximumPyScript_Merged_calisan kanıtı. **v1.7 `enter`: önce SelectSlot + StartGame/startButton (UI yolu); DirectEnter sadece UI yolu bulunamazsa YEDEK.** Çift-giriş yasağı (RC12) korunur: UI yolu seçilince DirectEnter hiç çağrılmaz. **(2) mkchar'dan sahte CREATE_FAILURE:** çift paket gidiyordu — UI OLUSTUR butonu paketi kendisi yolluyor + pylib bir de direkt SendCreateCharacterPacket yolluyordu → 1. paket başarı, 2. paket `CREATE_FAILURE: 0 (0 karakter yaratılamaz)`. Karakter zaten oluşmuştu; sahte hataydı. **v1.7 mkchar: paket yolu SADECE buton bulunamazsa.**
 >
@@ -18,14 +20,15 @@
 
 | Dosya | Ne işe yarar | Nereden geldi |
 |---|---|---|
-| `bin/MaxExecutor.dll` | **Ana proje.** Oyun içine enjekte edilen 32-bit DLL. Ana thread'de (WndProc + SetTimer) Python çalıştırır. Hook YOK, SHM YOK, arka-plan PyRun YOK. **v1.2: SetTimer drenajı + sayaçlar + probe. v1.3: pylib.py otomatik yükleme + kendini onaran komut bootstrap'i + `pyerr` komutu.** | Bu repo — derlendi (32-bit PE, `-O2 -static`; mingw-w64 i686 veya zig cc `x86-windows-gnu`) |
+| `bin/MaxExecutor.dll` | **Ana proje.** Oyun içine enjekte edilen 32-bit DLL. Ana thread'de (WndProc + SetTimer) Python çalıştırır. Hook YOK, SHM YOK, arka-plan PyRun YOK. **v1.8: PLUSMAXGOD komut ailesi (oyun-ici + kesif) + surum-ongoer BootImport + dump klasoru.** | Bu repo — derlendi (32-bit PE, `-O2`; zig cc `x86-windows-gnu`) |
 | `bin/MaxInject.exe` | DLL enjektörü. `metin2client.exe` sürecini bulur, DLL'i LoadLibrary ile yükler. | Bu repo — derlendi |
-| `pylib.py` | DLL içine yüklenen Python komut kütüphanesi (maxlib): login/charlist/selchar/newchar/mkchar/delchar/delcode/lasterr... **v3.2: enter UI START yolu + mkchar tek paket** | Bu repo |
+| `PLUSMAXGOD_PyScript.py` | **pylib v4.0 (maxlib).** DLL içine gömülü; diskte eksik/eskiyse otomatik yazılır. Tüm komutlar: menü (login/charlist/mkchar...) + oyun-ici (stat/inv/tp...) + kesif (pyfiles/pydumpall/plusquest). | Bu repo |
+| `pylib.py` | Eski v3.2 adı — YEDEK yolu olarak kabul edilir (BootImport önce PLUSMAXGOD'u dener). Silinebilir; DLL yeniden yazmaz. | Bu repo |
 | `MaximumPyScript_STABLE.py` | Eski mimarinin (SHM'li v17) RC12/RC13/RC14 yamalı hali. Alternatif yol. | Bu repo |
 | `MaxExecutor.cpp` / `MaxInject.cpp` | Kaynak kodlar (değişiklik yaparsan yeniden derlersin) | Bu repo |
 | `README.md` | Mimari açıklama (İngilizce başlıklı ama içerik Türkçe) | Bu repo |
 
-**Derleme ortamı (v1.1):** Debian GCC 14.2 mingw-w64 (win32 threads), i686-w64-mingw32, `-static` (579KB DLL, bağımlılık: yalnız USER32/KERNEL32 + UCRT).
+**Derleme ortamı (v1.1):** Debian GCC 14.2 mingw-w64 (win32 threads), i686-w64-mingw32, `-static` (579KB DLL, bağımlılık: yalnız USER32/KERNEL32 + UCRT). **v1.8: zig 0.11.0 (root-less) — 614KB DLL.**
 
 ---
 
@@ -48,15 +51,16 @@
    - Başka isimli client: `MaxInject.exe metin2.exe`
    - PID ile: `MaxInject.exe 12345`
    - Farklı DLL yolu: `MaxInject.exe metin2client.exe D:\yer\MaxExecutor.dll`
-4. **Konsol açılır** — "MaxExecutor v1.7" başlıklı siyah pencere (oyunun ÜSTÜNDE kalır, TOPMOST).
+4. **Konsol açılır** — "MaxExecutor v1.8 PLUSMAXGOD" başlıklı siyah pencere (oyunun ÜSTÜNDE kalır, TOPMOST).
    İlk satırlarda şunları görmelisin:
    ```
    python27.dll : BULUNDU [initialized]
-   pylib.py      : v3.2 (uyumlu) - otomatik yuklenecek, load yazmana gerek yok
+   PLUSMAXGOD_PyScript.py : v4.0 (uyumlu) - otomatik yuklenecek
    oyun penceresi: SUBCLASS EDILDI (hwnd=0x...)
    ana-thread timer: KURULDU
    ```
-   > `pylib.py : GUNCELLENDI -> v3.2 (DLL icinden yazildi)` görürsen: diskteki pylib eskiymiş, v1.7 gömülü kopyayı yazdı — ekstra bir şey yapmana gerek yok.
+   > `PLUSMAXGOD_PyScript.py : GUNCELLENDI -> v4.0 (DLL icinden yazildi)` görürsen: diskteki pylib eskiymiş (veya v3.2 idi), v1.8 gömülü kopyayı yazdı — ekstra bir şey yapmana gerek yok. Eski dosya `PLUSMAXGOD_eski_*.py` olarak yedeklenir.
+   > Eski `pylib.py` v3.2 yerinde duruyorsa bile sorun yok: BootImport sürümü okur, v4'ten küçükse PLUSMAXGOD_PyScript.py ile YERİNDE yükseltir (FIX-32).
    > `!! PYLIB ESI` uyarısı görürsen: pylib yazılamadı demektir (yazma hatası) — o zaman elle kopyala.
    > `python27.dll : YOK` ise oyunun Python'u henüz başlamamıştır → konsolda bekle,
    > oyun login ekranına gelince `status` yazarak tekrar dene (DLL her 0.5 sn'de yeniden dener, 20 sn boyunca).
@@ -241,6 +245,71 @@ raw print(net.GetMainActorVID())     → çıktı C:\MaxExec\results\last_error.
 
 ---
 
+## 3c. OYUN-İÇİ KOMUTLAR (v1.8 PLUSMAXGOD — `waitfor GameWindow 60` SONRASI)
+
+> Tümü oyunun KENDİ kanıtlı API'lerini kullanır (nighttown koleksiyonu 4000+ kullanım +
+> cycu.py — kullanıcının ekosistemi). Her komut önce "oyunda mıyız?" kontrolü yapar;
+> menü ekranındaysa `HATA: oyunda degilsin (once waitfor GameWindow 60)` der.
+> Raporlar `results\last_<komut>.txt`'e yazılır + konsola canlı basılır.
+
+### a) Durum raporları
+```
+stat       ad/seviye/HP%/SP%/EXP%/race/skill grubu/empire/hız/biniş durumu
+pos        vid + x/y/z + metre (x/100) + HARİTA ADI (background.GetCurrentMapName)
+           + hazır tp/goto önerisi
+inv 0      envanter 1. sayfa (45 slot): slot/vnum/isim/adet — INVENTORY_PAGE_SIZE'dan okunur
+inv 1      2. sayfa (45..89)
+equip      ekipman slotları (EQUIPMENT_BASE_INDEX=90+: silah/zırh/kolye...)
+skill      beceriler: slot/idx/isim/Lv/Grade/CD (GetSkillIndex yoksa öğretilmiş tarama)
+near       10000 birim yarıçaptaki varlıklar: vid/tip/dist/isim/Lv (VID sweep 1..2000,
+           chr.GetInstanceType + GetNameByVID + nonplayer.GetLevelByVID — kanıtlı)
+```
+
+### b) Sohbet + eylemler
+```
+chat merhaba            genel sohbet paketi (net.SendChatPacket)
+cmd /ride               slash komut (aynı yol — /ride /logout /phase_select ...)
+whisper Oyuncu selam    özel mesaj (net.SendWhisperPacket)
+ride | revive | logout | back | pickup   hızlı eylemler (cycu.py kanıtları)
+zoom 12000              kamera menzili (app.SetCameraMaxDistance)
+use 5                   5. slottaki eşyayı KULLAN (net.SendItemUsePacket — 218 kanıt)
+drop 5 1                5. slottan 1 adet YERE BIRAK — DESTRUKTİF, geri alınamaz!
+```
+
+### c) Hareket
+```
+pos                     önce konumu oku (x/y + harita)
+goto 95900 269000        KONUMA YÜRÜ (chr.MoveToDestPosition(vid,x,y) — yol izler)
+tp 95900 269000          KONUMA IŞINLAN (chr.SetPixelPosition(x,y) — 211 kanıt;
+                         server koordinat doğrulaması yoksa anlık ışınlanma)
+key UP 1 / key UP 0      tuş simülasyonu (player.SetSingleDIKKeyState — 368 kanıt!)
+attack 1 / attack 0      saldırı basılı tut / bırak (player.SetAttackKeyState — 100 kanıt)
+```
+> `goto` yürümedir (animasyonlu, mesafe kademeli), `tp` anlıktır. Bazı sunucular tp'yi
+> sunucu tarafında doğrular — ışınlanma sonrası `pos` ile doğrula, geri atarsan `goto` kullan.
+
+### d) Kesif akışı (oyunun python dosyalarını çek + incele)
+```
+pyfiles                 5 yöntem: app.GetFileList (bu client'ta yok olabilir) +
+                        sys.modules + pkgutil + disk taraması (cwd/sys.path/TEMP-TMP —
+                        nighttown workspace'te veya temp/tmp'te) + import-probe (80 modül)
+pydump intrologin       TEK dosyayı pack'ten oku (app.OpenTextFile — KANITLI yol) →
+                        C:\MaxExec\dump\intrologin.py + konsola ilk 40 satır
+pydumpall               HEPSİNİ dök → C:\MaxExec\dump\*.py + INDEX.txt
+                        (800 dosya üst sınırı; her 25'te ilerleme yazar)
+pyscan player           yüklü modülün fonksiyonları + argüman adları (py2 func_code)
+plusquest               TÜM yüklü modülleri tara → C:\MaxExec\dump\PLUSQuest_live.txt
+                        (oyundayken çalıştır — daha fazla modül yüklü olur)
+```
+> **SONRAKI ADIM:** `C:\MaxExec\dump` klasörünü ZIP'le → AI'ya gönder → PLUSQuest.md kataloğu
+> senin istemcinin gerçek dosyalarıyla zenginleştirilir.
+> **Eski AI hükmü:** `app.GetFileList("*.py")` eski AI'nin "en iyi yöntem" dediği şeydi —
+> bu istemcide 0 kanıt (nighttown koleksiyonunda hiç kullanılmamış). Gerçek okuma yolu
+> `app.OpenTextFile + GetTextFileLineCount + GetTextFileLine` (cycu.py + serverinfo.py
+> deneyin ile doğrulandı). Şifreli pack'ten bile okur!
+
+---
+
 ## 4. NEDEN BU MİMARİ GÜVENLİ? (kısa hatırlatma)
 
 | Eski yöntem (cppcmpr / Generated v9.2.0) | MaxExecutor |
@@ -307,8 +376,8 @@ eski Controller (win32apiMetin2Py / cppcmpr) zincirini kullanacaksan çalıştı
 
 ```bash
 # Debian/Ubuntu'da: sudo apt install g++-mingw-w64-i686 (root yoksa: apt-get download + dpkg -x)
-# ONCELIKLI: pylib.py degistirdiysen gomulu kopyayi yeniden uret (FIX-22):
-python3 scripts/embed_pylib.py        # pylib_embedded.h yenilenir
+# ONCELIKLI: PLUSMAXGOD_PyScript.py degistirdiysen gomulu kopyayi yeniden uret (FIX-22):
+python3 scripts/embed_pylib.py        # pylib_embedded.h yenilenir (kaynak: PLUSMAXGOD_PyScript.py)
 i686-w64-mingw32-g++ -shared -static -static-libgcc -static-libstdc++ -O2 \
     -o bin/MaxExecutor.dll MaxExecutor.cpp -luser32 -lkernel32 -lgdi32
 
@@ -317,6 +386,9 @@ i686-w64-mingw32-g++ -static -static-libgcc -O2 \
 
 # dogrulama (ikisi de pei-i386 / i386 cikmali):
 i686-w64-mingw32-objdump -f bin/MaxExecutor.dll | grep architecture
+# root-less alternatif (oturum 12-13 yolu):
+#   zig c++ -target x86-windows-gnu -O2 -shared MaxExecutor.cpp -o bin/MaxExecutor.dll
+#   zig c++ -target x86-windows-gnu -O2 MaxInject.cpp -o bin/MaxInject.exe
 ```
 Visual Studio kullanacaksan: x86 platform, DLL projesi, `/MT` (statik CRT), ek include yok.
 
@@ -325,11 +397,14 @@ Visual Studio kullanacaksan: x86 platform, DLL projesi, `/MT` (statik CRT), ek i
 ## 8. TEST KONTROL LİSTESİ (kullanıcı tarafında)
 
 - [ ] `MaxInject.exe` → konsol açıldı, `python27.dll : BULUNDU`
-- [ ] `pylib.py : v3.0 (uyumlu)` ya da `GUNCELLENDI -> v3.0` satırı göründü
+- [ ] `PLUSMAXGOD_PyScript.py : v4.0 (uyumlu)` ya da `GUNCELLENDI -> v4.0` satırı göründü
 - [ ] 30 sn sonra `results\last_pylib_load.txt` VAR (oto-yükleme kanıtı)
 - [ ] `status` → `SCENE=LoginWindow+ServerList` benzeri çıktı
 - [ ] `login id pwd` → `waitfor SelectCharacterWindow 30` ile ekran geçişi
 - [ ] `charlist` → `results/last_charlist.txt` dolu (5 slot, race/level/isim)
-- [ ] (yeni karakter) `empire` + `create` + hata takibi
 - [ ] `enter 0` → `waitfor GameWindow 60` → **NPC'ler görünüyor mu?**
-- [ ] `raw` ile `player.SetAttackKeyState` denemeleri (SendAttackPacket'a elle dokunma!)
+- [ ] **v1.8 oyun-ici:** `stat` + `pos` + `inv 0` + `equip` + `skill` raporları dolu mu?
+- [ ] **v1.8 hareket:** `goto <x> <y>` yürüdü mü? (tp'yi önce güvenli yerde dene)
+- [ ] **v1.8 kesif:** `pyfiles` → `pydumpall` → `C:\MaxExec\dump\INDEX.txt` oluştu mu?
+- [ ] **v1.8 katalog:** `plusquest` → `dump\PLUSQuest_live.txt` oluştu mu? (AI'ya gönderilecek)
+- [ ] (yeni karakter) `empire` + `create` + hata takibi

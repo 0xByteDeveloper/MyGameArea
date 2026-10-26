@@ -461,3 +461,63 @@ KULLANIM.md'ye "SAHA DOGRULAMALI SENARYOLAR" bolumu eklendi:
 Senaryo A (bayrak secmeli, waitfor'lu), Senaryo B (bayrak secsiz, waitfor'lu),
 Silme akisi. waitfor'in substring eslestirmesi ve ReselectEmpireWindow
 sahne adi notu dokumante edildi. Kod degisikligi YOK, rebuild YOK.
+
+---
+
+## Oturum 13 — v1.8 "PLUSMAXGOD" (2026-10-26): oyun-ici komutlar + py kesif + PLUSQuest katalogu
+
+### Giris
+- Kullanici raporu: oturum 12'deki v1.7 akisinin HEPSI calisti (enter UI yolu 2 kez yeni
+  karakterle girdi, mkchar sahte CREATE_FAILURE yok, delchar/delcode temiz).
+- Istekler: (1) kullanilan komutlarin listesi (oturum 12 sonunda verilip KULLANIM.md'ye
+  Senaryo A/B/Silme olarak islendi - commit 8dca033), (2) giris sonrasi oyun-ici komutlar
+  (envanter/chat/hareket-pozisyon), (3) oyuna ait BUTUN python dosyalarini cekip inceleme,
+  (4) tum fonksiyonlarin PLUSQuest adli dosyada katalogu + kombinasyonlari,
+  (5) pylib dosyasinin adi PLUSMAXGOD_PyScript.py olsun (MaximumPyScript_STABLE degil),
+  (6) nighttown workspace'te / temp-tmp'te (kesif taramasi icin not).
+
+### Kanit havuzu (yenisi - GOD MOD taramasi)
+- nighttown koleksiyonu (kullanici yukledi, repo icinde): Modules/ m2kmod/ pyDetour/
+  scripts_root/ - 4000+ API kullanimi sayildi (grep -c | sort).
+- Kritik bulgular: chr.SetPixelPosition 211 (tp), player.SetSingleDIKKeyState 368 (key),
+  net.SendItemUsePacket 218 (use), player.SetAttackKeyState 100 (attack),
+  chr.MoveToDestPosition 36 (goto), background.GetCurrentMapName 34 (pos),
+  chr.GetNameByVID 52 + chr.GetInstanceType 57 (near), app.OpenTextFile 24 (pydump),
+  **app.GetFileList 0 kullanim** (eski AI'nin "en iyi yontem" iddiasini curttu),
+  **chr.GetInstanceList 0** (near = VID sweep yapildi).
+- cycu.py zaten cycu-kanitlari veriyordu (GetStatus/GetMainActorVID/Revive/ClickSkillSlot...).
+
+### pylib v4.0 = PLUSMAXGOD_PyScript.py (2280 satir, 94KB, py2 sozdizimi dogrulandi)
+- v3.2'nin TAMAMI korundu (kanitli menu komutlari hic degismeden).
+- A) OYUN-ICI (hepsi _ingame() guard'li - cycu GetPixelPosition!='None' deseni):
+  stat pos inv(page) equip skill near chat whisper ride revive logout back zoom use pickup
+  drop goto tp key attack.
+- B) KESIF: pyfiles (5 yontem raporu) pydump(ad) pydumpall (dump\ + INDEX.txt, cap 800)
+  pyscan(modul) plusquest (PLUSQuest_live.txt; pyscanall takma ad).
+- Tum raporlar results\last_<ad>.txt + konsol canli yanki (v3.1 deseni).
+
+### MaxExecutor v1.8 (DLL 614KB + EXE 222KB, PE32 i386, kendi kaynakta 0 uyari)
+- FIX-32 BootImport surum-ongoer: eski maxlib (v3.x) yuklu ise PLUSMAXGOD_PyScript.py ile
+  YERINDE exec (kullanici hicbir sey yapmaz); o yoksa eski pylib.py yedek yolu; guard majer 4.
+- FIX-33 25 yeni Cmd ureticisi + dispatch + help (oyun-ici + KESIF bolumleri); PyStr() guvenli
+  python literal ureticisi (chat/whisper tirnak/kacis guvenli), JoinArgs().
+- FIX-34 dump klasoru (BASE_DIR\dump - basedir.txt ile tasinabilir).
+- FIX-35 SyncEmbeddedPylib yeni adla yazar, PLUSMAXGOD_eski_v<surum>.py yedekler.
+- Ders: "zig c++ ... | head" pipeline'i zig'i SIGPIPE ile olduruyor, rc=head'in rc'si oluyor ->
+  DLL eski kaldi (v3.2 gomulu). 2. derlemede stderr dosyaya yakalandi -> dogru DLL 614KB.
+
+### Dokuman + katalog
+- PLUSQuest.md (repo kokunde, 364 satir): 0. hizli erisim tablosu (komut -> fonksiyon -> kanit),
+  1. kesif yontemleri + eski AI hukumleri, 2. modul katalogu (app/net/player/chr/item/
+  nonplayer/background/skill/chat/ui + K/S/? kanit isaretleri), 3. 10 kombinasyon tarifi
+  (T1 giris zinciri, T2 envanter, T3 av dongusu, T4 HP koruma, T5 ghost/relogin,
+  T6 pozisyon takip, T7 skill rotasyonu, T8 kesif dongusu, T9 esya yoneticisi,
+  T10 registry->dosya koprusu), 4. risk tablosu.
+- KULLANIM.md: v1.8 ozeti + paket tablosu + kurulum metinleri + yeni "3c OYUN-ICI" ve
+  "3d KESIF" bolumleri + derleme (zig yolu) + test listesi.
+- README.md: PLUSMAXGOD_PyScript.py tablo/girisleri + dump\ klasoru.
+
+### Cikis
+- Commit: MaxExecutor v1.8 + pylib v4.0 (PLUSMAXGOD_PyScript.py) + PLUSQuest.md + dokumanlar.
+- Beklenen saha dogrulama: stat/pos/inv/equip/skill raporlari, goto/tp hareket,
+  chat/use paketleri, pyfiles->pydumpall->plusquest kesif zinciri (dump klasoru -> AI'ya).
