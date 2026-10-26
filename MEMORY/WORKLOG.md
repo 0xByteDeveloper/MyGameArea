@@ -255,3 +255,42 @@
 - KULLANIM.md: Oturum 8 ozeti + v1.3 kurulum satirlari + akista load kalkti +
   4 yeni sorun-giderme satiri (ImportError maxlib satiri en ustte)
 - Test checklist guncellendi: last_pylib_load.txt oto-yukleme kaniti
+
+## Oturum 9 — v1.4 + pylib v3.0: karakter islemleri + oyun hatasi izleme
+
+### Saha durumu
+- GIRIS BASARILI (MaxExecTamRapor.rar): selserver -> login -> charlist calisti.
+  Hesap: 2 karakter (raynare Ninja-K slot2, 111111111111 Shaman-K slot3), 3 bos slot.
+- Kullanici istekleri: yanlis sifre loglama, slot secme, olustur butonu, bayrak
+  listesi+secme+ilerle, sinif/cinsiyet/isim+enter, hata mesaji komutu, karakter
+  silme + silme kodu dialogu.
+
+### Kaynak arastirma (uploads/MaximumPyScript1.rar arsivi)
+- ui_scan.txt: LoginWindow tam attr (serverList=ListBox2, channelList, OK butonu)
+- ui_scan_select.txt: SelectCharacterWindow 84 metot (SelectSlot, MakeCharacter,
+  CreateCharacter, DeleteCharacter, PopupDeleteQuestion, InputPrivateCode,
+  AcceptInputPrivateCode, OnCreateFailure, OnDeleteFailure/Success, btnCreate=None!)
+- ui_scan_empire2_result.txt: ReselectEmpireWindow (empireID=3, ClickSelectButton)
+- chardeleter.txt + chardeleter_result.txt: KANITLANMIS silme akisi (5 adim,
+  inputValue EditLine, kod="1111111" gerceklesmis)
+- maximum_log.txt: KANITLANMIS server secim akisi (11.08.2026, birebir ayni komutlar)
+- MaximumPyScript_Merged_calisan.py: do_select_empire (OnSelectEmpire+EmpireButton.
+  CallEvent+ClickSelectButton) + do_create_character (__IncreaseSlotIndex gezme,
+  __SelectGender, editCharacterName.SetText, btnCreate.CallEvent + paket yedegi)
+- LoginEventTracker_GILSafe.py: OnLoginFailure hook deseni + LOGIN_FAILURE_CODES
+
+### pylib v3.0 (yeni)
+- OTO HATA IZLEME: _install_error_hooks() — OnLoginFailure /
+  OnCreateFailure / OnDeleteFailure / OnDeleteSuccess -> last_error.txt
+  (idempotent _mx_hooked; status() lazy tekrar dener)
+- YENI: selchar, newchar, joblist, mkchar(ad,race), empirelist, empireui(n),
+  delchar(slot), delcode(kod), lasterr, serverlist
+- Tablolar: EMPIRE_NAMES, RACE_TO_SLOT, RACE_TO_GENDER, LOGIN_FAILURE_CODES,
+  CREATE_FAIL_CODES — hepsi kanitlanmis scriptlerden
+- py2 gramer lib2to3 ile DOGRULANDI
+
+### DLL v1.4 (yeni)
+- 10 yeni komut dispatch'i: selchar/newchar/joblist/mkchar/empirelist/empireui/
+  delchar/delcode/serverlist/lasterr (CmdLastErr son 25 satiri konsola doker)
+- PrintHelp v1.4 tablosu (giris/olusturma/silme akislari)
+- DLL 604KB pei-i386, uyarisiz derleme

@@ -2,7 +2,7 @@
 
 > Paket içeriği, kurulum, komutlar, giriş akışı, sorun giderme — hepsi bu dosyada.
 > Mimari gerekçe için: `reports/DEV_REAL_BINARY_TEST.md` (RC18/RC19) + `reports/DEV_GIL_ANALYSIS.md` (RC1-RC17).
-> Son güncelleme: **Oturum 8 — v1.3** (oto pylib yükleme, kendini onaran komutlar, `pyerr` komutu, load dosya kontrolü)
+> Son güncelleme: **Oturum 9 — v1.4 / pylib v3.0** (karakter işlemleri: selchar/newchar/mkchar/empirelist/empireui/delchar/delcode + oyun hatası izleme lasterr)
 >
 > **v1.3 ÖZET — saha testi 26.10 dersi:** kuyruk/drenaj/ana-thread zinciri ÇALIŞIYORDU (kanıt: `results\py_probe.txt` oluştu, `alive.txt` aktti) ama makinede **`C:\MaxExec\pylib.py` dosyası yoktu**. `load` sessiz IOError yedi, `maxlib` hiç kurulmadı; her `status`/`login`/`waitfor` komutu pyerr.log'a "ImportError: No module named maxlib" yazdı (100+ kez). **v1.3 pylib.py'yi otomatik yükler** — dosya yoksa baştan uyarır.
 
@@ -97,6 +97,61 @@ Sonuç dosyaları `C:\MaxExec\results\` altında: `py_probe.txt` (zincir kanıt�
 | `alive.txt`'de `msg>0` artıyor | WndProc subclass da yaşıyor |
 | `alive.txt` HİÇ yok / 2 sn'de bir güncellenmiyor | Drain hiç çağrılmıyor — `maxexec.log`'a bak (SetTimer satırı var mı?) |
 | `alive.txt` içeriği örnek: `tick=110017796 drain=412 exec=8 timer=409 msg=3 py=1` | `drain` akıyor ama `exec` 0 ise python27 çözülememiş → `maxexec.log` |
+
+
+---
+
+## 3b. KARAKTER İŞLEMLERİ (v1.4 — giriş yaptıktan sonra)
+
+> pylib v3.0 **otomatik hata izleme** kurar: `LoginWindow.OnLoginFailure` +
+> `SelectCharacterWindow.OnCreateFailure/OnDeleteFailure/OnDeleteSuccess` hook'ları
+> (Python-seviye, kanıtlanmış desen). Yanlış şifre, isim çakışması, silme sonucu →
+> `results\last_error.txt`'ye düşer. Konsolda görmek için: **`lasterr`**
+
+### a) Slot seçme / girme
+```
+charlist              tabloya bak (hangi slotlar dolu/bos)
+selchar 4             4. slotu SEÇ (isaretler; girmez)
+enter 2               2. slotla OYUNA GİR (TEK DirectEnter)
+```
+
+### b) Yeni karakter oluşturma (2 ekran: bayrak → sınıf/cinsiyet/isim)
+```
+newchar               "karakter olustur" butonuna basar
+status                hangi ekran geldigine bak
+  SCENE=SelectEmpireWindow   -> bayrak ekrani (ilk karakter)
+  SCENE=CreateCharacterWindow -> direkt olusturma (bayrak kayitliysa)
+
+bayrak ekrani geldiyse:
+empirelist            bayrak listesi + mevcut empire (1=Shinsoo 2=Chunjo 3=Jinno)
+empireui 1            bayrak sec + ILERLE butonu (paket yolu yedekli)
+waitfor CreateCharacterWindow 10
+
+olusturma ekraninda:
+joblist               sinif/cinsiyet tablosu (race 0-8) + ekran durumu
+mkchar YeniIsim 3     sinif gez + cinsiyet + isim + OLUSTUR'a bas
+                      race=3 -> Shaman(K); race=7 -> Shaman(E); 0=Warrior(E)...
+waitfor SelectCharacterWindow 15
+charlist              yeni karakter slotta mi? (30 sn create cooldown olabilir)
+lasterr               hata varsa (isim mevcut = CREATE_FAILURE: 1)
+```
+
+### c) Karakter silme (2 adım: soru+kod dialogu → kodu gir)
+```
+charlist              once bak
+delchar 3             3. slotu sec + "karakteri sil" sorusu + kod dialogunu ACAR
+delcode 1111111       silme kodunu yazar + ONAYLAR
+lasterr               sonuc: DELETE_SUCCESS / DELETE_FAILURE
+charlist              slot bosaldi mi?
+```
+> Bazı serverlar silme kodu istemez (`NOT_NEED_DELETE_CODE`) — delchar çıktısında belirtilir.
+
+### d) Hata komutları özeti
+| Komut | Ne gösterir | Kaynak dosya |
+|---|---|---|
+| `lasterr` | **OYUN hataları** (yanlış şifre=LOGIN_FAILURE: WRONGPWD, isim mevcut, silme sonucu...) | `results\last_error.txt` |
+| `pyerr` | **PYTHON hataları** (traceback — kod hatası) | `pyerr.log` |
+| `log` | **DLL izi** (EXEC satırları, sayaçlar) | `maxexec.log` |
 
 ### create ile yeni karakter (karakter yoksa)
 ```

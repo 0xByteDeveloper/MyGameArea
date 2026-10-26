@@ -41,6 +41,12 @@
 //    FIX-17: pyerr komutu — pyerr.log son satirlarini konsola doker.
 //    FIX-18: PROBE sys.stderr'i pyerr.log'a baglar; ilk andan itibaren
 //            butun traceback'ler dosyaya duser.
+//  v1.4 (oturum 9 — giris sonrasi karakter islemleri):
+//    + selchar/newchar/joblist/mkchar/empirelist/empireui/delchar/delcode
+//      /lasterr/serverlist komutlari (pylib v3.0 cifti)
+//    + lasterr: oyun hatalarini (yanlis sifre vb.) konsola doker —
+//      pylib'in OnLoginFailure/OnCreateFailure/OnDelete* hooklari
+//      results\last_error.txt'ye yazar.
 // ============================================================================
 //  xgodmod4 gereksinimleri:
 //    * Python fonksiyon hook'u  YOK  (monkey-patch yok)
@@ -399,6 +405,92 @@ static void CmdSelServer(int srv, int ch)
     QRaw(buf);
 }
 
+static void CmdServerList(void)
+{
+    QRaw(BootImport() + "maxlib.serverlist()\n");
+}
+
+static void CmdSelChar(int slot)
+{
+    char buf[256];
+    _snprintf(buf, sizeof(buf), "%smaxlib.selchar(%d)\n", BootImport().c_str(), slot);
+    buf[sizeof(buf)-1] = 0;
+    QRaw(buf);
+}
+
+static void CmdNewChar(void)
+{
+    QRaw(BootImport() + "maxlib.newchar()\n");
+}
+
+static void CmdJobList(void)
+{
+    QRaw(BootImport() + "maxlib.joblist()\n");
+}
+
+static void CmdMkChar(const std::string& name, int race)
+{
+    char buf[512];
+    _snprintf(buf, sizeof(buf), "%smaxlib.mkchar(r'%s', %d)\n", BootImport().c_str(), name.c_str(), race);
+    buf[sizeof(buf)-1] = 0;
+    QRaw(buf);
+}
+
+static void CmdEmpireList(void)
+{
+    QRaw(BootImport() + "maxlib.empirelist()\n");
+}
+
+static void CmdEmpireUI(int n)
+{
+    char buf[256];
+    _snprintf(buf, sizeof(buf), "%smaxlib.empireui(%d)\n", BootImport().c_str(), n);
+    buf[sizeof(buf)-1] = 0;
+    QRaw(buf);
+}
+
+static void CmdDelChar(int slot)
+{
+    char buf[256];
+    _snprintf(buf, sizeof(buf), "%smaxlib.delchar(%d)\n", BootImport().c_str(), slot);
+    buf[sizeof(buf)-1] = 0;
+    QRaw(buf);
+}
+
+static void CmdDelCode(const std::string& code)
+{
+    char buf[512];
+    _snprintf(buf, sizeof(buf), "%smaxlib.delcode(r'%s')\n", BootImport().c_str(), code.c_str());
+    buf[sizeof(buf)-1] = 0;
+    QRaw(buf);
+}
+
+static void CmdLastErr(void)
+{
+    QRaw(BootImport() + "maxlib.lasterr()\n");
+    Sleep(400);
+    std::string s;
+    if (ReadFileAll(std::string(RESULT_DIR) + "\\last_error.txt", s))
+    {
+        printf("[LASTERR] oyun hatalari (sonlar en altta):\n");
+        // son 25 satir
+        std::vector<std::string> lines;
+        size_t p = 0;
+        while (p < s.size())
+        {
+            size_t q = s.find('\n', p);
+            if (q == std::string::npos) q = s.size();
+            if (q > p) lines.push_back(s.substr(p, q - p));
+            p = q + 1;
+        }
+        for (size_t i = lines.size() > 25 ? lines.size()-25 : 0; i < lines.size(); ++i)
+            printf("  %s\n", lines[i].c_str());
+        if (lines.empty()) printf("  (bos — henuz oyun hatasi yaklanmadi)\n");
+    }
+    else
+        printf("[LASTERR] last_error.txt yok — henuz oyun hatasi yaklanmadi\n");
+}
+
 static void CmdCharlist(void)
 {
     QRaw(BootImport() + "maxlib.charlist()\n");
@@ -495,7 +587,7 @@ static bool InitConsole(void)
         LogLine("CONOUT$ (stderr) yeniden acilamadi");
     setvbuf(stdout, NULL, _IONBF, 0);   // buffer'siz: crash olsa bile yazar
     setvbuf(stderr, NULL, _IONBF, 0);
-    SetConsoleTitleA("MaxExecutor v1.3");
+    SetConsoleTitleA("MaxExecutor v1.4");
     HWND cw = GetConsoleWindow();
     if (cw)
     {
@@ -548,25 +640,39 @@ static std::vector<std::string> SplitArgs(const std::string& line)
 
 static void PrintHelp(void)
 {
-    printf("\n=== MaxExecutor v1.3 (oto-yukle + kendini onaran komutlar) ===\n");
+    printf("\n=== MaxExecutor v1.4 (karakter islemleri + hata izleme) ===\n");
     printf("  help                        : bu yardim\n");
     printf("  status                      : anlik sahne/baglanti snapshot\n");
-    printf("  load <py-dosya>             : pylib yukle (v1.3 zaten otomatik yukler)\n");
-    printf("  selserver <srv> <ch>        : SERVER LISTESI ekraninda sunucu+CH sec (OK'a basar)\n");
+    printf("  serverlist                  : server/CH listbox icerigi\n");
+    printf("  selserver <srv> <ch>        : server+CH sec, OK'a bas\n");
     printf("  login <id> <pwd>            : login ekraninda UI doldurur + giris\n");
     printf("  charlist                    : 5 slot tablosunu doken rapor\n");
-    printf("  empire <1-3>                : bayrak/imparatorluk secimi\n");
-    printf("  create <slot> <ad> <race> <shape> : karakter olustur (race 0-8, shape 0/1)\n");
-    printf("  enter <slot>                : oyuna giris - TEK DirectEnter (cift giris yok!)\n");
+    printf("  selchar <slot>              : karakter slotu SEC (0-4)\n");
+    printf("  enter <slot>                : oyuna giris - TEK DirectEnter\n");
+    printf("  -- karakter olusturma --\n");
+    printf("  newchar                     : olustur butonuna bas (bayrak/olusturma acar)\n");
+    printf("  empirelist                  : bayrak listesi + mevcut empire\n");
+    printf("  empireui <1-3>              : bayrak sec + ILERLE (1=Shinsoo 2=Chunjo 3=Jinno)\n");
+    printf("  joblist                     : sinif/cinsiyet tablosu (race 0-8)\n");
+    printf("  mkchar <ad> <race>          : UI akisiyla OLUSTUR (sinif+cinsiyet+isim+enter)\n");
+    printf("  -- karakter silme --\n");
+    printf("  delchar <slot>              : slotu sec + silme sorusu + kod dialogu ACAR\n");
+    printf("  delcode <kod>               : silme kodunu yazar + ONAYLAR\n");
+    printf("  -- hata takibi --\n");
+    printf("  lasterr                     : OYUN hatalari (yanlis sifre vb.)\n");
+    printf("  pyerr                       : PYTHON hatalari (traceback)\n");
+    printf("  log                         : maxexec.log son satirlari\n");
+    printf("  load <py-dosya>             : pylib yukle (v1.3+ zaten otomatik)\n");
     printf("  raw <python kodu>           : serbest Python (ana thread'de)\n");
     printf("  waitfor <Scene> <sn>        : orn. waitfor GameWindow 60\n");
-    printf("  log                         : maxexec.log son satirlar\n");
-    printf("  pyerr                       : pyerr.log son satirlar (Python hatalari)\n");
     printf("  exit                        : cikis\n");
-    printf("Akis (load artik OTOMATIK): status -> selserver 0 0 ->\n");
-    printf("  waitfor LoginWindow 15 -> login <id> <pwd> -> waitfor SelectCharacterWindow 30\n");
-    printf("  -> charlist -> enter 0 -> waitfor GameWindow 60\n");
-    printf("Saglik: %s (tick/drain/exec/timer/msg/py) | zincir kaniti: results\\py_probe.txt\n\n", ALIVE_FILE);
+    printf("GIRIS AKISI: status -> selserver 0 0 -> waitfor LoginWindow 15 ->\n");
+    printf("  login <id> <pwd> -> waitfor SelectCharacterWindow 30 -> charlist\n");
+    printf("YENI KARAKTER: newchar -> status -> (bayrak geldiyse empirelist ->\n");
+    printf("  empireui 1 -> waitfor CreateCharacterWindow 10) -> joblist ->\n");
+    printf("  mkchar Isim 3 -> waitfor SelectCharacterWindow 15 -> charlist\n");
+    printf("SILME: charlist -> delchar <slot> -> delcode <silme-kodu> -> lasterr\n");
+    printf("Saglik: %s | oyun hatalari: results\\last_error.txt\n\n", ALIVE_FILE);
 }
 
 static DWORD WINAPI WorkerThread(LPVOID)
@@ -577,7 +683,7 @@ static DWORD WINAPI WorkerThread(LPVOID)
     const bool con = InitConsole();
 
     printf("\n=============================================\n");
-    printf("  MaxExecutor v1.3 - ana-thread executor (oto pylib yukle)\n");
+    printf("  MaxExecutor v1.4 - ana-thread executor (karakter islemleri)\n");
     printf("  hook yok | SHM yok | arka-plan PyRun yok\n");
     printf("=============================================\n");
     if (!con)
@@ -668,6 +774,16 @@ static DWORD WINAPI WorkerThread(LPVOID)
         else if (cmd == "empire" && a.size() >= 2) CmdEmpire(atoi(a[1].c_str()));
         else if (cmd == "create" && a.size() >= 5) CmdCreate(atoi(a[1].c_str()), a[2], atoi(a[3].c_str()), atoi(a[4].c_str()));
         else if (cmd == "enter" && a.size() >= 2) CmdEnter(atoi(a[1].c_str()));
+        else if (cmd == "selchar" && a.size() >= 2) CmdSelChar(atoi(a[1].c_str()));
+        else if (cmd == "newchar") CmdNewChar();
+        else if (cmd == "joblist") CmdJobList();
+        else if (cmd == "mkchar" && a.size() >= 3) CmdMkChar(a[1], atoi(a[2].c_str()));
+        else if (cmd == "empirelist") CmdEmpireList();
+        else if (cmd == "empireui" && a.size() >= 2) CmdEmpireUI(atoi(a[1].c_str()));
+        else if (cmd == "delchar" && a.size() >= 2) CmdDelChar(atoi(a[1].c_str()));
+        else if (cmd == "delcode" && a.size() >= 2) CmdDelCode(a[1]);
+        else if (cmd == "serverlist") CmdServerList();
+        else if (cmd == "lasterr") CmdLastErr();
         else if (cmd == "load" && a.size() >= 2) CmdLoad(a[1]);
         else if (cmd == "raw" && ln.size() > 4) QRaw(ln.substr(4));
         else if (cmd == "waitfor" && a.size() >= 3) CmdWaitFor(a[1], atoi(a[2].c_str()));
@@ -713,7 +829,7 @@ BOOL APIENTRY DllMain(HMODULE hMod, DWORD reason, LPVOID)
         DisableThreadLibraryCalls(hMod);
         EnsureDirs();
         CreateThread(NULL, 0, WorkerThread, NULL, 0, NULL);
-        LogLine("MaxExecutor v1.3 yuklendi (pid=%lu) — worker baslatiliyor",
+        LogLine("MaxExecutor v1.4 yuklendi (pid=%lu) — worker baslatiliyor",
                 GetCurrentProcessId());
     }
     return TRUE;

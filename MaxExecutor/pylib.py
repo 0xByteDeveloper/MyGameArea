@@ -1,8 +1,23 @@
 # -*- coding: utf-8 -*-
 """
 ===========================================================================
- pylib.py — MaxExecutor Ana-Thread Komut Kutuphanesi (v2.0)
+ pylib.py — MaxExecutor Ana-Thread Komut Kutuphanesi (v3.0)
 ===========================================================================
+ v3.0 DEGISIKLIKLER (giris basarili sonrasi istekler — oturum 9):
+   * OTO HATA IZLEME: LoginWindow.OnLoginFailure + SelectCharacterWindow
+     OnCreateFailure/OnDeleteFailure/OnDeleteSuccess hook'lari (Python-seviye,
+     kanitlanmis guvenli — LoginEventTracker/recorder v13-14 deseni).
+     Yanlis sifre/arti kodlar results\last_error.txt'ye duser.
+   * YENI KOMUTLAR:
+       selchar <slot>     : karakter slotu sec (orn. 4. slot)
+       newchar            : "karakter olustur" butonuna bas
+       joblist            : sinif/cinsiyet tablosu + olusturma ekran durumu
+       mkchar <ad> <race> : UI akisi — sinif gez + cinsiyet + isim + OLUSTUR
+       empirelist         : bayrak listesi + mevcut empire
+       empireui <1-3>     : bayrak sec + ILERLE (UI yolu — kanitlanmis)
+       delchar <slot>     : karakter sil butonuna bas + kod dialogu ac
+       delcode <kod>      : silme kodunu yaz + ONAYLA
+   * login() raporuna "lasterr" ipucu eklendi.
  v2.0 DEGISIKLIKLER (saha testi 25.10 sonrasi):
    * mainStream artik FRAME YURUYUSU ile bulunur (sys._current_frames).
      __main__.mainStream bu client'ta YOK — calisan script
@@ -16,6 +31,9 @@
    * enter: UI senkron (SelectSlot) + TEK DirectEnter (RC12 yasagi)
  GIL NOTU: butun fonksiyonlar ana thread'de (drain icinde) calisir;
    sadece dict/attr okumalari + dosya yazimi var; gc.get_objects YOK.
+   HOOK NOTU: Python-seviye fonksiyon atamasi (class attr) — C++ tarafinda
+   hook YOK; bu desen LoginEventTracker_GILSafe + recorder v13/v14'te
+   saha-kanitli (0 ms GIL, sadece atama).
 ===========================================================================
 """
 
@@ -32,6 +50,24 @@ RACE_TABLE = {
 }
 JOB_NAMES = {0: 'Warrior', 1: 'Ninja', 2: 'Sura', 3: 'Shaman', 4: 'Wolfman'}
 SLOT_COUNT = 5
+
+# olusturma ekranı donusumleri (MaximumPyScript_Merged_calisan'dan — kanitli)
+EMPIRE_NAMES    = {0: 'None', 1: 'Shinsoo', 2: 'Chunjo', 3: 'Jinno'}
+RACE_TO_SLOT    = {0: 0, 4: 0, 1: 1, 5: 1, 2: 2, 6: 2, 3: 3, 7: 3, 8: 0}
+RACE_TO_GENDER  = {0: 0, 1: 1, 2: 0, 3: 1, 4: 1, 5: 0, 6: 1, 7: 0, 8: 0}
+
+# oyun hata kodlari (LoginEventTracker_GILSafe'dan — client'in kendi kodlari)
+LOGIN_FAILURE_CODES = {
+    'ALREADY':  'Hesap zaten giris yapmis',   'NOID':     'Boyle bir hesap yok',
+    'WRONGPWD': 'Yanlis sifre',               'FULL':     'Server dolu',
+    'SHUTDOWN': 'Server kapali/bakimda',      'REPAIR':   'Hesap tamir asamasinda',
+    'BLOCK':    'Hesap engellendi',           'QUIT':     'Cok fazla hatali deneme',
+    'BESAMEKEY':'Cift login anahtari',        'NOTAVAIL': 'Hesap kullanilamaz',
+    'NOBILL':   'Abonelik/bakiye yok',        'BLKLOGIN': 'Giris engellendi',
+    'WEBBLK':   'Web uzerinden engellendi',   'BADSCLID': 'Yanlis sosyal ID',
+    'AGELIMIT': 'Yas/saat sinirlamasi',       'VERSION':  'Client versiyon uyumsuz',
+}
+CREATE_FAIL_CODES = {0: 'karakter yaratilamaz', 1: 'isim zaten mevcut'}
 
 # ---------------------------------------------------------------------------
 # yardimcilar
@@ -55,6 +91,87 @@ def _write(name, text):
 
 def _fmt_error(e):
     return '%s: %s' % (type(e).__name__, str(e))
+
+# ---------------------------------------------------------------------------
+# OTO HATA IZLEME — oyun hatalarini results\last_error.txt'ye dusurur
+# (LoginEventTracker_GILSafe + recorder v13/v14'te saha-kanitli desen)
+# ---------------------------------------------------------------------------
+_HOOKS_OK = []
+
+def _log_game_error(kind, detail):
+    try:
+        f = open(_res_name('error'), 'a')
+        f.write('[%s] %s: %s\n' % (time.strftime('%H:%M:%S'), kind, detail))
+        f.close()
+    except:
+        pass
+
+def _install_error_hooks():
+    """Python-seviye class hook'lari (idempotent — _mx_hooked bayragi).
+    Kurulamayan modul varsa sessiz gecer; status() her cagrida tekrar dener."""
+    try:
+        # 1) LoginWindow.OnLoginFailure(error) — yanlis sifre vb.
+        intro = sys.modules.get('introLogin', None) or sys.modules.get('intrologin', None)
+        if intro is not None:
+            LW = getattr(intro, 'LoginWindow', None)
+            orig = getattr(LW, 'OnLoginFailure', None) if LW is not None else None
+            if orig is not None and not getattr(orig, '_mx_hooked', False):
+                def _h_login_fail(self_lw, *a, **kw):
+                    try:
+                        code = a[0] if a else '?'
+                        _log_game_error('LOGIN_FAILURE',
+                                        '%s (%s)' % (code, LOGIN_FAILURE_CODES.get(code, 'bilinmeyen')))
+                    except:
+                        pass
+                    return orig(self_lw, *a, **kw)
+                _h_login_fail._mx_hooked = True
+                _h_login_fail._mx_orig = orig
+                LW.OnLoginFailure = _h_login_fail
+                _HOOKS_OK.append('OnLoginFailure')
+        # 2) SelectCharacterWindow create/delete sonuclari
+        isel = sys.modules.get('introSelect', None) or sys.modules.get('introselect', None)
+        if isel is not None:
+            SW = getattr(isel, 'SelectCharacterWindow', None)
+            if SW is not None:
+                for mname, kind, mtable in (
+                        ('OnCreateFailure', 'CREATE_FAILURE', CREATE_FAIL_CODES),
+                        ('OnDeleteFailure', 'DELETE_FAILURE', None),
+                        ('OnDeleteSuccess', 'DELETE_SUCCESS', None)):
+                    orig = getattr(SW, mname, None)
+                    if orig is None or getattr(orig, '_mx_hooked', False):
+                        continue
+                    def _mk(orig=orig, mname=mname, kind=kind, mtable=mtable):
+                        def _h(self_sw, *a, **kw):
+                            try:
+                                code = a[0] if a else ''
+                                desc = mtable.get(code, '') if mtable else ''
+                                _log_game_error(kind, '%s %s' % (code, desc))
+                            except:
+                                pass
+                            return orig(self_sw, *a, **kw)
+                        _h._mx_hooked = True
+                        _h._mx_orig = orig
+                        return _h
+                    try:
+                        setattr(SW, mname, _mk())
+                        _HOOKS_OK.append(mname)
+                    except:
+                        pass
+    except:
+        pass
+
+def lasterr_text():
+    """last_error.txt icerigi (DLL komutu bunu okur; pylib yedek yazar)."""
+    try:
+        f = open(_res_name('error'), 'r')
+        data = f.read()
+        f.close()
+        return data if data.strip() else 'henuz oyun hatasi yakalanmadi\n'
+    except:
+        return 'henuz oyun hatasi yaklanmadi\n'
+
+def lasterr():
+    _write('lasterr', lasterr_text())
 
 # ---------------------------------------------------------------------------
 # mainStream — FRAME YURUYUSU (calisan script teknigi, hooksuz)
@@ -272,6 +389,7 @@ def login(user, pwd):
                     return
             log.append('OK: paket yolu (SetLoginInfo + %s)' % (sent or 'baglanti yok!'))
         log.append('Beklenen: waitfor SelectCharacterWindow 30')
+        log.append('Sonuc takibi: lasterr (yanlis sifre = LOGIN_FAILURE: WRONGPWD yakalanir)')
         _write('login', '\n'.join(log) + '\n')
         _write('status', status_text())
     except Exception, e:
@@ -384,9 +502,521 @@ def enter(slot):
         _write('enter', 'HATA ' + _fmt_error(e) + '\n')
 
 # ---------------------------------------------------------------------------
-# 8) STATUS — sahne + baglanti + stream bilgisi
+# 9) SELCHAR — karakter slotu sec (orn. 4. slotu secmek)
+# ---------------------------------------------------------------------------
+def selchar(slot):
+    try:
+        sw = _pw_by_type('SelectCharacterWindow')
+        if sw is None:
+            _write('selchar', 'HATA: SelectCharacterWindow sahnesinde degil (SCENE=%s)\n' % _scene_name())
+            return
+        log = ['SCENE=%s' % _scene_name(), 'istenen slot=%d' % slot]
+        try:
+            sw.SelectSlot(slot)
+            log.append('OK: SelectSlot(%d)' % slot)
+        except Exception, e:
+            log.append('UYARI: SelectSlot hatasi (%s) — slot attr atanacak' % _fmt_error(e))
+            try:
+                sw.slot = slot
+                log.append('OK: slot=%d attr atandi' % slot)
+            except Exception, e2:
+                _write('selchar', '\n'.join(log + ['HATA: slot attr de atilanamadi ' + _fmt_error(e2)]) + '\n')
+                return
+        time.sleep(0.3)
+        try:
+            cn = getattr(sw, 'CharacterName', None)
+            if cn is not None and hasattr(cn, 'GetText'):
+                log.append('secilen karakter: %s' % cn.GetText())
+        except:
+            pass
+        log.append('Kontrol: charlist (slot isaretlenmis olmali)')
+        _write('selchar', '\n'.join(log) + '\n')
+    except Exception, e:
+        _write('selchar', 'HATA ' + _fmt_error(e) + '\n')
+
+# ---------------------------------------------------------------------------
+# 10) NEWCHAR — "karakter olustur" butonuna bas
+# (btnCreate instance attr None olabilir — ElementDictionary + dir() yedekli,
+#  kanitlanmis _click_create_button deseni)
+# ---------------------------------------------------------------------------
+def newchar():
+    try:
+        sw = _pw_by_type('SelectCharacterWindow')
+        if sw is None:
+            _write('newchar', 'HATA: SelectCharacterWindow sahnesinde degil (SCENE=%s)\n' % _scene_name())
+            return
+        log = ['SCENE=%s' % _scene_name()]
+        btn = None
+        for attr in ('btnCreate', 'createButton', 'btn_create'):
+            b = getattr(sw, attr, None)
+            if b is not None and hasattr(b, 'CallEvent'):
+                btn = b
+                log.append('buton attr: %s' % attr)
+                break
+        if btn is None:
+            ed = getattr(sw, 'ElementDictionary', None) or {}
+            for key in ('create_button', 'btnCreate', 'CreateButton'):
+                b = ed.get(key, None)
+                if b is not None and hasattr(b, 'CallEvent'):
+                    btn = b
+                    log.append('buton (ElementDictionary): %s' % key)
+                    break
+        if btn is None:
+            for a in dir(sw):
+                if 'reate' in a and ('utton' in a or 'utton' in a.lower()):
+                    try:
+                        b = getattr(sw, a)
+                    except:
+                        continue
+                    if b is not None and hasattr(b, 'CallEvent'):
+                        btn = b
+                        log.append('aday buton: %s' % a)
+                        break
+        if btn is None:
+            extra = ['HATA: create butonu bulunamadi!']
+            try:
+                for a in dir(sw):
+                    if 'reate' in a or 'utton' in a:
+                        extra.append('  aday attr: %s = %s' % (a, type(getattr(sw, a)).__name__))
+            except:
+                pass
+            _write('newchar', '\n'.join(log + extra) + '\n')
+            return
+        btn.CallEvent()
+        log.append('OK: create butonuna basildi')
+        log.append('Beklenen: bayrak ekrani (ilk karakter) VEYA olusturma ekrani')
+        log.append('Sonraki: status -> empireui <1-3> VEYA mkchar <ad> <race>')
+        _write('newchar', '\n'.join(log) + '\n')
+    except Exception, e:
+        _write('newchar', 'HATA ' + _fmt_error(e) + '\n')
+
+# ---------------------------------------------------------------------------
+# 11) JOBLIST — sinif/cinsiyet tablosu + olusturma ekran durumu
+# ---------------------------------------------------------------------------
+def joblist():
+    try:
+        lines = ['SCENE=%s' % _scene_name(), '', 'race tablosu (mkchar <ad> <race>):']
+        for r in sorted(RACE_TABLE):
+            job, sex = RACE_TABLE[r]
+            lines.append('  race %d = %s (%s)' % (r, job, 'Erkek' if sex == 'E' else 'Kadin'))
+        ccw = _pw_by_type('CreateCharacterWindow')
+        if ccw is not None:
+            lines.append('')
+            lines.append('olusturma ekrani ACIK:')
+            lines.append('  mevcut slot(idx) = %s' % str(getattr(ccw, 'slot', '?')))
+            lines.append('  gender           = %s' % str(getattr(ccw, 'gender', '?')))
+            try:
+                edn = getattr(ccw, 'editCharacterName', None)
+                if edn is not None and hasattr(edn, 'GetText'):
+                    lines.append('  isim kutusu      = "%s"' % edn.GetText())
+            except:
+                pass
+            try:
+                gbl = getattr(ccw, 'genderButtonList', [])
+                lines.append('  genderButtonList = %d buton' % len(gbl))
+            except:
+                pass
+        else:
+            lines.append('')
+            lines.append('(olusturma ekrani kapali — newchar ile ac)')
+        _write('joblist', '\n'.join(lines) + '\n')
+    except Exception, e:
+        _write('joblist', 'HATA ' + _fmt_error(e) + '\n')
+
+# ---------------------------------------------------------------------------
+# 12) MKCHAR — UI akisiyla karakter olustur (sinif gez + cinsiyet + isim + OLUSTUR)
+# (kanitlanmis do_create_character deseni; paket yolu yedek)
+# ---------------------------------------------------------------------------
+def mkchar(name, race):
+    try:
+        if race not in RACE_TABLE:
+            _write('mkchar', 'HATA: race 0..8 (joblist yaz)\n')
+            return
+        if len(name) > 12:
+            _write('mkchar', 'HATA: isim > 12 karakter\n')
+            return
+        log = ['SCENE=%s' % _scene_name(),
+               'hedef: ad=%s race=%d (%s-%s)' % (name, race,
+                                                 RACE_TABLE[race][0], RACE_TABLE[race][1])]
+        ccw = _pw_by_type('CreateCharacterWindow')
+        if ccw is None:
+            _write('mkchar', '\n'.join(log + ['HATA: CreateCharacterWindow acik degil — once newchar']) + '\n')
+            return
+        # a) sinif slotuna gez (Warrior->Ninja->Sura->Shaman)
+        target_slot = RACE_TO_SLOT.get(race, 3)
+        target_gender = RACE_TO_GENDER.get(race, 0)
+        cur = getattr(ccw, 'slot', 0)
+        log.append('sinif slotu: %d -> %d' % (cur, target_slot))
+        try:
+            cur = int(cur)
+        except:
+            cur = 0
+        if cur != target_slot:
+            incr = getattr(ccw, '_CreateCharacterWindow__IncreaseSlotIndex', None)
+            if incr is not None:
+                steps = (target_slot - cur) % 4
+                for s in range(steps):
+                    try:
+                        incr()
+                        time.sleep(1.0)
+                        if int(getattr(ccw, 'slot', -1)) == target_slot:
+                            break
+                    except:
+                        break
+            try:
+                ccw.slot = target_slot
+            except:
+                pass
+            log.append('OK: sinif slotu = %d' % target_slot)
+        # b) cinsiyet
+        sel_g = getattr(ccw, '_CreateCharacterWindow__SelectGender', None)
+        if sel_g is not None:
+            try:
+                sel_g(target_gender)
+                time.sleep(0.3)
+                log.append('OK: __SelectGender(%d)' % target_gender)
+            except:
+                pass
+        try:
+            ccw.gender = target_gender
+        except:
+            pass
+        gbl = getattr(ccw, 'genderButtonList', None) or []
+        if len(gbl) > target_gender:
+            try:
+                gbl[target_gender].CallEvent()
+                time.sleep(0.3)
+                log.append('OK: genderButtonList[%d].CallEvent()' % target_gender)
+            except:
+                pass
+        sbl = getattr(ccw, 'shapeButtonList', None) or []
+        if len(sbl) > target_gender:
+            try:
+                sbl[target_gender].CallEvent()
+            except:
+                pass
+        # c) isim
+        edn = getattr(ccw, 'editCharacterName', None)
+        if edn is not None and hasattr(edn, 'SetText'):
+            edn.SetText(name)
+            log.append('OK: isim = "%s"' % name)
+        else:
+            log.append('UYARI: editCharacterName bulunamadi!')
+        # d) OLUSTUR butonu (enter)
+        btn = None
+        for attr in ('btnCreate', 'createButton', 'btn_create'):
+            b = getattr(ccw, attr, None)
+            if b is not None and hasattr(b, 'CallEvent'):
+                btn = b
+                break
+        if btn is None:
+            ed = getattr(ccw, 'ElementDictionary', None) or {}
+            for key in ('create_button', 'btnCreate', 'CreateButton'):
+                b = ed.get(key, None)
+                if b is not None and hasattr(b, 'CallEvent'):
+                    btn = b
+                    break
+        if btn is not None:
+            btn.CallEvent()
+            log.append('OK: OLUSTUR butonuna basildi')
+        else:
+            log.append('UYARI: olustur butonu bulunamadi — sadece paket yolu')
+        # e) paket yolu yedek (UI butonu yetmezse sunucuya gider)
+        time.sleep(1.0)
+        slot = -1
+        try:
+            import net
+            for i in range(SLOT_COUNT):
+                pid = 0
+                try:
+                    pid = net.GetAccountCharacterSlotDataInteger(i, net.ACCOUNT_CHARACTER_SLOT_ID)
+                except:
+                    pid = 0
+                if not pid:
+                    slot = i
+                    break
+        except:
+            pass
+        if slot < 0:
+            slot = 0
+        try:
+            import net
+            use_emp = 0
+            try:
+                eid = net.GetEmpireID()
+                if eid > 0:
+                    use_emp = eid
+            except:
+                pass
+            net.SendCreateCharacterPacket(slot, name, race, target_gender, use_emp, 0, 0, 0)
+            log.append('OK: SendCreateCharacterPacket(slot=%d, race=%d, shape=%d)' % (slot, race, target_gender))
+            log.append('NOT: UI butonu + paket ikisi de gonderildi (cift kayit riski dusuk;')
+            log.append('     server ayni isim/second reddeder — 30 sn sonra charlist ile kontrol)')
+        except Exception, e2:
+            log.append('UYARI: paket yolu hatasi: %s' % _fmt_error(e2))
+        log.append('Kontrol: waitfor SelectCharacterWindow 15 -> charlist')
+        log.append('Hata olursa: lasterr (CREATE_FAILURE yakalanir)')
+        _write('mkchar', '\n'.join(log) + '\n')
+    except Exception, e:
+        _write('mkchar', 'HATA ' + _fmt_error(e) + '\n')
+
+# ---------------------------------------------------------------------------
+# 13) EMPIRELIST — bayrak listesi + mevcut empire
+# ---------------------------------------------------------------------------
+def empirelist():
+    try:
+        lines = ['SCENE=%s' % _scene_name()]
+        try:
+            import net
+            eid = net.GetEmpireID()
+            lines.append('hesabin empire\'i: %d (%s)' % (eid, EMPIRE_NAMES.get(eid, '?')))
+        except Exception, e:
+            lines.append('net.GetEmpireID okunamadi: %s' % _fmt_error(e))
+        ew = _pw_by_type('SelectEmpireWindow', 'ReselectEmpireWindow')
+        if ew is None:
+            lines.append('(bayrak ekrani acik degil)')
+        else:
+            lines.append('bayrak ekrani ACIK (%s):' % type(ew).__name__)
+            try:
+                lines.append('  empireID = %s' % str(getattr(ew, 'empireID', '?')))
+            except:
+                pass
+            try:
+                ed = getattr(ew, 'ElementDictionary', None) or {}
+                cnt = 0
+                for key, obj in ed.items():
+                    try:
+                        if type(obj).__name__ == 'EmpireButton':
+                            cnt += 1
+                            lines.append('  EmpireButton: key=%s arg=%s' % (key, str(getattr(obj, 'arg', '?'))))
+                    except:
+                        pass
+                if cnt == 0:
+                    lines.append('  (ElementDictionary\'de EmpireButton yok — OnSelectEmpire ile secilecek)')
+            except:
+                pass
+        lines.append('')
+        lines.append('bayrak tablosu: 1=Shinsoo (kirmizi) 2=Chunjo (sari) 3=Jinno (mavi)')
+        try:
+            isel = sys.modules.get('introSelect', None) or sys.modules.get('introselect', None)
+            if isel is not None:
+                en = getattr(isel, 'EMPIRE_NAME', None)
+                if en:
+                    lines.append('client isimleri: %s' % str(en))
+        except:
+            pass
+        _write('empirelist', '\n'.join(lines) + '\n')
+    except Exception, e:
+        _write('empirelist', 'HATA ' + _fmt_error(e) + '\n')
+
+# ---------------------------------------------------------------------------
+# 14) EMPIREUI — bayrak sec + ILERLE (kanitlanmis do_select_empire deseni)
+# ---------------------------------------------------------------------------
+def empireui(n):
+    try:
+        if n not in (1, 2, 3):
+            _write('empireui', 'HATA: empire 1/2/3\n')
+            return
+        ew = _pw_by_type('SelectEmpireWindow', 'ReselectEmpireWindow')
+        if ew is None:
+            _write('empireui', 'HATA: bayrak ekrani acik degil (SCENE=%s)\n' % _scene_name())
+            return
+        log = ['SCENE=%s' % _scene_name(), 'hedef empire=%d (%s)' % (n, EMPIRE_NAMES.get(n, '?'))]
+        # a) OnSelectEmpire — bayragi isaretle
+        try:
+            ew.OnSelectEmpire(n)
+            time.sleep(0.5)
+            log.append('OK: OnSelectEmpire(%d)' % n)
+        except Exception, e:
+            log.append('UYARI: OnSelectEmpire hatasi: %s' % _fmt_error(e))
+        try:
+            ew.empireID = n
+            log.append('OK: empireID=%d atandi' % n)
+        except:
+            pass
+        # b) EmpireButton'a tikla (ElementDictionary, arg eslesmeli)
+        clicked = False
+        try:
+            ed = getattr(ew, 'ElementDictionary', None) or {}
+            for key, obj in ed.items():
+                try:
+                    if type(obj).__name__ == 'EmpireButton' and getattr(obj, 'arg', -1) == n:
+                        obj.CallEvent()
+                        clicked = True
+                        time.sleep(1.0)
+                        log.append('OK: EmpireButton(%s).CallEvent()' % key)
+                        break
+                except:
+                    pass
+        except:
+            pass
+        if not clicked:
+            log.append('(EmpireButton bulunamadi/eslesmedi — OnSelectEmpire yeterli olabilir)')
+        # c) ILERLE — ClickSelectButton
+        done = False
+        try:
+            ew.ClickSelectButton()
+            done = True
+            log.append('OK: ClickSelectButton() — ilerlendi')
+        except Exception, e:
+            log.append('UYARI: ClickSelectButton hatasi: %s' % _fmt_error(e))
+        if not done:
+            try:
+                ed = getattr(ew, 'ElementDictionary', None) or {}
+                sb = ed.get('select_button', None)
+                if sb is not None and hasattr(sb, 'CallEvent'):
+                    sb.CallEvent()
+                    log.append('OK: select_button.CallEvent() — ilerlendi')
+            except:
+                pass
+        # d) paket yolu yedegi (ekran gecmezse)
+        time.sleep(1.5)
+        scene_now = _scene_name()
+        log.append('simdi sahne: %s' % scene_now)
+        if 'Empire' in scene_now:
+            try:
+                import net
+                net.SendSelectEmpirePacket(n)
+                log.append('YEDEK: SendSelectEmpirePacket(%d) gonderildi' % n)
+            except Exception, e:
+                log.append('UYARI: paket yolu hatasi: %s' % _fmt_error(e))
+        log.append('Beklenen: olusturma ekrani (yoksa bayrak kayitliyse direkt olusturma)')
+        log.append('Sonraki: status -> mkchar <ad> <race>')
+        _write('empireui', '\n'.join(log) + '\n')
+    except Exception, e:
+        _write('empireui', 'HATA ' + _fmt_error(e) + '\n')
+
+# ---------------------------------------------------------------------------
+# 15) DELCHAR — karakter sil akisi: slot sec + silme sorusu + kod dialogu AC
+# (kanitlanmis chardeleter v8 deseni — CallEvent YOK, dogrudan metodlar)
+# ---------------------------------------------------------------------------
+def delchar(slot):
+    try:
+        sw = _pw_by_type('SelectCharacterWindow')
+        if sw is None:
+            _write('delchar', 'HATA: SelectCharacterWindow sahnesinde degil (SCENE=%s)\n' % _scene_name())
+            return
+        log = ['SCENE=%s' % _scene_name(), 'hedef slot=%d' % slot]
+        # dialog temizligi (once acik kalan kutular kapat)
+        try:
+            pib = getattr(sw, 'privateInputBoard', None)
+            if pib is not None:
+                try:
+                    sw.CancelInputPrivateCode()
+                except:
+                    pass
+                log.append('eski kod dialogu kapatildi')
+        except:
+            pass
+        # 1) slot sec
+        try:
+            sw.SelectSlot(slot)
+            log.append('OK: SelectSlot(%d)' % slot)
+        except Exception, e:
+            log.append('UYARI: SelectSlot hatasi: %s' % _fmt_error(e))
+        time.sleep(0.5)
+        # 2) silme sorusu dialogu
+        try:
+            sw.PopupDeleteQuestion()
+            log.append('OK: PopupDeleteQuestion() — "karakteri sil" sorusu')
+        except Exception, e:
+            log.append('UYARI: PopupDeleteQuestion hatasi: %s' % _fmt_error(e))
+        time.sleep(0.5)
+        # 3) kod dialogu
+        try:
+            sw.InputPrivateCode()
+            log.append('OK: InputPrivateCode() — kod dialogu ACILDI')
+            log.append('SONRA: delcode <silme-kodu> yaz')
+        except Exception, e:
+            log.append('HATA: InputPrivateCode hatasi: %s' % _fmt_error(e))
+        # NOT_NEED_DELETE_CODE bayragi (kod istemeyen serverlar)
+        try:
+            isel = sys.modules.get('introSelect', None) or sys.modules.get('introselect', None)
+            if isel is not None:
+                if getattr(isel, 'NOT_NEED_DELETE_CODE', False):
+                    log.append('NOT: bu server silme kodu istemiyor olabilir (NOT_NEED_DELETE_CODE=1)')
+        except:
+            pass
+        _write('delchar', '\n'.join(log) + '\n')
+    except Exception, e:
+        _write('delchar', 'HATA ' + _fmt_error(e) + '\n')
+
+# ---------------------------------------------------------------------------
+# 16) DELCODE — silme kodunu yaz + ONAYLA (chardeleter v8 — inputValue EditLine)
+# ---------------------------------------------------------------------------
+def delcode(code):
+    try:
+        sw = _pw_by_type('SelectCharacterWindow')
+        if sw is None:
+            _write('delcode', 'HATA: SelectCharacterWindow sahnesinde degil (SCENE=%s)\n' % _scene_name())
+            return
+        log = ['SCENE=%s' % _scene_name()]
+        pib = getattr(sw, 'privateInputBoard', None)
+        if pib is None:
+            try:
+                sw.InputPrivateCode()
+                time.sleep(0.5)
+            except:
+                pass
+            pib = getattr(sw, 'privateInputBoard', None)
+        if pib is None:
+            _write('delcode', '\n'.join(log + ['HATA: kod dialogu acik degil — once delchar <slot>']) + '\n')
+            return
+        log.append('kod dialogu: %s' % type(pib).__name__)
+        # EditLine bul (inputValue oncelikli — chardeleter kaniti)
+        edit = None
+        for attr in ('inputValue', 'inputBoard', 'editLine', 'edit', 'input', 'textEdit'):
+            obj = getattr(pib, attr, None)
+            if obj is not None and hasattr(obj, 'SetText') and hasattr(obj, 'GetText'):
+                tn = type(obj).__name__
+                if 'Button' not in tn and 'TextLine' not in tn:
+                    edit = obj
+                    log.append('EditLine: %s (%s)' % (attr, tn))
+                    break
+        if edit is None:
+            try:
+                for attr in dir(pib):
+                    if attr.startswith('__'):
+                        continue
+                    try:
+                        obj = getattr(pib, attr)
+                    except:
+                        continue
+                    if obj is not None and hasattr(obj, 'SetText') and hasattr(obj, 'GetText'):
+                        tn = type(obj).__name__
+                        if 'Button' not in tn and 'TextLine' not in tn:
+                            edit = obj
+                            log.append('EditLine (dir): %s (%s)' % (attr, tn))
+                            break
+            except:
+                pass
+        if edit is None:
+            _write('delcode', '\n'.join(log + ['HATA: kod giris kutusu bulunamadi!']) + '\n')
+            return
+        edit.SetText(str(code))
+        try:
+            wr = edit.GetText()
+            log.append('OK: kod yazildi: "%s"' % wr)
+        except:
+            log.append('OK: kod yazildi')
+        time.sleep(0.3)
+        # ONAYLA
+        try:
+            sw.AcceptInputPrivateCode()
+            log.append('OK: AcceptInputPrivateCode() — ONAYLANDI')
+        except Exception, e:
+            log.append('HATA: AcceptInputPrivateCode hatasi: %s' % _fmt_error(e))
+        time.sleep(1.0)
+        log.append('Sonuc: lasterr (DELETE_SUCCESS/DELETE_FAILURE) + charlist')
+        _write('delcode', '\n'.join(log) + '\n')
+    except Exception, e:
+        _write('delcode', 'HATA ' + _fmt_error(e) + '\n')
+# ---------------------------------------------------------------------------
+# 8) STATUS — sahne + baglanti + stream bilgisi (+ lazy hook kurulumu)
 # ---------------------------------------------------------------------------
 def status_text():
+    if len(_HOOKS_OK) < 4:
+        _install_error_hooks()   # moduller sonra yuklenmis olabilir — tekrar dene
     try:
         import net
         try:
@@ -422,6 +1052,10 @@ _sys.modules['maxlib'] = _maxlib
 # ---------------------------------------------------------------------------
 # yukleme raporu
 # ---------------------------------------------------------------------------
+_install_error_hooks()   # oto hata izleme — yanlis sifre vb. last_error.txt'ye
 _write('pylib_load',
-       'pylib v2.0 yuklendi (ANA THREAD)\n' + status_text())
-print '[maxlib] v2.0 yuklendi — selserver/login/charlist/empire/create/enter/status/serverlist'
+       'pylib v3.0 yuklendi (ANA THREAD)\n'
+       'hata izleme hooklari: %s\n' % (', '.join(_HOOKS_OK) if _HOOKS_OK else 'henuz kurulamadi (status ile tekrar denenir)')
+       + status_text())
+print '[maxlib] v3.0 yuklendi — selserver/login/charlist/enter/status/serverlist'
+print '[maxlib] yeni: selchar/newchar/joblist/mkchar/empirelist/empireui/delchar/delcode/lasterr'
