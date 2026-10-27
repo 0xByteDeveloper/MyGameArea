@@ -1,7 +1,22 @@
 # -*- coding: utf-8 -*-
 """
 ===========================================================================
- PLUSMAXGOD_PyScript.py - MaxExecutor Ana-Thread Komut Kutuphanesi (v4.5)
+ PLUSMAXGOD_PyScript.py - MaxExecutor Ana-Thread Komut Kutuphanesi (v4.6)
+ v4.6 DEGISIKLIKLER (saha testi 12 dev raporu - tumu NightTown dump kanitli):
+   * near: tip FILTRESI kalkti - metin tasi (tip=2) artik bulunur!
+     (kagb-multihack kaniti: 0=MOB 2=METIN 6=OYUNCU)
+   * speed/aspeed: 0.5sn DONGU (Crap_Levelbot yontemi - sunucu hizi
+     surekli sifirlar, tek atis etkisizdi)
+   * antifly: saldiri tusu DEFAULT DEGIL (1=kilit 2=+Güclü Beden
+     efezgi 3=orijinal saldirili)
+   * chchange/relogin: select ekranindan stream.SetLoginPhase()
+     (networkModule.py oyun yolu - karakter ekraninda takilma bitti)
+   * attr etiketleri: efsun 1-5 + 6./7. BONUS (efsunbotu kaniti)
+   * YENI: warp (otp adim + SendCharacterPositionPacket) | antistun |
+     antislow | autopot (27001-3 kirmizi 27004-6 mavi) | combo
+     (surekli vurus: chr.testSetComboType) | statdown (/stat-) |
+     skillupui/statupui (oyunun kendi UI fonksiyonlari) |
+     efsun <slot>|all (bonus efsun raporu)
  "PLUSMAXGOD" SURUMU - v4.4 tamami + v4.5 kok-neden onarimi
  v4.5 DEGISIKLIKLER (saha testi 11 "hatali sistem" raporu - KOK NEDEN):
    * v4.4 YUKLENEMIYORDU: yeni _NearScanWnd/_GoTakeWnd/_AntiFlyWnd
@@ -263,7 +278,7 @@ DUMP_DIR   = r'C:\MaxExec\dump'   # v4.0: py dump + PLUSQuest_live buraya
 # SURUM ISARETI - DLL v1.8 bunu okur (FIX-19). PLUSMAXGOD_PyScript.py
 # degistirmeden bu satiri silme/degistirme! Eski pylib (v3.x) major 3
 # oldugu icin DLL v1.8 acilista KOSKOCA uyar basar.
-PYLIB_VERSION = '4.5'
+PYLIB_VERSION = '4.6'
 
 RACE_TABLE = {
     0: ('Warrior', 'E'), 1: ('Ninja', 'K'), 2: ('Sura', 'E'), 3: ('Shaman', 'K'),
@@ -1766,8 +1781,15 @@ def skill():
 # ---------------------------------------------------------------------------
 NEAR_SCAN_CHUNK = 40000
 NEAR_SCAN_MAX = 4000000
+# v4.6: INSTANCE_TYPE_GATE kaldirildi (bu istemcide yok), tip FILTRESI
+# kalkti (tasi tip=2 atiliyordu). KANIT sayisal degerler (NightTown dump):
+#   0=MOB/ENEMY (kagb 'wykrywaczmetkow' boss dedektoru: a==0 + GetRace ile
+#   boss listesi) | 2=METIN TASI (kagb: 'if a==2' metin dedektoru;
+#   MetinFinder.SetVIDRange: 'if 2 == chr.GetInstanceType(i)') |
+#   6=OYUNCU (eiglib: 'GetInstanceType(vid) == 6' fısıldayan-listesi).
 NEAR_TYPES = ('INSTANCE_TYPE_PLAYER', 'INSTANCE_TYPE_NPC', 'INSTANCE_TYPE_ENEMY',
-              'INSTANCE_TYPE_BUILDING', 'INSTANCE_TYPE_OBJECT', 'INSTANCE_TYPE_GATE')
+              'INSTANCE_TYPE_BUILDING', 'INSTANCE_TYPE_OBJECT')
+NEAR_TYPE_FALLBACK = {0: 'MOB', 2: 'METIN', 6: 'OYUNCU'}
 
 def _near_tnames():
     import chr
@@ -1777,6 +1799,8 @@ def _near_tnames():
             tn[int(getattr(chr, c))] = c.replace('INSTANCE_TYPE_', '')
         except:
             pass
+    for k, v in NEAR_TYPE_FALLBACK.items():
+        tn.setdefault(k, v)   # sabit kanit-degerler (0=MOB 2=METIN 6=OYUNCU)
     return tn
 
 def _near_scan_range(brange, erange):
@@ -1786,13 +1810,14 @@ def _near_scan_range(brange, erange):
     gtyp = chr.GetInstanceType
     hexst = chr.HasInstance
     gpos = chr.GetPixelPosition
-    valid = set(_near_tnames().keys())
+    # v4.6: tip FILTRESI YOK - her gecerli instance doner (metin tasi tip=2
+    # artik listelenir; bilinmeyen tipler 'TIP-n' etiketiyle gorunur)
     for vid in xrange(int(brange), int(erange)):
         try:
             t = int(gtyp(vid))
         except:
             continue
-        if t not in valid:
+        if t < 0:
             continue
         try:
             if not hexst(vid):
@@ -1822,11 +1847,13 @@ def _near_row_lines(rows, myvid, mx, my):
         except:
             pass
         lv = ''
-        if tl in ('NPC', 'ENEMY'):
+        if tl in ('NPC', 'ENEMY', 'METIN', 'MOB', 'OYUNCU'):
             try:
                 lv = ' Lv%s' % str(nonplayer.GetLevelByVID(v))
             except:
                 pass
+        if tl == 'METIN' or tl == 'MOB':
+            tl = tl + '*'   # v4.6: metin tasi / mob isareti
         rv = 0
         try:
             rv = int(chr.GetVirtualNumber(v))
@@ -1872,6 +1899,8 @@ def near(quickmax=50000):
         L.append('---')
         L.append('secme: chr.SelectInstance(<vid>) | hedefe donus: morphtarget (tikla once)')
         L.append('race=X -> morph <race> / spawn <race> (demirci=20016)')
+        L.append('v4.6: METIN* = metin tasi (tip=2) | MOB* = yaratik (tip=0) | OYUNCU (tip=6)')
+        L.append('tip sayilari (kayit): 0=MOB 1=NPC 2=METIN 6=OYUNCU - digerleri TIP-n')
         L.append('ARKA PLAN tam tarama (0..%d) basladi -> bittiğinde: C:\\MaxExec\\near_full.txt' % NEAR_SCAN_MAX)
         _near_full_start()
         _write('near', '\n'.join(L) + '\n')
@@ -3147,14 +3176,31 @@ class _ChLoopWnd(ui_WindowBase):
                 elif now - st['t0'] > 20:
                     _ch_fail('sahne hala degismedi (SCENE=%s)' % sc)
             elif sn == 'disc2':
-                # SELECT ekranindan Disconnect GUVENLI: introSelect'in kendi
-                # baglanti-kopma akisi login fazina tasir (SameLoginDisconnect
-                # cizimi: ExitSelect -> SetLoginPhase). Ana fazda DEGIL!
-                _live('CH: select ekranindan baglanti kesiliyor (guvenli nokta)')
-                try:
-                    net.Disconnect()
-                except Exception, e1:
-                    _live('CH: Disconnect hata %s' % _fmt_error(e1))
+                # v4.6 KOK DUZELTME: oyunun KENDI yolu - networkModule.py
+                # SetLoginPhase() = net.Disconnect + LoginWindow faz takasi
+                # (ham net.Disconnect'ta oldugu gibi sahne DONMUYORDU ->
+                # 'karakter ekraninda takilip kaliyordu'). introSelect
+                # ExitSelect cizimi de ayni yolu cagiriyor.
+                _live('CH: login fazina geciliyor (stream.SetLoginPhase - oyunun kendi yolu)')
+                done = 0
+                ms = _get_ms()
+                if ms is not None:
+                    try:
+                        ms.SetLoginPhase()
+                        done = 1
+                    except Exception, e1:
+                        _live('CH: SetLoginPhase hata %s' % _fmt_error(e1))
+                if not done:
+                    try:
+                        net.LogOutGame()
+                        done = 1
+                    except:
+                        pass
+                if not done:
+                    try:
+                        net.Disconnect()
+                    except:
+                        pass
                 st['step'] = 'waitlogin'
                 st['t0'] = now
             elif sn == 'waitlogin':
@@ -5223,10 +5269,11 @@ def fakemount(mode=1):
 ridefake = fakemount   # kisaltma
 
 def speed(v):
-    """hareket hizi (KANIT: 123klo-multihack/Crap_Levelbot/vbmultihack.py
-    chr.SetMoveSpeed). 100=normal, 200=2x. MAX 1100 (InstanceBaseMovement.cpp:
-    'if uMovSpd > 1100 -> uMovSpd = 0' ustunu yazarsan SIFIRLANIR!).
-    speed 0 = oyunun gercek degerini geri yukler (player.GetStatus)."""
+    """hareket hizi - v4.6 DONGULU (KANIT: Crap_Levelbot MoveSpeedHackFixLoop:
+    sunucu hizi surekli gercege sifirlar, TEK ATIS etkisizdi!). Her 0.5sn:
+    gercek hiz -> hack hizi ('reset-dansi'). 100=normal, 200=2x, MAX 1100.
+    speed 0 = dongu durur + gercek deger geri yuklenir. Yavaslama icin:
+    antislow 1 ile birlikte kullan."""
     try:
         if not _ingame():
             _write('speed', 'HATA: oyunda degilsin\n')
@@ -5234,27 +5281,35 @@ def speed(v):
         import chr, player
         n = int(v)
         if n <= 0:
+            _SPEED['move'] = 0
             try:
-                n = int(player.GetStatus(player.MOVING_SPEED))
+                chr.SelectInstance(_my_vid())
+                chr.SetMoveSpeed(int(player.GetStatus(player.MOVING_SPEED)))
             except:
-                n = 100
-            if n <= 0:
-                n = 100
+                pass
+            if _SPEED['atk'] == 0:
+                _speed_win_stop()
+            _write('speed', 'OK: hareket-hizi dongusu DURDURULDU, gercek deger geri yuklendi\nsaldiri hizi dongusu: aspeed 0')
+            return
         if n > 1100:
             n = 1100
+        _SPEED['move'] = n
+        _SPEED['t0'] = 0.0
+        if _SPEED['win'] is None:
+            _SPEED['win'] = _SpeedWnd()
         try:
             chr.SelectInstance(_my_vid())
+            chr.SetMoveSpeed(n)
         except:
             pass
-        chr.SetMoveSpeed(n)
-        _write('speed', 'OK: hareket hizi=%d (100=normal, geri: speed 0)\nUYARI: istemci-tarafi; cok yuksek degerde sunucu geri atabilir (otp ile birlesir)' % n)
+        _write('speed', 'OK: hareket hizi=%d - 0.5sn dongu AKTIF (Crap_Levelbot yontemi:\nher dongu gercek-hiz -> hack-hizi; sunucu sifirlamasina dayanikli)\ngeri: speed 0 | saldiri: aspeed <n> | durdur hepsi: speed 0 + aspeed 0' % n)
     except Exception, e:
         _write('speed', 'HATA ' + _fmt_error(e) + '\n')
 
 def aspeed(v):
-    """saldiri hizi (kanit: vbmultihack.py chr.SetAttackSpeed +
-    int(player.GetStatus(player.ATT_SPEED))). 100=normal; max 1100.
-    aspeed 0 = gercek degeri geri yukle."""
+    """saldiri hizi - v4.6 DONGULU (her 0.5sn yeniden uygulanir; kanit:
+    Crap_Levelbot chr.SetAttackSpeed + player.GetStatus(player.ATT_SPEED)).
+    100=normal, MAX 1100. aspeed 0 = dongu durur + gercek deger geri."""
     try:
         if not _ingame():
             _write('aspeed', 'HATA: oyunda degilsin\n')
@@ -5262,20 +5317,28 @@ def aspeed(v):
         import chr, player
         n = int(v)
         if n <= 0:
+            _SPEED['atk'] = 0
             try:
-                n = int(player.GetStatus(player.ATT_SPEED))
+                chr.SelectInstance(_my_vid())
+                chr.SetAttackSpeed(int(player.GetStatus(player.ATT_SPEED)))
             except:
-                n = 100
-            if n <= 0:
-                n = 100
+                pass
+            if _SPEED['move'] == 0:
+                _speed_win_stop()
+            _write('aspeed', 'OK: saldiri-hizi dongusu DURDURULDU, gercek deger geri yuklendi')
+            return
         if n > 1100:
             n = 1100
+        _SPEED['atk'] = n
+        _SPEED['t0'] = 0.0
+        if _SPEED['win'] is None:
+            _SPEED['win'] = _SpeedWnd()
         try:
             chr.SelectInstance(_my_vid())
+            chr.SetAttackSpeed(n)
         except:
             pass
-        chr.SetAttackSpeed(n)
-        _write('aspeed', 'OK: saldiri hizi=%d (100=normal, geri: aspeed 0)\nUYARI: istemci-tarafi animasyon/paket hizi; sunucu kontrolu devarsa limitlenir' % n)
+        _write('aspeed', 'OK: saldiri hizi=%d - 0.5sn dongu AKTIF\ngeri: aspeed 0 | hareket: speed <n>' % n)
     except Exception, e:
         _write('aspeed', 'HATA ' + _fmt_error(e) + '\n')
 
@@ -5335,6 +5398,56 @@ def skillup(idx, count=1):
     except Exception, e:
         _write('skillup', 'HATA ' + _fmt_error(e) + '\n')
 
+# --- v4.6 HIZ DONGUSU (Crap_Levelbot kaniti) -------------------------------
+_SPEED = {'win': None, 'move': 0, 'atk': 0, 't0': 0.0}
+
+class _SpeedWnd(ui_WindowBase):
+    def __init__(self):
+        ui_WindowBase.__init__(self)
+        self.Show()
+
+    def OnUpdate(self):
+        try:
+            import time, chr, player
+            st = _SPEED
+            if st['move'] == 0 and st['atk'] == 0:
+                return
+            now = time.time()
+            if now - st['t0'] < 0.5:
+                return
+            st['t0'] = now
+            try:
+                chr.SelectInstance(_my_vid())
+            except:
+                pass
+            if st['move'] > 0:
+                # Crap_Levelbot 'reset-dansi': once GERCEK hiz, hemen ardindan
+                # hack hizisi (MoveSpeedHackFixLoop1 -> Loop2 deseni)
+                try:
+                    chr.SetMoveSpeed(int(player.GetStatus(player.MOVING_SPEED)))
+                except:
+                    pass
+                try:
+                    chr.SetMoveSpeed(int(st['move']))
+                except:
+                    pass
+            if st['atk'] > 0:
+                try:
+                    chr.SetAttackSpeed(int(st['atk']))
+                except:
+                    pass
+        except:
+            pass
+
+def _speed_win_stop():
+    try:
+        if _SPEED['win'] is not None:
+            _SPEED['win'].Hide()
+            _SPEED['win'].Destroy()
+    except:
+        pass
+    _SPEED['win'] = None
+
 # --- ANTIFLY (sekme/ucus engeli) -------------------------------------------
 # KANIT (kullanici dump): AntiFly.py + antifly_sekmeme_.py - BlockFly:
 #   chr.SetLoopMotion(chr.MOTION_WAIT) + player.SetAttackKeyState(TRUE)
@@ -5367,7 +5480,16 @@ class _AntiFlyWnd(ui_WindowBase):
                 chr.SetLoopMotion(chr.MOTION_WAIT)
             except:
                 pass
-            if st['mode'] == 1:
+            # v4.6: mod 2 = + Guclu Beden (zihinsel savasci) efezgi - devrilmeme
+            if st['mode'] == 2:
+                try:
+                    import chrmgr
+                    chrmgr.SetAffect(me, chr.AFFECT_CHEONGEUN, 1)
+                except:
+                    pass
+            # v4.6: saldiri tusu SADECE mod 3'te (orijinal AntiFly.py) -
+            # kullanici istegi: saldirmadan da devrilmemek istiyor
+            if st['mode'] == 3:
                 try:
                     player.SetAttackKeyState(1)
                 except:
@@ -5391,12 +5513,15 @@ def _antifly_stop():
     _ANTIFLY['mode'] = 0
 
 def antifly(mode):
-    """ANTIFLY (itilme/sekme engeli) - coklu yontem:
-    antifly 1 = TAM (kanit AntiFly.py): WAIT animasyonu + saldiri basili
-                (otomatik vurma + itilmezsin)
-    antifly 2 = SOFT: sadece animasyon kilidi (saldirmazsin, ucus animasyonu ezilir)
-    antifly 0 = kapat (saldiri tusunu birakir)
-    EK: antiflyeffect <id> (zihinsel savasci efezgi gibi efekt ekleme)"""
+    """ANTIFLY / DEVRILME ENGELI - v4.6 mod seti (saldıri tusu artik
+    varsayilan DEGIL - kullanici istegi):
+    antifly 1 = animasyon kilidi (WAIT - sekme/ucus animasyonunu ezer)
+    antifly 2 = animasyon kilidi + GUCLU BEDEN efezgi (zihinsel savasci
+                skilinin devrilmeme etkisi: chr.AFFECT_CHEONGEON -
+                'birine daldiginda devrilmeme' icin)
+    antifly 3 = ORIJINAL AntiFly.py (WAIT + saldiri tusu basili - botun
+                tam yontemi; otomatik vurur!)
+    antifly 0 = kapat (saldiri tusunu da birakir)"""
     try:
         if not _ingame():
             _write('antifly', 'HATA: oyunda degilsin\n')
@@ -5404,31 +5529,45 @@ def antifly(mode):
         m = int(mode)
         if m == 0:
             _antifly_stop()
-            _write('antifly', 'OK: antifly KAPALI (saldiri tusu birakildi)')
+            _write('antifly', 'OK: antifly KAPALI (saldiri tusu birakildi, efezgi temizlendi)')
             return
-        if m not in (1, 2):
-            m = 1
+        if m not in (1, 2, 3):
+            m = 1   # v4.6: bilinmeyen mod -> 1 (SALDIRISIZ; eskiden 1'e
+                    # zorlaniyordu ve saldirili mod saniliyordu!)
         _ANTIFLY['mode'] = m
         if _ANTIFLY['win'] is None:
             _ANTIFLY['win'] = _AntiFlyWnd()
         _ANTIFLY['t0'] = 0.0
-        _write('antifly', 'OK: antifly mod %d (%s)\n1=TAM (animasyon+saldiri, AntiFly.py kaniti) | 2=SOFT (sadece animasyon)\nkapat: antifly 0 | efekt yontemi: antiflyeffect <id>' % (m, 'TAM' if m == 1 else 'SOFT'))
+        dsc = {1: 'animasyon kilidi (saldirmaz)', 2: 'animasyon + GUCLU BEDEN efezgi (cheongeun)',
+               3: 'ORIJINAL: animasyon + SALDIRI BASILI (otomatik vurur!)'}
+        _write('antifly', 'OK: antifly mod %d = %s\n0=kapat | 1=kilit | 2=kilit+efeekt(Guclu Beden) | 3=orijinal(saldirili)' % (m, dsc.get(m, '?')))
     except Exception, e:
         _write('antifly', 'HATA ' + _fmt_error(e) + '\n')
 
 def antiflyeffect(eft=1):
-    """karaktere efekt ekle (kullanici onerisi: 'zihinsel savasci skilini
-    setaffect ile eklemek'). KANIT: PythonCharacterManagerModule.cpp
-    chrmgr.SetAffect(vid, efekt, gorunur). Id 1..30 arasi denenebilir;
-    gorseldir, kalici olmaz (warp temizler). Itilme engeli icin antifly 1."""
+    """karaktere EFEKT/AFEKKT ekle (chrmgr.SetAffect(vid, efekt, 1) - mypy.py
+    kaniti). v4.6: isim de kabul eder:
+      antiflyeffect cheongeun -> GUCLU BEDEN (zihinsel savasci devrilmeme!)
+      antiflyeffect stun / slow / poison -> o efezgi ekler (test icin)
+      antiflyeffect <sayi> -> do\xfdvan sayi. Kalici degil (warp temizler)."""
     try:
         if not _ingame():
             _write('antiflyeffect', 'HATA: oyunda degilsin\n')
             return
-        import chrmgr
+        import chrmgr, chr
         me = _my_vid()
-        chrmgr.SetAffect(me, int(eft), 1)
-        _write('antiflyeffect', 'OK: chrmgr.SetAffect(vid=%d, efekt=%d, 1)\nNOT: gorsel efektir; itme engeli icin: antifly 1' % (me, int(eft)))
+        ad = {'cheongeun': 'AFFECT_CHEONGEUN', 'guclu': 'AFFECT_CHEONGEUN',
+              'guclubeden': 'AFFECT_CHEONGEUN', 'geomgyeong': 'AFFECT_GEOMGYEONG',
+              'stun': 'AFFECT_STUN', 'slow': 'AFFECT_SLOW',
+              'poison': 'AFFECT_POISON', 'kwaesok': 'AFFECT_KWAESOK'}
+        k = str(eft).strip().lower()
+        if k in ad:
+            aid = int(getattr(chr, ad[k]))
+            nm = ad[k]
+        else:
+            aid = int(eft); nm = 'efekt #%d' % aid
+        chrmgr.SetAffect(me, aid, 1)
+        _write('antiflyeffect', 'OK: %s (id=%d) eklendi -> vid=%d\nkalici degildir (harita gecisi temizler) | kalici dongu: antifly 2' % (nm, aid, me))
     except Exception, e:
         _write('antiflyeffect', 'HATA ' + _fmt_error(e) + '\n')
 
@@ -5581,7 +5720,10 @@ def attr(slot):
             if tv == 0:
                 continue
             n += 1
-            L.append('  efsun%d: apply=%d deger=%d (%s +%s)' % (i, tv, vv, APPLY_NAMES.get(tv, '?'), vv))
+            if i < 5:
+                L.append('  efsun %d/5:  apply=%-3d deger=%-5d (%s +%s)' % (i + 1, tv, vv, APPLY_NAMES.get(tv, '?'), vv))
+            else:
+                L.append('  BONUS %d/7 (6./7. efsun): apply=%-3d deger=%-5d (%s +%s)' % (i + 1, tv, vv, APPLY_NAMES.get(tv, '?'), vv))
         if n == 0:
             L.append('  (efsun YOK - efsunsuz esya)')
         sok = []
@@ -5595,7 +5737,8 @@ def attr(slot):
         if sok:
             L.append('  soketler: %s' % ', '.join(sok))
         L.append('---')
-        L.append('efsun degistirme: useon <kagit-slot> %d (kagit: itemfind efsun)' % s)
+        L.append('v4.6: efsun 1-5 = normal | BONUS = 6./7. (rare) efsun (efsunbotu.py index kaniti)')
+        L.append('efsun degistirme: useon <kagit-slot> %d (kagit: itemfind efsun) | efsunsw %d' % (s, s))
         _write('attr', '\n'.join(L) + '\n')
     except Exception, e:
         _write('attr', 'HATA ' + _fmt_error(e) + '\n')
@@ -5684,6 +5827,537 @@ def efsunsw(dst):
     except Exception, e:
         _write('efsunsw', 'HATA ' + _fmt_error(e) + '\n')
 
+
+# ===========================================================================
+# v4.6 YENI KOMUTLAR (saha testi 12 dev raporu)
+# ===========================================================================
+
+# --- WARP: konum-paketi isinlanmasi ----------------------------------------
+# KANIT: net.SendCharacterPositionPacket (NightTown net modulu - PLUSQuest
+# canli katalog) = CG_POSITION 'konuma istek' paketi (kullanicinin tarif
+# ettigi teknigin paketi). + otp adimlamasi (sunucu-senkron, geri atma yok).
+_WARP = {'win': None, 'on': 0, 'tx': 0, 'ty': 0, 't0': 0.0, 'n': 0,
+         'pos_t': 0.0, 'pos_n': 0}
+
+class _WarpWnd(ui_WindowBase):
+    def __init__(self):
+        ui_WindowBase.__init__(self)
+        self.Show()
+
+    def OnUpdate(self):
+        try:
+            import time, chr, player, net
+            st = _WARP
+            if not st['on']:
+                return
+            now = time.time()
+            # varis SONRASI: konum paketlerini 3 kez 300ms arayla gonder
+            if st['pos_n'] > 0:
+                if now - st['pos_t'] >= 0.3:
+                    st['pos_t'] = now
+                    try:
+                        net.SendCharacterPositionPacket()
+                        st['pos_n'] += 1
+                        _live('WARP: konum paketi #%d gonderildi' % st['pos_n'])
+                    except:
+                        pass
+                    if st['pos_n'] >= 4:
+                        st['on'] = 0
+                        try:
+                            player.SetAttackKeyState(0)
+                        except:
+                            pass
+                        try:
+                            st['win'].Hide(); st['win'].Destroy()
+                        except:
+                            pass
+                        st['win'] = None
+                        p = chr.GetPixelPosition(_my_vid())
+                        _live('WARP: tamam konum=(%d,%d)' % (int(p[0]), int(p[1])))
+                        _write('warp', 'OK: warp tamamlandi (%d adim + 3x konum paketi)\nson konum=(%d,%d)\nkontrol: pos yaz' % (st['n'], int(p[0]), int(p[1])))
+                return
+            # adimlama fazı (otp motoru): 240px adim + saldiri tusu basili
+            if now - st['t0'] < 0.05:
+                return
+            st['t0'] = now
+            vid = _my_vid()
+            try:
+                chr.SelectInstance(vid)
+            except:
+                pass
+            try:
+                player.SetAttackKeyState(1)
+            except:
+                pass
+            p = chr.GetPixelPosition(vid)
+            cx, cy = int(p[0]), int(p[1])
+            dx = st['tx'] - cx; dy = st['ty'] - cy
+            dist = (dx * dx + dy * dy) ** 0.5
+            if dist <= 288:
+                # varildi -> konum paketi fazina gec
+                try:
+                    player.SetAttackKeyState(0)
+                except:
+                    pass
+                try:
+                    net.SendCharacterPositionPacket()
+                except:
+                    pass
+                st['pos_n'] = 1
+                st['pos_t'] = now
+                _live('WARP: hedefe varildi (%d adim) - konum paketleri gonderiliyor' % st['n'])
+                return
+            k = 240.0 / dist
+            nx = int(cx + dx * k); ny = int(cy + dy * k)
+            try:
+                chr.SetPixelPosition(nx, ny)
+            except:
+                pass
+            try:
+                chr.MoveToDestPosition(vid, nx, ny)
+            except:
+                pass
+            st['n'] += 1
+            if st['n'] % 20 == 0:
+                _live('WARP: %d adim, kalan ~%dpx' % (st['n'], int(dist)))
+        except Exception, e:
+            _live('WARP hatasi: ' + _fmt_error(e))
+            _WARP['on'] = 0
+
+def warp(x, y):
+    """ISINLANMA v2 (ayni harita): otp-adimlamasi (240px adim + saldiri tusu
+    - geri atma YOK) + hedefe varinca 3x net.SendCharacterPositionPacket
+    (CG_POSITION - kullanici tarifli 'konuma istek' tekniği).
+    MAPTAN MAPA gecis SUNUCU kontrolundedir (harita kapilarindan yuru:
+    goto <kapi-x> <kapi-y>; isinlanma yuzugu sunucu paketidir, istemcide
+    terslenemez). warp <x> <y> | iptal: otpstop"""
+    try:
+        if not _ingame():
+            _write('warp', 'HATA: oyunda degilsin\n')
+            return
+        import chr
+        _WARP.update({'tx': int(x), 'ty': int(y), 'on': 1, 'n': 0,
+                      't0': 0.0, 'pos_n': 0, 'pos_t': 0.0})
+        if _WARP['win'] is None:
+            _WARP['win'] = _WarpWnd()
+        _live('WARP: hedef=(%d,%d) - adimlama basladi' % (int(x), int(y)))
+        _write('warp', 'OK: warp hedef=(%d,%d)\nakis: 240px adimlar (saldiri tusu basili) -> varis -> 3x konum paketi\nharita ici garantili | map-arasi: goto ile harita kapisina yuru (sunucu gecisi)' % (int(x), int(y)))
+    except Exception, e:
+        _write('warp', 'HATA ' + _fmt_error(e) + '\n')
+
+# --- ANTISTUN / ANTISLOW (efektsel cozum) ----------------------------------
+# KANIT: chr modulu AFFECT_STUN/AFFECT_SLOW/AFFECT_KWAESOK sabitleri (canli
+# katalog) + chrmgr.SetAffect(vid, afekt, 0/1) (mypy.py 3-arg kaniti).
+# Sunucu efezgi tekrar gonderse de dongu her 0.4sn yeniden temizler.
+_ANTIEFF = {'win': None, 'stun': 0, 'slow': 0, 't0': 0.0}
+
+class _AntiEffWnd(ui_WindowBase):
+    def __init__(self):
+        ui_WindowBase.__init__(self)
+        self.Show()
+
+    def OnUpdate(self):
+        try:
+            import time, chr, chrmgr
+            st = _ANTIEFF
+            if st['stun'] == 0 and st['slow'] == 0:
+                return
+            now = time.time()
+            if now - st['t0'] < 0.4:
+                return
+            st['t0'] = now
+            me = _my_vid()
+            if st['stun']:
+                try:
+                    chrmgr.SetAffect(me, chr.AFFECT_STUN, 0)
+                except:
+                    pass
+            if st['slow']:
+                try:
+                    chrmgr.SetAffect(me, chr.AFFECT_SLOW, 0)
+                except:
+                    pass
+                try:
+                    chrmgr.SetAffect(me, chr.AFFECT_KWAESOK, 0)
+                except:
+                    pass
+        except:
+            pass
+
+def _antieff_win_stop():
+    try:
+        if _ANTIEFF['win'] is not None:
+            _ANTIEFF['win'].Hide()
+            _ANTIEFF['win'].Destroy()
+    except:
+        pass
+    _ANTIEFF['win'] = None
+
+def antistun(mode):
+    """ANTISTUN (kullanici: 'stunlanma yasarsak aninda cozsun'): 0.4sn'lik
+    dongu AFFECT_STUN'i surekli temizler -> sersemleme ani kalkar (gorsel +
+    hareket kilidi acilir; sunucu tarafinin kendi suresi kisalamaz ama
+    sen sersemleme animasyonunda kilitli kalmazsin). antistun 1|0"""
+    try:
+        if not _ingame():
+            _write('antistun', 'HATA: oyunda degilsin\n')
+            return
+        _ANTIEFF['stun'] = 1 if int(mode) else 0
+        if _ANTIEFF['stun'] or _ANTIEFF['slow']:
+            if _ANTIEFF['win'] is None:
+                _ANTIEFF['win'] = _AntiEffWnd()
+            _ANTIEFF['t0'] = 0.0
+            _write('antistun', 'OK: antistun ACIK (0.4sn dongu - AFFECT_STUN temizleme)\ntam etki icin: antislow 1 + speed <deger> ile birlikte kullan')
+        else:
+            if _ANTIEFF['slow'] == 0:
+                _antieff_win_stop()
+            _write('antistun', 'OK: antistun KAPALI')
+    except Exception, e:
+        _write('antistun', 'HATA ' + _fmt_error(e) + '\n')
+
+def antislow(mode):
+    """ANTISLOW (kullanici: 'anti yavaslama ekle'): 0.4sn dongu
+    AFFECT_SLOW + AFFECT_KWAESOK temizler. Gerçek hareket hizi sunucuda
+    yavaslamis kalabilir -> speed <deger> dongusuyle birlikte kullan
+    (speed her 0.5sn hizi yeniden uygular). antislow 1|0"""
+    try:
+        if not _ingame():
+            _write('antislow', 'HATA: oyunda degilsin\n')
+            return
+        _ANTIEFF['slow'] = 1 if int(mode) else 0
+        if _ANTIEFF['stun'] or _ANTIEFF['slow']:
+            if _ANTIEFF['win'] is None:
+                _ANTIEFF['win'] = _AntiEffWnd()
+            _ANTIEFF['t0'] = 0.0
+            _write('antislow', 'OK: antislow ACIK (AFFECT_SLOW+KWAESOK temizleme)\nNOT: yavaslama sunucu kaynakliysa speed <gercek-hizin> dongusunu de ac')
+        else:
+            if _ANTIEFF['stun'] == 0:
+                _antieff_win_stop()
+            _write('antislow', 'OK: antislow KAPALI')
+    except Exception, e:
+        _write('antislow', 'HATA ' + _fmt_error(e) + '\n')
+
+# --- AUTOPOT (otomatik can/mana potlari) -----------------------------------
+# KANIT: New_Levelbot.py Auto Potion (player.GetStatus(player.HP/MAX_HP) +
+# vnum 27001-3 kirmizi, 27004-6 mavi + net.SendItemUsePacket(i)).
+# Bu sunucuda isimler (itemscan_full.txt): Licoare Rosie/Albastra K/M/G.
+POT_HP_VNUMS = (27001, 27002, 27003)
+POT_SP_VNUMS = (27004, 27005, 27006)
+_AUTOPOT = {'win': None, 'on': 0, 'hp': 50, 'sp': 30, 't_hp': 0.0, 't_sp': 0.0, 'n': 0}
+
+def _pot_find(vnums):
+    import player
+    try:
+        total = int(player.INVENTORY_SLOT_COUNT)
+    except:
+        total = 90
+    for s in range(total):
+        try:
+            v = int(player.GetItemIndex(s))
+        except:
+            continue
+        if v in vnums:
+            return s, v
+    return -1, 0
+
+class _AutoPotWnd(ui_WindowBase):
+    def __init__(self):
+        ui_WindowBase.__init__(self)
+        self.Show()
+
+    def OnUpdate(self):
+        try:
+            import time, player, net
+            st = _AUTOPOT
+            if not st['on']:
+                return
+            now = time.time()
+            if now - st['t_hp'] < 1.2 and now - st['t_sp'] < 1.2:
+                return
+            try:
+                hp = int(player.GetStatus(player.HP))
+                mhp = int(player.GetStatus(player.MAX_HP))
+            except:
+                return
+            if mhp > 0 and hp * 100 / mhp < st['hp'] and now - st['t_hp'] >= 1.2:
+                s, v = _pot_find(POT_HP_VNUMS)
+                if s >= 0:
+                    net.SendItemUsePacket(s)
+                    st['t_hp'] = now
+                    st['n'] += 1
+                    _live('POT: kirmizi icildi (can ' + str(hp * 100 / mhp) + 'PCT, slot=' + str(s) + ', vnum=' + str(v) + ')')
+                else:
+                    st['t_hp'] = now + 3.0   # pot yok: 4.2sn sonra tekrar ara
+                    _live('POT HATA: kirmizi pot yok! /i 27001 200')
+            try:
+                sp = int(player.GetStatus(player.SP))
+                msp = int(player.GetStatus(player.MAX_SP))
+            except:
+                sp = 0; msp = 0
+            if msp > 0 and sp * 100 / msp < st['sp'] and now - st['t_sp'] >= 1.2:
+                s, v = _pot_find(POT_SP_VNUMS)
+                if s >= 0:
+                    net.SendItemUsePacket(s)
+                    st['t_sp'] = now
+                else:
+                    st['t_sp'] = now + 3.0
+                    _live('POT HATA: mavi pot yok! /i 27004 200')
+        except:
+            pass
+
+def autopot(mode, hp_pct=50, sp_pct=30):
+    """OTOMATIK POT (kullanici istegi): can <sinir -> kirmizi pot, mana <
+    sinir -> mavi pot otomatik icilir. VNUM KANIT (New_Levelbot + bu
+    sunucunun item listesi): kirmizi=27001/27002/27003 (Licoare Rosie K/M/G)
+    mavi=27004/27005/27006 (Licoare Albastra K/M/G).
+    autopot 1 | autopot 1 70 40 (hp% sp% sinirlari) | autopot 0"""
+    try:
+        if not _ingame():
+            _write('autopot', 'HATA: oyunda degilsin\n')
+            return
+        m = int(mode)
+        if m:
+            try:
+                _AUTOPOT['hp'] = max(5, min(95, int(hp_pct)))
+            except:
+                _AUTOPOT['hp'] = 50
+            try:
+                _AUTOPOT['sp'] = max(5, min(95, int(sp_pct)))
+            except:
+                _AUTOPOT['sp'] = 30
+            _AUTOPOT['on'] = 1
+            if _AUTOPOT['win'] is None:
+                _AUTOPOT['win'] = _AutoPotWnd()
+            _write('autopot', 'OK: AUTOPOT ACIK | can<' + str(_AUTOPOT['hp']) + 'PCT altinda kirmizi pot (27001-3) | mana<' + str(_AUTOPOT['sp']) + 'PCT altinda mavi pot (27004-6)\npot al: /i 27001 200 + /i 27004 200 | kapat: autopot 0')
+        else:
+            _AUTOPOT['on'] = 0
+            try:
+                if _AUTOPOT['win'] is not None:
+                    _AUTOPOT['win'].Hide()
+                    _AUTOPOT['win'].Destroy()
+            except:
+                pass
+            _AUTOPOT['win'] = None
+            _write('autopot', 'OK: AUTOPOT KAPALI')
+    except Exception, e:
+        _write('autopot', 'HATA ' + _fmt_error(e) + '\n')
+
+# --- COMBO (surekli vurus - 'damage animasyonu' tekniği) --------------------
+def combo(m):
+    """SUREKLI VURUS (kullanici tarifli: 'renderle ilgili animasyonu damage
+    animasyonuyla degistirince ... surekli vurmaca'). KANIT: 123klo-multihack
+    'Combo' duzmesi: chr.testSetComboType(2). combo 1..3 = combo tipi,
+    combo 0 = kapat. Saldırı animasyonu kısalir/kesişir -> arka arkaya vurur."""
+    try:
+        if not _ingame():
+            _write('combo', 'HATA: oyunda degilsin\n')
+            return
+        import chr
+        n = int(m)
+        if n < 0 or n > 3:
+            n = 0
+        try:
+            chr.SelectInstance(_my_vid())
+        except:
+            pass
+        chr.testSetComboType(n)
+        _write('combo', 'OK: combo tipi=%d\n0=kapat | 1/2/3 dene (2 = 123klo-multihack kaniti)\nsaldiri hizi icin: aspeed <n> (dongulu)' % n)
+    except Exception, e:
+        _write('combo', 'HATA ' + _fmt_error(e) + '\n')
+
+# --- STAT GERI ALMA + UI-YOLU fonksiyonlar ---------------------------------
+def statdown(part, count=1):
+    """stat PUANI GERI AL (v4.6, KANIT: uiCharacter.py statusMinusCommandDict:
+    '/stat- ht' - oyunun kendi minus butonlari bunu yollar).
+    orn: statdown st 3"""
+    try:
+        if not _ingame():
+            _write('statdown', 'HATA: oyunda degilsin\n')
+            return
+        import net
+        p = str(part).strip().lower()
+        alias = {'ht': 'ht', 'vit': 'ht', 'con': 'ht',
+                 'iq': 'iq', 'int': 'iq',
+                 'st': 'st', 'str': 'st',
+                 'dx': 'dx', 'dex': 'dx'}
+        if p not in alias:
+            _write('statdown', 'HATA: part ht|iq|st|dx olmali (orn: statdown st 3)')
+            return
+        p = alias[p]
+        try:
+            c = max(1, min(50, int(count)))
+        except:
+            c = 1
+        for i in range(c):
+            net.SendChatPacket('/stat- %s' % p)
+        _write('statdown', 'OK: %d x /stat- %s gonderildi\nkontrol: stat yaz (puan geri doner - puan-geri-alma kosullari gecerliyse)' % (c, p))
+    except Exception, e:
+        _write('statdown', 'HATA ' + _fmt_error(e) + '\n')
+
+def _char_wnd():
+    """oyunun karakter penceresi (game.interface.wndCharacter - game.py:1065
+    kaniti: 'if self.interface.wndCharacter')"""
+    g = sys.modules.get('game', None)
+    if g is None:
+        return None
+    itf = getattr(g, 'interface', None)
+    if itf is None:
+        return None
+    return getattr(itf, 'wndCharacter', None)
+
+def skillupui(slot):
+    """SKILL Puanini OYUNUN KENDI UI FONKSIYONUyla ver (kullanici: 'farkli py
+    fonksiyonu ile de olabilir'). KANIT: uiCharacter.py OnPressedSlotButton
+    (karakter penceresinin + dugmesi tam bunu cagiriyor). slot = skill
+    raporundaki GORUNEN slot (1..40). Not: oyunun kendisi de net.SendChatPacket
+    ('/skillup N') kullanir - baska paket yok (uiCharacter.py:947 kaniti)."""
+    try:
+        if not _ingame():
+            _write('skillupui', 'HATA: oyunda degilsin\n')
+            return
+        w = _char_wnd()
+        if w is None:
+            _write('skillupui', 'HATA: karakter penceresi yok (oyunda V ile ac sonra dene)\nyedek: skillup <idx> (chat paketi yolu)')
+            return
+        w.OnPressedSlotButton(int(slot))
+        _write('skillupui', 'OK: OnPressedSlotButton(%d) cagrildi (oyunun + dugme fonksiyonu)\nkontrol: skill yaz' % int(slot))
+    except Exception, e:
+        _write('skillupui', 'HATA ' + _fmt_error(e) + '\n')
+
+def statupui(part):
+    """STAT + dugmesini OYUNUN KENDI fonksiyonuyla 'tikla' (kullanici: '/stat
+    iq fonksiyonla da gonderilebilir'). KANIT: uiCharacter.py
+    __OnClickStatusPlusButton(statusKey) - HTH/INT/STR/DEX anahtarlari.
+    Bu da sonunda net.SendChatPacket('/stat N') yollar (oyunun kendisi boyle
+    yapar) ama UI durumu da guncellenir. part: ht|iq|st|dx"""
+    try:
+        if not _ingame():
+            _write('statupui', 'HATA: oyunda degilsin\n')
+            return
+        w = _char_wnd()
+        if w is None:
+            _write('statupui', 'HATA: karakter penceresi yok (oyunda V ile ac sonra dene)\nyedek: statup <part> (chat paketi yolu)')
+            return
+        p = str(part).strip().lower()
+        key = {'ht': 'HTH', 'vit': 'HTH', 'con': 'HTH',
+               'iq': 'INT', 'int': 'INT',
+               'st': 'STR', 'str': 'STR',
+               'dx': 'DEX', 'dex': 'DEX'}.get(p)
+        if key is None:
+            _write('statupui', 'HATA: part ht|iq|st|dx olmali')
+            return
+        m = getattr(w, '_CharacterWindow__OnClickStatusPlusButton', None)
+        if m is not None:
+            m(key)
+            _write('statupui', 'OK: __OnClickStatusPlusButton(%s) cagrildi (oyunun + dugme fonksiyonu)\nkontrol: stat yaz' % key)
+        else:
+            bd = getattr(w, 'statusPlusButtonDict', None)
+            if bd and key in bd:
+                bd[key].CallEvent()
+                _write('statupui', 'OK: %s + dugmesi CallEvent ile tiklandi\nkontrol: stat yaz' % key)
+            else:
+                _write('statupui', 'HATA: stat dugmesi bulunamadi - yedek: statup %s' % p)
+    except Exception, e:
+        _write('statupui', 'HATA ' + _fmt_error(e) + '\n')
+
+# --- EFSUN okuma (attr'nin kullanici-dostu yeni adi) ------------------------
+def efsun(slot='all'):
+    """envanter/ekipman esyasininin BONUS EFSUNLARINI oku (kullanici: 'asil
+    bize bonus efsunu lazim envanterdeki itemin'). efsun <slot> (envanter
+    0..89 / ekipman 90+) | efsun all (ekipman + envanterdeki TUM efsunlular)
+    KANIT: player.GetItemAttribute(slot, i) (efsunbotu.py: 0-4 normal,
+    5-6 = 6./7. BONUS)."""
+    try:
+        k = str(slot).strip().lower()
+        if k in ('all', 'hepsi', ''):
+            efsun_all()
+            return
+        attr(slot)
+    except Exception, e:
+        _write('efsun', 'HATA ' + _fmt_error(e) + '\n')
+
+def efsun_all():
+    """ekipman + envanterdeki EFSUNLU esyalarin tam bonus raporu"""
+    try:
+        if not _ingame():
+            _write('efsun', 'HATA: oyunda degilsin\n')
+            return
+        import player, item
+        try:
+            total = int(player.INVENTORY_SLOT_COUNT)
+        except:
+            total = 90
+        try:
+            eb = _eq_base()
+        except:
+            eb = 90
+        L = ['BONUS EFSUN RAPORU (envanter + ekipman) - v4.6']
+        nl = []
+        for s in range(total):
+            try:
+                v = int(player.GetItemIndex(s))
+            except:
+                continue
+            if v <= 0:
+                continue
+            parts = []
+            for i in range(7):
+                try:
+                    a = player.GetItemAttribute(s, i)
+                    tv = int(a[0]); vv = int(a[1])
+                except:
+                    break
+                if tv != 0:
+                    if i < 5:
+                        parts.append('%s +%s' % (APPLY_NAMES.get(tv, 'apply%d' % tv), vv))
+                    else:
+                        parts.append('[B%d] %s +%s' % (i + 1, APPLY_NAMES.get(tv, 'apply%d' % tv), vv))
+            if parts:
+                try:
+                    item.SelectItem(v)
+                    nm = str(item.GetItemName())
+                except:
+                    nm = '?'
+                nl.append('  [ENV] slot %-3d vnum=%-7d %s | %s' % (s, v, nm, ', '.join(parts)))
+        ne = []
+        for off in range(12):
+            s = eb + off
+            try:
+                v = int(player.GetItemIndex(s))
+            except:
+                continue
+            if v <= 0:
+                continue
+            parts = []
+            for i in range(7):
+                try:
+                    a = player.GetItemAttribute(s, i)
+                    tv = int(a[0]); vv = int(a[1])
+                except:
+                    break
+                if tv != 0:
+                    if i < 5:
+                        parts.append('%s +%s' % (APPLY_NAMES.get(tv, 'apply%d' % tv), vv))
+                    else:
+                        parts.append('[B%d] %s +%s' % (i + 1, APPLY_NAMES.get(tv, 'apply%d' % tv), vv))
+            if parts:
+                try:
+                    item.SelectItem(v)
+                    nm = str(item.GetItemName())
+                except:
+                    nm = '?'
+                ne.append('  [EKIP] slot %-3d vnum=%-7d %s | %s' % (s, v, nm, ', '.join(parts)))
+        L.extend(ne)
+        L.extend(nl)
+        if not ne and not nl:
+            L.append('  (hiç efsunlu esya yok - efsunsuz envanter)')
+        L.append('---')
+        L.append('[B6]/[B7] = 6./7. BONUS efsun (rare) | tek esya: efsun <slot> | degistir: efsunsw <slot>')
+        _write('efsun', chr(10).join(L) + chr(10))
+    except Exception, e:
+        _write('efsun', 'HATA ' + _fmt_error(e) + '\n')
+
+# ---------------------------------------------------------------------------
 # modul kaydi - DLL snippet'leri `import maxlib; maxlib.xxx()` der
 # ---------------------------------------------------------------------------
 import types as _types
@@ -5706,6 +6380,8 @@ _install_error_hooks()   # oto hata izleme - yanlis sifre vb. last_error.txt'ye
 #   results\last_pylib_load.txt  |  konsola sadece 1 kisa satir:
 _write('pylib_load',
        'PLUSMAXGOD_PyScript v%s yuklendi (ANA THREAD)' % PYLIB_VERSION + chr(10) +
+       'v4.6: near artik METIN taslarini bulur | speed/aspeed dongulu | antifly saldirisiz' + chr(10) +
+       'YENI: warp antistun antislow autopot combo statdown skillupui statupui efsun' + chr(10) +
        'v4.5: ui_WindowBase sira hatasi duzeltildi (v4.4 yuklenemeyip v3.2\'ye dusuyordu!)' + chr(10) +
        'v4.4 OZET: fishdelay/fishswap/fishswapnow/fishtp KALDIRILDI' + chr(10) +
        'YENI: morphtarget cloneplayer fakemount speed aspeed statup skillup antifly antiflyeffect itemfind iteminfo attr useon efsunsw gotake' + chr(10) +
