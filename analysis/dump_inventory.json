@@ -1,0 +1,7990 @@
+{
+ "python": {
+  "123klo-fishbot.py": {
+   "lines": 2001,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "background",
+    "chat",
+    "chr",
+    "chrmgr",
+    "cinfo",
+    "game",
+    "interfacemodule",
+    "locale",
+    "net",
+    "os",
+    "player",
+    "time",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "net.SendItemUsePacket",
+     12
+    ],
+    [
+     "chat.AppendChat",
+     4
+    ],
+    [
+     "player.SetAttackKeyState",
+     4
+    ],
+    [
+     "player.GetItemIndex",
+     3
+    ],
+    [
+     "app.GetRandom",
+     2
+    ]
+   ]
+  },
+  "123klo-multihack.py": {
+   "lines": 1861,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "background",
+    "chat",
+    "chr",
+    "interfacemodule",
+    "locale",
+    "net",
+    "os",
+    "player",
+    "time",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "player.GetStatus",
+     6
+    ],
+    [
+     "player.GetItemIndex",
+     4
+    ],
+    [
+     "net.SendItemUsePacket",
+     4
+    ],
+    [
+     "chat.AppendChat",
+     3
+    ],
+    [
+     "chr.SetMoveSpeed",
+     3
+    ],
+    [
+     "chr.testSetComboType",
+     2
+    ],
+    [
+     "app.SetCameraMaxDistance",
+     2
+    ],
+    [
+     "app.SetMinFog",
+     2
+    ],
+    [
+     "background.SetEnvironmentData",
+     2
+    ],
+    [
+     "background.EnableSnow",
+     2
+    ],
+    [
+     "player.SetAttackKeyState",
+     2
+    ],
+    [
+     "player.PickCloseItem",
+     2
+    ],
+    [
+     "net.SendRefinePacket",
+     1
+    ],
+    [
+     "chr.Revive",
+     1
+    ],
+    [
+     "background.RegisterEnvironmentData",
+     1
+    ]
+   ]
+  },
+  "AntiFly.py": {
+   "lines": 57,
+   "top_funcs": [
+    "Run:53"
+   ],
+   "n_funcs": 1,
+   "modules": [
+    "player"
+   ],
+   "api_calls_top": [
+    [
+     "player.SetAttackKeyState",
+     3
+    ],
+    [
+     "app.IsPressed",
+     2
+    ],
+    [
+     "chr.BlendLoopMotion",
+     1
+    ],
+    [
+     "chr.SetMotionMode",
+     1
+    ],
+    [
+     "chr.testSetComboType",
+     1
+    ],
+    [
+     "chr.SetLoopMotion",
+     1
+    ]
+   ]
+  },
+  "Crap_Levelbot.py": {
+   "lines": 4555,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "chat",
+    "chr",
+    "locale",
+    "net",
+    "player",
+    "skill",
+    "time",
+    "ui",
+    "uiTarget"
+   ],
+   "api_calls_top": [
+    [
+     "chat.AppendChat",
+     68
+    ],
+    [
+     "player.SetSingleDIKKeyState",
+     40
+    ],
+    [
+     "chr.SetPixelPosition",
+     23
+    ],
+    [
+     "player.GetMainCharacterPosition",
+     17
+    ],
+    [
+     "player.GetStatus",
+     12
+    ],
+    [
+     "net.SendItemUsePacket",
+     8
+    ],
+    [
+     "player.GetSkillGrade",
+     6
+    ],
+    [
+     "player.GetSkillLevel",
+     6
+    ],
+    [
+     "skill.CanUseSkill",
+     6
+    ],
+    [
+     "player.ClickSkillSlot",
+     6
+    ],
+    [
+     "player.GetItemIndex",
+     5
+    ],
+    [
+     "chr.SetMoveSpeed",
+     4
+    ],
+    [
+     "chr.GetInstanceType",
+     4
+    ],
+    [
+     "chr.SelectInstance",
+     4
+    ],
+    [
+     "player.SetAttackKeyState",
+     4
+    ]
+   ]
+  },
+  "DT_Upper.py": {
+   "lines": 289,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "background",
+    "chat",
+    "chr",
+    "interfacemodule",
+    "locale",
+    "net",
+    "os",
+    "player",
+    "thread",
+    "time",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "net.SendRefinePacket",
+     2
+    ]
+   ]
+  },
+  "Exp_Donator.py": {
+   "lines": 99,
+   "top_funcs": [
+    "MainLoop:33"
+   ],
+   "n_funcs": 1,
+   "modules": [
+    "app",
+    "chat",
+    "net",
+    "player",
+    "time",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "chat.AppendChat",
+     3
+    ],
+    [
+     "app.IsPressed",
+     2
+    ],
+    [
+     "player.GetStatus",
+     1
+    ],
+    [
+     "player.SetStatus",
+     1
+    ],
+    [
+     "net.SendGuildOfferPacket",
+     1
+    ]
+   ]
+  },
+  "FileExtractor.py": {
+   "lines": 778,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "chat",
+    "chr",
+    "grp",
+    "item",
+    "locale",
+    "net",
+    "os",
+    "pack",
+    "player",
+    "shop",
+    "skill",
+    "snd",
+    "time",
+    "ui",
+    "uiCommon",
+    "uiTip",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "grp.GenerateColor",
+     2
+    ],
+    [
+     "wndMgr.GetScreenWidth",
+     2
+    ],
+    [
+     "wndMgr.GetScreenHeight",
+     2
+    ],
+    [
+     "snd.PlaySound",
+     1
+    ]
+   ]
+  },
+  "Fishbot.py": {
+   "lines": 2001,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "background",
+    "chat",
+    "chr",
+    "chrmgr",
+    "cinfo",
+    "game",
+    "interfacemodule",
+    "locale",
+    "net",
+    "os",
+    "player",
+    "time",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "net.SendItemUsePacket",
+     12
+    ],
+    [
+     "chat.AppendChat",
+     4
+    ],
+    [
+     "player.SetAttackKeyState",
+     4
+    ],
+    [
+     "player.GetItemIndex",
+     3
+    ],
+    [
+     "app.GetRandom",
+     2
+    ]
+   ]
+  },
+  "Fishbot_-_DaRealFreak.py": {
+   "lines": 529,
+   "top_funcs": [
+    "IsDivideAble:509",
+    "DivideToFloat:521"
+   ],
+   "n_funcs": 2,
+   "modules": [
+    "app",
+    "chat",
+    "chr",
+    "chrmgr",
+    "item",
+    "net",
+    "player",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "chat.AppendChat",
+     15
+    ],
+    [
+     "item.SelectItem",
+     8
+    ],
+    [
+     "app.GetTime",
+     8
+    ],
+    [
+     "item.GetItemName",
+     6
+    ],
+    [
+     "item.GetIconImageFileName",
+     3
+    ],
+    [
+     "player.GetItemIndex",
+     3
+    ],
+    [
+     "net.SendItemUsePacket",
+     3
+    ],
+    [
+     "player.SetAttackKeyState",
+     2
+    ],
+    [
+     "player.GetItemCountByVnum",
+     2
+    ],
+    [
+     "app.GetRandom",
+     1
+    ],
+    [
+     "net.SendItemDropPacketNew",
+     1
+    ],
+    [
+     "player.GetItemCount",
+     1
+    ]
+   ]
+  },
+  "ForButton.py": {
+   "lines": 31,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [],
+   "api_calls_top": []
+  },
+  "IngameCommands.py": {
+   "lines": 57,
+   "top_funcs": [
+    "netSendChatPacket:9"
+   ],
+   "n_funcs": 1,
+   "modules": [
+    "net"
+   ],
+   "api_calls_top": [
+    [
+     "chat.AppendChat",
+     3
+    ],
+    [
+     "chr.Revive",
+     1
+    ],
+    [
+     "net.SendChatPacket",
+     1
+    ]
+   ]
+  },
+  "Instantpickup.py": {
+   "lines": 1744,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "background",
+    "chat",
+    "chr",
+    "dbg",
+    "net",
+    "player",
+    "textTail",
+    "thread",
+    "time",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "chat.AppendChat",
+     6
+    ],
+    [
+     "player.GetMainCharacterPosition",
+     6
+    ],
+    [
+     "chr.Revive",
+     4
+    ],
+    [
+     "player.SetSingleDIKKeyState",
+     4
+    ],
+    [
+     "net.SendChatPacket",
+     2
+    ],
+    [
+     "chr.SetMoveSpeed",
+     2
+    ],
+    [
+     "chr.PushOnceMotion",
+     2
+    ],
+    [
+     "background.LoadMap",
+     2
+    ],
+    [
+     "background.GetCurrentMapName",
+     2
+    ],
+    [
+     "net.LogOutGame",
+     2
+    ]
+   ]
+  },
+  "ItemUse.py": {
+   "lines": 2853,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app"
+   ],
+   "api_calls_top": [
+    [
+     "player.GetItemIndex",
+     19
+    ],
+    [
+     "net.SendItemUsePacket",
+     16
+    ],
+    [
+     "player.GetStatus",
+     9
+    ],
+    [
+     "player.SetTarget",
+     6
+    ],
+    [
+     "player.ClickSkillSlot",
+     6
+    ],
+    [
+     "chr.SetMoveSpeed",
+     4
+    ],
+    [
+     "net.SendChatPacket",
+     3
+    ],
+    [
+     "chat.AppendChat",
+     3
+    ],
+    [
+     "chr.SetAttackSpeed",
+     2
+    ],
+    [
+     "player.SetAttackKeyState",
+     2
+    ],
+    [
+     "chr.testSetComboType",
+     2
+    ],
+    [
+     "app.SetCameraMaxDistance",
+     2
+    ],
+    [
+     "app.SetMinFog",
+     2
+    ],
+    [
+     "background.SetEnvironmentData",
+     2
+    ],
+    [
+     "item.GetItemName",
+     2
+    ]
+   ]
+  },
+  "MetinFinder.py": {
+   "lines": 192,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "chat",
+    "chr",
+    "chrmgr",
+    "item",
+    "net",
+    "nonplayer",
+    "pack",
+    "player",
+    "skill",
+    "snd",
+    "time",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "chat.AppendChat",
+     5
+    ],
+    [
+     "player.SetAttackKeyState",
+     4
+    ],
+    [
+     "chr.GetInstanceType",
+     2
+    ],
+    [
+     "chr.GetPixelPosition",
+     2
+    ],
+    [
+     "player.GetCharacterDistance",
+     2
+    ],
+    [
+     "chr.MoveToDestPosition",
+     2
+    ],
+    [
+     "player.IsMountingHorse",
+     2
+    ],
+    [
+     "net.SendChatPacket",
+     2
+    ],
+    [
+     "player.ClickSkillSlot",
+     2
+    ],
+    [
+     "chr.SelectInstance",
+     1
+    ],
+    [
+     "chr.GetName",
+     1
+    ],
+    [
+     "nonplayer.GetLevelByVID",
+     1
+    ],
+    [
+     "player.GetMainCharacterIndex",
+     1
+    ],
+    [
+     "app.GetRandom",
+     1
+    ],
+    [
+     "player.PickCloseItem",
+     1
+    ]
+   ]
+  },
+  "New_Levelbot.py": {
+   "lines": 1086,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "chat",
+    "chr",
+    "chrmgr",
+    "dbg",
+    "item",
+    "net",
+    "nonplayer",
+    "pack",
+    "player",
+    "skill",
+    "snd",
+    "time",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "wndMgr.GetScreenWidth",
+     8
+    ],
+    [
+     "wndMgr.GetScreenHeight",
+     8
+    ],
+    [
+     "chat.AppendChat",
+     7
+    ],
+    [
+     "player.GetStatus",
+     4
+    ],
+    [
+     "chr.GetInstanceType",
+     2
+    ],
+    [
+     "item.SelectItem",
+     2
+    ],
+    [
+     "item.GetIconImageFileName",
+     2
+    ],
+    [
+     "chr.SelectInstance",
+     2
+    ],
+    [
+     "player.GetItemIndex",
+     2
+    ],
+    [
+     "net.SendItemUsePacket",
+     2
+    ],
+    [
+     "nonplayer.GetLevelByVID",
+     1
+    ],
+    [
+     "chr.GetRace",
+     1
+    ],
+    [
+     "chr.GetPixelPosition",
+     1
+    ],
+    [
+     "player.GetCharacterDistance",
+     1
+    ],
+    [
+     "chr.GetNameByVID",
+     1
+    ]
+   ]
+  },
+  "Pickup.py": {
+   "lines": 94,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "player"
+   ],
+   "api_calls_top": [
+    [
+     "wndMgr.GetScreenWidth",
+     1
+    ],
+    [
+     "player.PickCloseItem",
+     1
+    ]
+   ]
+  },
+  "Questbot.py": {
+   "lines": 435,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "background",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "player.GetStatus",
+     2
+    ],
+    [
+     "wndMgr.GetScreenWidth",
+     1
+    ],
+    [
+     "net.ExitGame",
+     1
+    ],
+    [
+     "chat.AppendChat",
+     1
+    ],
+    [
+     "player.GetTargetVID",
+     1
+    ],
+    [
+     "net.SendOnClickPacket",
+     1
+    ],
+    [
+     "event.SelectAnswer",
+     1
+    ]
+   ]
+  },
+  "RootDirectory1.py": {
+   "lines": 18,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "dbg",
+    "serverinfo"
+   ],
+   "api_calls_top": []
+  },
+  "RootDirectory3.py": {
+   "lines": 495,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "ServerInfo",
+    "_winreg",
+    "app",
+    "chat",
+    "chr",
+    "net",
+    "player",
+    "time",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "player.IsMountingHorse",
+     12
+    ],
+    [
+     "net.SendChatPacket",
+     10
+    ],
+    [
+     "player.GetStatus",
+     7
+    ],
+    [
+     "player.IsSkillCoolTime",
+     6
+    ],
+    [
+     "player.ClickSkillSlot",
+     6
+    ],
+    [
+     "net.DirectEnter",
+     2
+    ],
+    [
+     "chr.Revive",
+     2
+    ],
+    [
+     "net.SetServerInfo",
+     1
+    ],
+    [
+     "app.OpenTextFile",
+     1
+    ],
+    [
+     "app.GetTextFileLineCount",
+     1
+    ],
+    [
+     "app.GetTextFileLine",
+     1
+    ],
+    [
+     "chr.GetPixelPosition",
+     1
+    ],
+    [
+     "net.GetMainActorVID",
+     1
+    ],
+    [
+     "player.GetName",
+     1
+    ],
+    [
+     "net.GetMainActorSkillGroup",
+     1
+    ]
+   ]
+  },
+  "ServerCommandParser.py": {
+   "lines": 114,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "background",
+    "constInfo",
+    "net",
+    "stringCommander"
+   ],
+   "api_calls_top": [
+    [
+     "net.SetServerCommandParserWindow",
+     1
+    ],
+    [
+     "net.PreserveServerCommand",
+     1
+    ]
+   ]
+  },
+  "ShopScanner.py": {
+   "lines": 1326,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "chat",
+    "chr",
+    "locale",
+    "net",
+    "player",
+    "shop",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "net.SendShopBuyPacket",
+     24
+    ],
+    [
+     "chat.AppendChat",
+     16
+    ],
+    [
+     "net.SendShopEndPacket",
+     6
+    ]
+   ]
+  },
+  "Teleporthack_-_DaRealFreak.py": {
+   "lines": 300,
+   "top_funcs": [
+    "GetCurrentMapSize:212",
+    "GetTmpTeleport:236",
+    "DivideToFloat:246"
+   ],
+   "n_funcs": 3,
+   "modules": [
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "background.GetCurrentMapName",
+     4
+    ],
+    [
+     "wndMgr.GetMousePosition",
+     2
+    ],
+    [
+     "chr.SetPixelPosition",
+     2
+    ],
+    [
+     "player.SetSingleDIKKeyState",
+     2
+    ],
+    [
+     "player.GetMainCharacterPosition",
+     2
+    ],
+    [
+     "app.IsPressed",
+     1
+    ],
+    [
+     "player.GetMainCharacterIndex",
+     1
+    ],
+    [
+     "chr.MoveToDestPosition",
+     1
+    ],
+    [
+     "app.OpenTextFile",
+     1
+    ],
+    [
+     "app.GetTextFileLineCount",
+     1
+    ],
+    [
+     "app.GetTextFileLine",
+     1
+    ]
+   ]
+  },
+  "Teleporthack_-_Music.py": {
+   "lines": 619,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "background",
+    "chat",
+    "chr",
+    "exception",
+    "ime",
+    "locale",
+    "miniMap",
+    "net",
+    "player",
+    "sys",
+    "ui",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "player.SetSingleDIKKeyState",
+     16
+    ],
+    [
+     "chr.SetPixelPosition",
+     8
+    ],
+    [
+     "chat.AppendChat",
+     6
+    ],
+    [
+     "player.GetMainCharacterPosition",
+     6
+    ],
+    [
+     "app.GetTime",
+     2
+    ],
+    [
+     "app.IsPressed",
+     2
+    ],
+    [
+     "wndMgr.GetMousePosition",
+     2
+    ],
+    [
+     "background.GlobalPositionToMapInfo",
+     1
+    ],
+    [
+     "wndMgr.GetScreenWidth",
+     1
+    ]
+   ]
+  },
+  "WalkToMobs.py": {
+   "lines": 284,
+   "top_funcs": [
+    "IsMobAlive:191",
+    "HookedSetHPTargetBoard:251",
+    "HookSetHPTargetBoard:263",
+    "UnHookSetHPTargetBoard:271"
+   ],
+   "n_funcs": 4,
+   "modules": [
+    "player"
+   ],
+   "api_calls_top": [
+    [
+     "chat.AppendChat",
+     4
+    ],
+    [
+     "chr.GetInstanceType",
+     3
+    ],
+    [
+     "chr.SelectInstance",
+     3
+    ],
+    [
+     "player.GetCharacterDistance",
+     2
+    ],
+    [
+     "wndMgr.GetScreenWidth",
+     1
+    ],
+    [
+     "nonplayer.GetLevelByVID",
+     1
+    ],
+    [
+     "chr.GetRace",
+     1
+    ],
+    [
+     "chr.GetPixelPosition",
+     1
+    ],
+    [
+     "player.GetMainCharacterIndex",
+     1
+    ],
+    [
+     "chr.MoveToDestPosition",
+     1
+    ],
+    [
+     "chr.GetBoundBoxOnlyXY",
+     1
+    ]
+   ]
+  },
+  "WhisperSpammer.py": {
+   "lines": 375,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "background",
+    "m2kmod",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "chat.AppendChat",
+     1
+    ]
+   ]
+  },
+  "alchemistbot.py": {
+   "lines": 683,
+   "top_funcs": [
+    "GuiParser:613"
+   ],
+   "n_funcs": 1,
+   "modules": [
+    "background",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "player.SetSingleDIKKeyState",
+     24
+    ],
+    [
+     "chr.SetPixelPosition",
+     12
+    ],
+    [
+     "player.GetMainCharacterPosition",
+     10
+    ],
+    [
+     "chat.AppendChat",
+     9
+    ],
+    [
+     "item.GetItemName",
+     4
+    ],
+    [
+     "event.SelectAnswer",
+     4
+    ],
+    [
+     "item.SelectItem",
+     3
+    ],
+    [
+     "player.GetItemIndex",
+     2
+    ],
+    [
+     "player.GetTargetVID",
+     2
+    ],
+    [
+     "net.SendGiveItemPacket",
+     2
+    ],
+    [
+     "net.SendShopBuyPacket",
+     2
+    ],
+    [
+     "app.GetTime",
+     2
+    ]
+   ]
+  },
+  "antifly_sekmeme_.py": {
+   "lines": 57,
+   "top_funcs": [
+    "Run:53"
+   ],
+   "n_funcs": 1,
+   "modules": [
+    "player"
+   ],
+   "api_calls_top": [
+    [
+     "player.SetAttackKeyState",
+     3
+    ],
+    [
+     "app.IsPressed",
+     2
+    ],
+    [
+     "chr.BlendLoopMotion",
+     1
+    ],
+    [
+     "chr.SetMotionMode",
+     1
+    ],
+    [
+     "chr.testSetComboType",
+     1
+    ],
+    [
+     "chr.SetLoopMotion",
+     1
+    ]
+   ]
+  },
+  "buffbot.py": {
+   "lines": 419,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "chat",
+    "chr",
+    "locale",
+    "player",
+    "time",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "player.GetTargetVID",
+     3
+    ],
+    [
+     "player.ClearTarget",
+     1
+    ],
+    [
+     "chat.AppendChat",
+     1
+    ],
+    [
+     "player.ClickSkillSlot",
+     1
+    ],
+    [
+     "chr.GetPixelPosition",
+     1
+    ],
+    [
+     "chr.MoveToDestPosition",
+     1
+    ],
+    [
+     "player.GetMainCharacterIndex",
+     1
+    ],
+    [
+     "chr.GetNameByVID",
+     1
+    ]
+   ]
+  },
+  "colorInfo.py": {
+   "lines": 66,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [],
+   "api_calls_top": []
+  },
+  "constInfo.py": {
+   "lines": 560,
+   "top_funcs": [
+    "GET_ITEM_DROP_QUESTION_DIALOG_STATUS:127",
+    "SET_ITEM_DROP_QUESTION_DIALOG_STATUS:135",
+    "SET_DEFAULT_FOG_LEVEL:153",
+    "SET_FOG_LEVEL_INDEX:161",
+    "GET_FOG_LEVEL_INDEX:179",
+    "SET_DEFAULT_CAMERA_MAX_DISTANCE:193",
+    "SET_CAMERA_MAX_DISTANCE_INDEX:201",
+    "GET_CAMERA_MAX_DISTANCE_INDEX:221",
+    "SET_DEFAULT_CHRNAME_COLOR:243",
+    "SET_CHRNAME_COLOR_INDEX:251",
+    "GET_CHRNAME_COLOR_INDEX:261",
+    "SET_VIEW_OTHER_EMPIRE_PLAYER_TARGET_BOARD:269",
+    "GET_VIEW_OTHER_EMPIRE_PLAYER_TARGET_BOARD:277",
+    "SET_DEFAULT_CONVERT_EMPIRE_LANGUAGE_ENABLE:285",
+    "SET_DEFAULT_USE_ITEM_WEAPON_TABLE_ATTACK_BONUS:293",
+    "SET_DEFAULT_USE_SKILL_EFFECT_ENABLE:301",
+    "SET_TWO_HANDED_WEAPON_ATT_SPEED_DECREASE_VALUE:309",
+    "GET_ACCESSORY_MATERIAL_VNUM:345",
+    "GET_BELT_MATERIAL_VNUM:425",
+    "IS_AUTO_POTION:441",
+    "IS_AUTO_POTION_HP:449",
+    "IS_AUTO_POTION_SP:471",
+    "WriteLineInFile:489",
+    "ReadLineInFile:525"
+   ],
+   "n_funcs": 24,
+   "modules": [
+    "app",
+    "chrmgr",
+    "item",
+    "net",
+    "os",
+    "player"
+   ],
+   "api_calls_top": [
+    [
+     "app.SetMinFog",
+     2
+    ],
+    [
+     "app.SetCameraMaxDistance",
+     2
+    ],
+    [
+     "net.SetEmpireLanguageMode",
+     1
+    ],
+    [
+     "player.SetWeaponAttackBonusFlag",
+     1
+    ],
+    [
+     "app.SetSkillEffectUpgradeEnable",
+     1
+    ],
+    [
+     "app.SetTwoHandedWeaponAttSpeedDecreaseValue",
+     1
+    ]
+   ]
+  },
+  "craplevelbot.py": {
+   "lines": 4549,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "chat",
+    "chr",
+    "locale",
+    "net",
+    "player",
+    "skill",
+    "time",
+    "ui",
+    "uiTarget"
+   ],
+   "api_calls_top": [
+    [
+     "chat.AppendChat",
+     68
+    ],
+    [
+     "player.SetSingleDIKKeyState",
+     40
+    ],
+    [
+     "chr.SetPixelPosition",
+     23
+    ],
+    [
+     "player.GetMainCharacterPosition",
+     17
+    ],
+    [
+     "player.GetStatus",
+     12
+    ],
+    [
+     "net.SendItemUsePacket",
+     8
+    ],
+    [
+     "player.GetSkillGrade",
+     6
+    ],
+    [
+     "player.GetSkillLevel",
+     6
+    ],
+    [
+     "skill.CanUseSkill",
+     6
+    ],
+    [
+     "player.ClickSkillSlot",
+     6
+    ],
+    [
+     "player.GetItemIndex",
+     5
+    ],
+    [
+     "chr.SetMoveSpeed",
+     4
+    ],
+    [
+     "chr.GetInstanceType",
+     4
+    ],
+    [
+     "chr.SelectInstance",
+     4
+    ],
+    [
+     "player.SetAttackKeyState",
+     4
+    ]
+   ]
+  },
+  "cycu.py": {
+   "lines": 13,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app"
+   ],
+   "api_calls_top": [
+    [
+     "app.IsPressed",
+     1
+    ]
+   ]
+  },
+  "cycu_-_Kopya.py": {
+   "lines": 671,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "ServerInfo",
+    "_winreg",
+    "app",
+    "chat",
+    "net",
+    "player",
+    "textTail",
+    "time",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "player.IsMountingHorse",
+     12
+    ],
+    [
+     "net.SendChatPacket",
+     10
+    ],
+    [
+     "net.SendRefinePacket",
+     8
+    ],
+    [
+     "player.GetStatus",
+     7
+    ],
+    [
+     "player.IsSkillCoolTime",
+     6
+    ],
+    [
+     "player.ClickSkillSlot",
+     6
+    ],
+    [
+     "net.SendItemUsePacket",
+     6
+    ],
+    [
+     "net.DirectEnter",
+     4
+    ],
+    [
+     "chr.Revive",
+     2
+    ],
+    [
+     "net.SetServerInfo",
+     1
+    ],
+    [
+     "net.SetPacketSequenceMode",
+     1
+    ],
+    [
+     "net.SetLoginInfo",
+     1
+    ],
+    [
+     "net.ConnectToAccountServer",
+     1
+    ],
+    [
+     "app.OpenTextFile",
+     1
+    ],
+    [
+     "app.GetTextFileLineCount",
+     1
+    ]
+   ]
+  },
+  "darealfreakbot.py": {
+   "lines": 9511,
+   "top_funcs": [
+    "AnswerMinimizedWhisper:8219",
+    "ActivateMinimizedWhisper:8273",
+    "AskCleverbot:8443",
+    "GetVidList:8927",
+    "GetPickUpList:8933",
+    "GetPickUpListNames:8939",
+    "GetPrivateMessages:8945",
+    "GetPositiveValue:8951",
+    "IsMobAlive:9057",
+    "IsBetween:9121",
+    "GuiParser:9143",
+    "IsDivideAble:9211",
+    "DivideToFloat:9223",
+    "GetDegree:9235",
+    "GetTmpTeleport:9253",
+    "ConvertToDegrees:9273",
+    "GetDistance:9279",
+    "GetCurrentMapSize:9291",
+    "GetClass:9339",
+    "NewSkillsEnable:9363",
+    "HookedSetHPTargetBoard:9383",
+    "HookSetHPTargetBoard:9395",
+    "UnHookSetHPTargetBoard:9403",
+    "HookedOnRecvWhisper:9415",
+    "HookOnRecvWhisper:9447",
+    "UnHookHookOnRecvWhisper:9455",
+    "HookOpenTargetBoard:9465",
+    "HookedOpenTargetBoard:9473",
+    "UnHookOpenTargetBoard:9487"
+   ],
+   "n_funcs": 29,
+   "modules": [
+    "ServerInfo",
+    "api",
+    "app",
+    "background",
+    "chat",
+    "chr",
+    "chrmgr",
+    "event",
+    "exception",
+    "game",
+    "grp",
+    "item",
+    "m2BotLib",
+    "m2botlibpadmak",
+    "math",
+    "miniMap",
+    "net",
+    "nonplayer",
+    "os",
+    "player",
+    "shop",
+    "skill",
+    "snd",
+    "thread",
+    "time",
+    "ui",
+    "uiCommon",
+    "uiminimap"
+   ],
+   "api_calls_top": [
+    [
+     "chat.AppendChat",
+     151
+    ],
+    [
+     "item.SelectItem",
+     42
+    ],
+    [
+     "app.GetTime",
+     38
+    ],
+    [
+     "item.GetItemName",
+     34
+    ],
+    [
+     "player.GetItemIndex",
+     31
+    ],
+    [
+     "net.SendItemUsePacket",
+     19
+    ],
+    [
+     "chr.GetNameByVID",
+     12
+    ],
+    [
+     "item.GetIconImageFileName",
+     12
+    ],
+    [
+     "player.GetStatus",
+     12
+    ],
+    [
+     "player.GetItemCountByVnum",
+     12
+    ],
+    [
+     "net.SendChatPacket",
+     10
+    ],
+    [
+     "player.SetAttackKeyState",
+     10
+    ],
+    [
+     "app.GetGlobalTimeStamp",
+     10
+    ],
+    [
+     "chr.GetInstanceType",
+     9
+    ],
+    [
+     "wndMgr.GetScreenWidth",
+     9
+    ]
+   ]
+  },
+  "debugInfo.py": {
+   "lines": 20,
+   "top_funcs": [
+    "SetDebugMode:5",
+    "IsDebugMode:13"
+   ],
+   "n_funcs": 2,
+   "modules": [],
+   "api_calls_top": []
+  },
+  "edithack.py": {
+   "lines": 2345,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "chat",
+    "dbg",
+    "grp",
+    "item",
+    "player",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "item.SelectItem",
+     12
+    ],
+    [
+     "chat.AppendChat",
+     12
+    ],
+    [
+     "item.GetItemName",
+     11
+    ],
+    [
+     "item.GetIconImageFileName",
+     8
+    ],
+    [
+     "player.SetItemAttribute",
+     5
+    ],
+    [
+     "player.SetItemMetinSocket",
+     3
+    ],
+    [
+     "app.Abort",
+     3
+    ],
+    [
+     "grp.GenerateColor",
+     2
+    ],
+    [
+     "item.GetLimit",
+     2
+    ],
+    [
+     "player.GetStatus",
+     2
+    ],
+    [
+     "player.isItem",
+     2
+    ],
+    [
+     "player.GetItemIndex",
+     1
+    ],
+    [
+     "item.GetItemSize",
+     1
+    ],
+    [
+     "player.SetItemData",
+     1
+    ]
+   ]
+  },
+  "efsunbotu.py": {
+   "lines": 3776,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "chat",
+    "grp",
+    "item",
+    "mouseModule",
+    "net",
+    "player",
+    "shop",
+    "ui",
+    "uitooltip",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "grp.GenerateColor",
+     20
+    ],
+    [
+     "wndMgr.GetScreenWidth",
+     13
+    ],
+    [
+     "wndMgr.GetScreenHeight",
+     13
+    ],
+    [
+     "chat.AppendChat",
+     10
+    ],
+    [
+     "player.GetItemAttribute",
+     7
+    ],
+    [
+     "item.GetItemType",
+     5
+    ],
+    [
+     "player.GetItemIndex",
+     5
+    ],
+    [
+     "item.SelectItem",
+     4
+    ],
+    [
+     "player.GetItemCount",
+     4
+    ],
+    [
+     "player.GetMoney",
+     2
+    ],
+    [
+     "net.SendShopBuyPacket",
+     2
+    ],
+    [
+     "net.SendItemUseToItemPacket",
+     2
+    ],
+    [
+     "wndMgr.SetColor",
+     1
+    ],
+    [
+     "item.GetAffect",
+     1
+    ],
+    [
+     "item.GetItemSubType",
+     1
+    ]
+   ]
+  },
+  "efsunbotu2.py": {
+   "lines": 3776,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "chat",
+    "grp",
+    "item",
+    "mouseModule",
+    "net",
+    "player",
+    "shop",
+    "ui",
+    "uitooltip",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "grp.GenerateColor",
+     20
+    ],
+    [
+     "wndMgr.GetScreenWidth",
+     13
+    ],
+    [
+     "wndMgr.GetScreenHeight",
+     13
+    ],
+    [
+     "chat.AppendChat",
+     10
+    ],
+    [
+     "player.GetItemAttribute",
+     7
+    ],
+    [
+     "item.GetItemType",
+     5
+    ],
+    [
+     "player.GetItemIndex",
+     5
+    ],
+    [
+     "item.SelectItem",
+     4
+    ],
+    [
+     "player.GetItemCount",
+     4
+    ],
+    [
+     "player.GetMoney",
+     2
+    ],
+    [
+     "net.SendShopBuyPacket",
+     2
+    ],
+    [
+     "net.SendItemUseToItemPacket",
+     2
+    ],
+    [
+     "wndMgr.SetColor",
+     1
+    ],
+    [
+     "item.GetAffect",
+     1
+    ],
+    [
+     "item.GetItemSubType",
+     1
+    ]
+   ]
+  },
+  "eiglib.py": {
+   "lines": 1538,
+   "top_funcs": [
+    "SendInformationChat:45",
+    "DropTheseItems:53",
+    "SeparateItem:63",
+    "LoadPythonFile:77",
+    "Teleport:93",
+    "Debug:119",
+    "GetTmpTeleport:127",
+    "DivideToFloat:147",
+    "ConnectToChannel:161",
+    "InitHook:205",
+    "WalkVID:219",
+    "WalkCOORD:253",
+    "SendAttack:287",
+    "GetDegree:309",
+    "ConvertToDegrees:327",
+    "GiveItemTo:335",
+    "UseItem:345",
+    "BuyItem:361",
+    "IsMoneyOkay:381",
+    "UpgradeItem:413",
+    "SendEverybody:485",
+    "SendChat:497",
+    "IsGameMasterHere:545",
+    "KickMe:577",
+    "WriteToFile:593",
+    "GameMasterCommand:601",
+    "GoAsGameMaster:665",
+    "Teleport2:713",
+    "GetClass:747",
+    "NewSkillsEnable:773"
+   ],
+   "n_funcs": 30,
+   "modules": [
+    "__builtin__",
+    "app",
+    "chat",
+    "chr",
+    "game",
+    "introLogin",
+    "math",
+    "net",
+    "os",
+    "player",
+    "shop",
+    "snd",
+    "thread",
+    "threading",
+    "time",
+    "ui",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "chat.AppendChat",
+     14
+    ],
+    [
+     "player.GetMainCharacterPosition",
+     8
+    ],
+    [
+     "net.SendChatPacket",
+     8
+    ],
+    [
+     "chr.SetPixelPosition",
+     6
+    ],
+    [
+     "player.SetSingleDIKKeyState",
+     6
+    ],
+    [
+     "net.SendRefinePacket",
+     5
+    ],
+    [
+     "chr.GetNameByVID",
+     5
+    ],
+    [
+     "player.GetItemIndex",
+     4
+    ],
+    [
+     "player.GetMainCharacterIndex",
+     3
+    ],
+    [
+     "wndMgr.Enable",
+     3
+    ],
+    [
+     "wndMgr.Disable",
+     3
+    ],
+    [
+     "wndMgr.Down",
+     3
+    ],
+    [
+     "wndMgr.SetUp",
+     3
+    ],
+    [
+     "chr.GetPixelPosition",
+     2
+    ],
+    [
+     "chr.MoveToDestPosition",
+     2
+    ]
+   ]
+  },
+  "emotion.py": {
+   "lines": 502,
+   "top_funcs": [
+    "__RegisterSharedEmotionAnis:455",
+    "RegisterEmotionAnis:469",
+    "RegisterEmotionIcons:495"
+   ],
+   "n_funcs": 3,
+   "modules": [
+    "chr",
+    "chrmgr",
+    "localeInfo",
+    "player"
+   ],
+   "api_calls_top": [
+    [
+     "player.RegisterEmotionIcon",
+     1
+    ]
+   ]
+  },
+  "energybot.py": {
+   "lines": 449,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "CY_FIX",
+    "chat",
+    "tp",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "chat.AppendChat",
+     10
+    ],
+    [
+     "event.SelectAnswer",
+     7
+    ],
+    [
+     "player.GetItemIndex",
+     4
+    ],
+    [
+     "item.SelectItem",
+     3
+    ],
+    [
+     "item.GetItemName",
+     2
+    ],
+    [
+     "chr.SelectInstance",
+     2
+    ],
+    [
+     "chr.GetRace",
+     2
+    ],
+    [
+     "item.GetItemType",
+     1
+    ],
+    [
+     "player.GetMoney",
+     1
+    ],
+    [
+     "player.GetItemCount",
+     1
+    ],
+    [
+     "chr.GetInstanceType",
+     1
+    ]
+   ]
+  },
+  "exception.py": {
+   "lines": 76,
+   "top_funcs": [
+    "GetExceptionString:1",
+    "Abort:51"
+   ],
+   "n_funcs": 2,
+   "modules": [
+    "app",
+    "dbg",
+    "sys",
+    "traceback"
+   ],
+   "api_calls_top": [
+    [
+     "app.Abort",
+     1
+    ]
+   ]
+  },
+  "farmbot.py": {
+   "lines": 284,
+   "top_funcs": [
+    "IsMobAlive:191",
+    "HookedSetHPTargetBoard:251",
+    "HookSetHPTargetBoard:263",
+    "UnHookSetHPTargetBoard:271"
+   ],
+   "n_funcs": 4,
+   "modules": [
+    "player"
+   ],
+   "api_calls_top": [
+    [
+     "chat.AppendChat",
+     4
+    ],
+    [
+     "chr.GetInstanceType",
+     3
+    ],
+    [
+     "chr.SelectInstance",
+     3
+    ],
+    [
+     "player.GetCharacterDistance",
+     2
+    ],
+    [
+     "wndMgr.GetScreenWidth",
+     1
+    ],
+    [
+     "nonplayer.GetLevelByVID",
+     1
+    ],
+    [
+     "chr.GetRace",
+     1
+    ],
+    [
+     "chr.GetPixelPosition",
+     1
+    ],
+    [
+     "player.GetMainCharacterIndex",
+     1
+    ],
+    [
+     "chr.MoveToDestPosition",
+     1
+    ],
+    [
+     "chr.GetBoundBoxOnlyXY",
+     1
+    ]
+   ]
+  },
+  "fishbot-darealfreak.py": {
+   "lines": 529,
+   "top_funcs": [
+    "IsDivideAble:509",
+    "DivideToFloat:521"
+   ],
+   "n_funcs": 2,
+   "modules": [
+    "app",
+    "chat",
+    "chr",
+    "chrmgr",
+    "item",
+    "net",
+    "player",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "chat.AppendChat",
+     15
+    ],
+    [
+     "item.SelectItem",
+     8
+    ],
+    [
+     "app.GetTime",
+     8
+    ],
+    [
+     "item.GetItemName",
+     6
+    ],
+    [
+     "item.GetIconImageFileName",
+     3
+    ],
+    [
+     "player.GetItemIndex",
+     3
+    ],
+    [
+     "net.SendItemUsePacket",
+     3
+    ],
+    [
+     "player.SetAttackKeyState",
+     2
+    ],
+    [
+     "player.GetItemCountByVnum",
+     2
+    ],
+    [
+     "app.GetRandom",
+     1
+    ],
+    [
+     "net.SendItemDropPacketNew",
+     1
+    ],
+    [
+     "player.GetItemCount",
+     1
+    ]
+   ]
+  },
+  "fishbot1.0.py": {
+   "lines": 847,
+   "top_funcs": [
+    "NewOnRecvWhisper:93",
+    "InstallHook:125",
+    "UninstallHook:143"
+   ],
+   "n_funcs": 3,
+   "modules": [
+    "app",
+    "chat",
+    "chr",
+    "chrmgr",
+    "game",
+    "grp",
+    "item",
+    "net",
+    "player",
+    "time",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "player.GetItemIndex",
+     9
+    ],
+    [
+     "player.SetAttackKeyState",
+     8
+    ],
+    [
+     "app.GetTime",
+     8
+    ],
+    [
+     "net.SendItemUsePacket",
+     3
+    ],
+    [
+     "net.SendItemDropPacket",
+     2
+    ],
+    [
+     "chat.AppendChat",
+     2
+    ],
+    [
+     "app.GetLocalePath",
+     1
+    ],
+    [
+     "app.Exit",
+     1
+    ],
+    [
+     "net.SendChatPacket",
+     1
+    ],
+    [
+     "grp.GenerateColor",
+     1
+    ],
+    [
+     "player.GetItemCount",
+     1
+    ],
+    [
+     "net.SendShopSellPacket",
+     1
+    ],
+    [
+     "app.GetRandom",
+     1
+    ]
+   ]
+  },
+  "fishbot1.1.py": {
+   "lines": 529,
+   "top_funcs": [
+    "IsDivideAble:509",
+    "DivideToFloat:521"
+   ],
+   "n_funcs": 2,
+   "modules": [
+    "app",
+    "chat",
+    "chr",
+    "chrmgr",
+    "item",
+    "net",
+    "player",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "chat.AppendChat",
+     15
+    ],
+    [
+     "item.SelectItem",
+     8
+    ],
+    [
+     "app.GetTime",
+     8
+    ],
+    [
+     "item.GetItemName",
+     6
+    ],
+    [
+     "item.GetIconImageFileName",
+     3
+    ],
+    [
+     "player.GetItemIndex",
+     3
+    ],
+    [
+     "net.SendItemUsePacket",
+     3
+    ],
+    [
+     "player.SetAttackKeyState",
+     2
+    ],
+    [
+     "player.GetItemCountByVnum",
+     2
+    ],
+    [
+     "app.GetRandom",
+     1
+    ],
+    [
+     "net.SendItemDropPacketNew",
+     1
+    ],
+    [
+     "player.GetItemCount",
+     1
+    ]
+   ]
+  },
+  "game.py": {
+   "lines": 4289,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "_weakref",
+    "app",
+    "background",
+    "chat",
+    "chr",
+    "chrmgr",
+    "consoleModule",
+    "constInfo",
+    "dbg",
+    "debugInfo",
+    "effect",
+    "event",
+    "exception",
+    "exchange",
+    "fly",
+    "grp",
+    "guild",
+    "ime",
+    "interfaceModule",
+    "item",
+    "localeInfo",
+    "messenger",
+    "mouseModule",
+    "musicInfo",
+    "net",
+    "os",
+    "player",
+    "playerSettingModule",
+    "quest",
+    "skill",
+    "snd",
+    "stringCommander",
+    "systemSetting",
+    "textTail",
+    "time",
+    "ui",
+    "uiAffectShower",
+    "uiCharacter",
+    "uiCommon",
+    "uiGuild",
+    "uiMapNameShower",
+    "uiPhaseCurtain",
+    "uiPlayerGauge",
+    "uiPrivateShopBuilder",
+    "uiTarget",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "app.IsPressed",
+     20
+    ],
+    [
+     "chat.AppendChat",
+     17
+    ],
+    [
+     "net.SendChatPacket",
+     16
+    ],
+    [
+     "wndMgr.GetScreenWidth",
+     9
+    ],
+    [
+     "player.SetSingleDIKKeyState",
+     8
+    ],
+    [
+     "snd.FadeInMusic",
+     6
+    ],
+    [
+     "app.RotateCamera",
+     4
+    ],
+    [
+     "app.ZoomCamera",
+     4
+    ],
+    [
+     "app.PitchCamera",
+     4
+    ],
+    [
+     "app.MovieRotateCamera",
+     4
+    ],
+    [
+     "app.MovieZoomCamera",
+     4
+    ],
+    [
+     "app.MoviePitchCamera",
+     4
+    ],
+    [
+     "player.GetPKMode",
+     4
+    ],
+    [
+     "chat.AppendWhisper",
+     4
+    ],
+    [
+     "player.SetMouseState",
+     4
+    ]
+   ]
+  },
+  "interfacemodule.py": {
+   "lines": 3654,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "_weakref",
+    "app",
+    "background",
+    "chat",
+    "constInfo",
+    "dbg",
+    "event",
+    "grp",
+    "guild",
+    "item",
+    "localeInfo",
+    "miniMap",
+    "mouseModule",
+    "os",
+    "player",
+    "sys",
+    "systemSetting",
+    "time",
+    "ui",
+    "uiCharacter",
+    "uiChat",
+    "uiCommon",
+    "uiCube",
+    "uiDragonSoul",
+    "uiEquipmentDialog",
+    "uiExchange",
+    "uiGameButton",
+    "uiGuild",
+    "uiHelp",
+    "uiInventory",
+    "uiMessenger",
+    "uiMiniMap",
+    "uiParty",
+    "uiPointReset",
+    "uiPrivateShopBuilder",
+    "uiQuest",
+    "uiRefine",
+    "uiRestart",
+    "uiSafebox",
+    "uiScriptLocale",
+    "uiSelectItem",
+    "uiShop",
+    "uiSystem",
+    "uiTaskBar",
+    "uiTip",
+    "uiToolTip",
+    "uiWeb",
+    "uiWhisper",
+    "uisash",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "player.IsObserverMode",
+     10
+    ],
+    [
+     "chat.AppendChat",
+     5
+    ],
+    [
+     "wndMgr.GetScreenWidth",
+     4
+    ],
+    [
+     "wndMgr.GetScreenHeight",
+     4
+    ],
+    [
+     "app.IsPressed",
+     4
+    ],
+    [
+     "event.SetInterfaceWindow",
+     2
+    ],
+    [
+     "player.GetMainCharacterName",
+     2
+    ],
+    [
+     "player.SetItemData",
+     2
+    ],
+    [
+     "player.SetPlayTime",
+     1
+    ],
+    [
+     "player.IsInSafeArea",
+     1
+    ],
+    [
+     "item.SelectItem",
+     1
+    ],
+    [
+     "item.GetIconImageFileName",
+     1
+    ],
+    [
+     "event.QuestButtonClick",
+     1
+    ],
+    [
+     "chat.InitWhisper",
+     1
+    ],
+    [
+     "background.GetPickingPoint",
+     1
+    ]
+   ]
+  },
+  "introCreate.py": {
+   "lines": 1316,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "chr",
+    "event",
+    "exception",
+    "grp",
+    "localeInfo",
+    "math",
+    "mouseModule",
+    "musicInfo",
+    "net",
+    "networkModule",
+    "playerSettingModule",
+    "snd",
+    "systemSetting",
+    "ui",
+    "uiScriptLocale",
+    "uiToolTip",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "chr.SelectInstance",
+     11
+    ],
+    [
+     "event.Skip",
+     4
+    ],
+    [
+     "chr.Hide",
+     3
+    ],
+    [
+     "event.GetVisibleStartLine",
+     3
+    ],
+    [
+     "app.SetCamera",
+     2
+    ],
+    [
+     "net.SetPhaseWindow",
+     2
+    ],
+    [
+     "app.GetRandom",
+     2
+    ],
+    [
+     "chr.SetMotionMode",
+     2
+    ],
+    [
+     "chr.SetLoopMotion",
+     2
+    ],
+    [
+     "chr.Show",
+     2
+    ],
+    [
+     "app.GetTime",
+     2
+    ],
+    [
+     "chr.PushOnceMotion",
+     2
+    ],
+    [
+     "event.IsWait",
+     2
+    ],
+    [
+     "event.SetVisibleStartLine",
+     2
+    ],
+    [
+     "event.RenderEventSet",
+     1
+    ]
+   ]
+  },
+  "introEmpire.py": {
+   "lines": 504,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "_weakref",
+    "app",
+    "dbg",
+    "event",
+    "exception",
+    "localeInfo",
+    "net",
+    "ui",
+    "uiScriptLocale",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "event.Skip",
+     4
+    ],
+    [
+     "event.GetVisibleStartLine",
+     3
+    ],
+    [
+     "net.SetPhaseWindow",
+     2
+    ],
+    [
+     "event.IsWait",
+     2
+    ],
+    [
+     "event.SetVisibleStartLine",
+     2
+    ],
+    [
+     "net.SendSelectEmpirePacket",
+     2
+    ],
+    [
+     "event.RenderEventSet",
+     1
+    ],
+    [
+     "app.GetRandom",
+     1
+    ],
+    [
+     "app.HideCursor",
+     1
+    ],
+    [
+     "event.Destroy",
+     1
+    ],
+    [
+     "wndMgr.GetScreenWidth",
+     1
+    ],
+    [
+     "wndMgr.GetScreenHeight",
+     1
+    ],
+    [
+     "app.ShowCursor",
+     1
+    ],
+    [
+     "event.ClearEventSet",
+     1
+    ],
+    [
+     "event.RegisterEventSet",
+     1
+    ]
+   ]
+  },
+  "introLoading.py": {
+   "lines": 610,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "background",
+    "chrmgr",
+    "colorInfo",
+    "constInfo",
+    "dbg",
+    "emotion",
+    "exception",
+    "localeInfo",
+    "net",
+    "player",
+    "playerSettingModule",
+    "stringCommander",
+    "ui",
+    "uiAttachMetin",
+    "uiChat",
+    "uiExchange",
+    "uiHelp",
+    "uiMessenger",
+    "uiOption",
+    "uiPickMoney",
+    "uiPointReset",
+    "uiRefine",
+    "uiRestart",
+    "uiScriptLocale",
+    "uiShop",
+    "uiSystem",
+    "uiToolTip",
+    "uiWhisper",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "background.RegisterDungeonMapName",
+     5
+    ],
+    [
+     "background.SetViewDistanceSet",
+     5
+    ],
+    [
+     "app.SetFrameSkip",
+     3
+    ],
+    [
+     "net.SetPhaseWindow",
+     2
+    ],
+    [
+     "net.GetMainActorRace",
+     2
+    ],
+    [
+     "net.GetMainActorSkillGroup",
+     2
+    ],
+    [
+     "net.GetMainActorEmpire",
+     2
+    ],
+    [
+     "app.HideCursor",
+     1
+    ],
+    [
+     "app.GetRandom",
+     1
+    ],
+    [
+     "wndMgr.GetScreenWidth",
+     1
+    ],
+    [
+     "wndMgr.GetScreenHeight",
+     1
+    ],
+    [
+     "net.SendSelectCharacterPacket",
+     1
+    ],
+    [
+     "app.Exit",
+     1
+    ],
+    [
+     "background.SelectViewDistanceNum",
+     1
+    ],
+    [
+     "app.SetGlobalCenterPosition",
+     1
+    ]
+   ]
+  },
+  "introLogin.py": {
+   "lines": 2151,
+   "top_funcs": [
+    "set_reg:59",
+    "get_reg:79",
+    "Suffle:97",
+    "IsLoginDelay:123",
+    "GetLoginDelay:137"
+   ],
+   "n_funcs": 5,
+   "modules": [
+    "ServerCommandParser",
+    "ServerStateChecker",
+    "_winreg",
+    "app",
+    "constInfo",
+    "dbg",
+    "exception",
+    "ime",
+    "localeInfo",
+    "musicInfo",
+    "net",
+    "os",
+    "serverInfo",
+    "snd",
+    "systemSetting",
+    "time",
+    "ui",
+    "uiCommon",
+    "uiScriptLocale",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "wndMgr.GetScreenHeight",
+     4
+    ],
+    [
+     "wndMgr.GetScreenWidth",
+     3
+    ],
+    [
+     "net.SetServerInfo",
+     3
+    ],
+    [
+     "app.SetGuildMarkPath",
+     2
+    ],
+    [
+     "net.SetAccountConnectorHandler",
+     2
+    ],
+    [
+     "snd.PlaySound",
+     2
+    ],
+    [
+     "net.Disconnect",
+     2
+    ],
+    [
+     "net.SetMarkServer",
+     2
+    ],
+    [
+     "app.ForceSetlocaleInfo",
+     2
+    ],
+    [
+     "app.GetRandom",
+     1
+    ],
+    [
+     "net.SetPhaseWindow",
+     1
+    ],
+    [
+     "net.ClearPhaseWindow",
+     1
+    ],
+    [
+     "snd.SetMusicVolume",
+     1
+    ],
+    [
+     "snd.FadeInMusic",
+     1
+    ],
+    [
+     "snd.SetSoundVolume",
+     1
+    ]
+   ]
+  },
+  "introLogo.py": {
+   "lines": 154,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "localeInfo",
+    "net",
+    "snd",
+    "ui",
+    "uiScriptLocale",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "net.SetPhaseWindow",
+     2
+    ],
+    [
+     "app.OnLogoClose",
+     2
+    ],
+    [
+     "app.SetGuildMarkPath",
+     1
+    ],
+    [
+     "wndMgr.GetScreenWidth",
+     1
+    ],
+    [
+     "wndMgr.GetScreenHeight",
+     1
+    ],
+    [
+     "app.ShowCursor",
+     1
+    ],
+    [
+     "app.HideCursor",
+     1
+    ],
+    [
+     "app.OnLogoUpdate",
+     1
+    ],
+    [
+     "app.OnLogoRender",
+     1
+    ],
+    [
+     "app.OnLogoOpen",
+     1
+    ]
+   ]
+  },
+  "introSelect.py": {
+   "lines": 1494,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "chat",
+    "chr",
+    "consoleModule",
+    "dbg",
+    "exception",
+    "grp",
+    "interfaceModule",
+    "localeInfo",
+    "math",
+    "musicInfo",
+    "net",
+    "networkModule",
+    "player",
+    "playerSettingModule",
+    "snd",
+    "systemSetting",
+    "ui",
+    "uiAffectShower",
+    "uiCharacter",
+    "uiCommon",
+    "uiInventory",
+    "uiMapNameShower",
+    "uiPlayerGauge",
+    "uiScriptLocale",
+    "uiTarget",
+    "uiTaskBar",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "net.GetAccountCharacterSlotDataInteger",
+     19
+    ],
+    [
+     "chr.DeleteInstance",
+     5
+    ],
+    [
+     "chr.SelectInstance",
+     4
+    ],
+    [
+     "net.GetAccountCharacterSlotDataString",
+     3
+    ],
+    [
+     "app.SetCenterPosition",
+     2
+    ],
+    [
+     "app.SetCamera",
+     2
+    ],
+    [
+     "net.SetPhaseWindow",
+     2
+    ],
+    [
+     "chr.HasInstance",
+     2
+    ],
+    [
+     "chr.PushOnceMotion",
+     2
+    ],
+    [
+     "net.SendDestroyCharacterPacket",
+     2
+    ],
+    [
+     "grp.ClearDepthBuffer",
+     1
+    ],
+    [
+     "grp.SetGameRenderState",
+     1
+    ],
+    [
+     "grp.PushState",
+     1
+    ],
+    [
+     "grp.SetOmniLight",
+     1
+    ],
+    [
+     "wndMgr.GetScreenWidth",
+     1
+    ]
+   ]
+  },
+  "itembasma.py": {
+   "lines": 289,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "background",
+    "chat",
+    "chr",
+    "interfacemodule",
+    "locale",
+    "net",
+    "os",
+    "player",
+    "thread",
+    "time",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "net.SendRefinePacket",
+     2
+    ]
+   ]
+  },
+  "itemcreator.py": {
+   "lines": 1467,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "background",
+    "dbg",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "item.SelectItem",
+     12
+    ],
+    [
+     "chat.AppendChat",
+     12
+    ],
+    [
+     "item.GetItemName",
+     11
+    ],
+    [
+     "item.GetIconImageFileName",
+     8
+    ],
+    [
+     "player.SetItemAttribute",
+     5
+    ],
+    [
+     "player.SetItemMetinSocket",
+     3
+    ],
+    [
+     "app.Abort",
+     3
+    ],
+    [
+     "grp.GenerateColor",
+     2
+    ],
+    [
+     "item.GetLimit",
+     2
+    ],
+    [
+     "player.GetStatus",
+     2
+    ],
+    [
+     "player.isItem",
+     2
+    ],
+    [
+     "player.GetItemIndex",
+     1
+    ],
+    [
+     "item.GetItemSize",
+     1
+    ],
+    [
+     "player.SetItemData",
+     1
+    ]
+   ]
+  },
+  "kagb-multihack.py": {
+   "lines": 2750,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "chat",
+    "chatm2g",
+    "chr",
+    "dbg",
+    "m2netm2g",
+    "net",
+    "player",
+    "playerm2g2",
+    "time",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "player.SetSingleDIKKeyState",
+     40
+    ],
+    [
+     "chr.SelectInstance",
+     29
+    ],
+    [
+     "chr.SetPixelPosition",
+     23
+    ],
+    [
+     "net.SendItemUsePacket",
+     15
+    ],
+    [
+     "player.GetMainCharacterIndex",
+     13
+    ],
+    [
+     "player.RequestUseLocalQuickSlot",
+     8
+    ],
+    [
+     "player.GetMainCharacterPosition",
+     8
+    ],
+    [
+     "player.GetCharacterDistance",
+     7
+    ],
+    [
+     "chr.GetPixelPosition",
+     6
+    ],
+    [
+     "player.GetStatus",
+     6
+    ],
+    [
+     "player.SetAttackKeyState",
+     6
+    ],
+    [
+     "player.GetItemIndex",
+     5
+    ],
+    [
+     "chr.GetNameByVID",
+     5
+    ],
+    [
+     "chr.MoveToDestPosition",
+     4
+    ],
+    [
+     "net.SendChatPacket",
+     4
+    ]
+   ]
+  },
+  "kickhack.py": {
+   "lines": 537,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "chat",
+    "chr",
+    "dbg",
+    "net",
+    "player",
+    "textTail",
+    "time",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "player.GetTargetVID",
+     2
+    ],
+    [
+     "chr.GetNameByVID",
+     2
+    ],
+    [
+     "net.SendWhisperPacket",
+     1
+    ]
+   ]
+  },
+  "localeInfo.py": {
+   "lines": 1108,
+   "top_funcs": [
+    "LoadLocaleData:61",
+    "mapping:67",
+    "SNA:71",
+    "SA:81",
+    "LoadLocaleFile:91",
+    "GetAuxiliaryWordType:235",
+    "CutMoneyString:277",
+    "SecondToDHM:329",
+    "SecondToHM:377",
+    "GetAlignmentTitleName:421",
+    "GetLetterImageName:995",
+    "GetLetterOpenImageName:999",
+    "GetLetterCloseImageName:1003",
+    "DO_YOU_SELL_ITEM:1009",
+    "DO_YOU_BUY_ITEM:1021",
+    "REFINE_FAILURE_CAN_NOT_ATTACH:1033",
+    "REFINE_FAILURE_NO_SOCKET:1039",
+    "REFINE_FAILURE_NO_GOLD_SOCKET:1045",
+    "HOW_MANY_ITEM_DO_YOU_DROP:1051",
+    "FISHING_NOTIFY:1063",
+    "FISHING_SUCCESS:1075",
+    "NumberToMoneyString:1087",
+    "NumberToSecondaryCoinString:1099"
+   ],
+   "n_funcs": 23,
+   "modules": [
+    "app",
+    "constInfo",
+    "dbg"
+   ],
+   "api_calls_top": [
+    [
+     "app.GetLocalePath",
+     4
+    ],
+    [
+     "app.LoadLocaleData",
+     1
+    ],
+    [
+     "app.Abort",
+     1
+    ]
+   ]
+  },
+  "mesajbot.py": {
+   "lines": 375,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "background",
+    "m2kmod",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "chat.AppendChat",
+     1
+    ]
+   ]
+  },
+  "metinbulucu.py": {
+   "lines": 894,
+   "top_funcs": [
+    "GetTmpTeleport:713",
+    "DivideToFloat:735",
+    "GuiParser:753"
+   ],
+   "n_funcs": 3,
+   "modules": [
+    "app",
+    "chat",
+    "chr",
+    "dbg",
+    "math",
+    "player",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "player.GetMainCharacterPosition",
+     2
+    ],
+    [
+     "chr.SetPixelPosition",
+     2
+    ],
+    [
+     "player.SetSingleDIKKeyState",
+     2
+    ],
+    [
+     "chr.GetPixelPosition",
+     1
+    ],
+    [
+     "chr.GetNameByVID",
+     1
+    ],
+    [
+     "chat.AppendChat",
+     1
+    ],
+    [
+     "player.GetMainCharacterIndex",
+     1
+    ],
+    [
+     "chr.MoveToDestPosition",
+     1
+    ]
+   ]
+  },
+  "mhswitu_-_Kopya__2_.py": {
+   "lines": 23,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "player"
+   ],
+   "api_calls_top": [
+    [
+     "player.GetStatus",
+     3
+    ],
+    [
+     "player.GetMainCharacterPosition",
+     2
+    ],
+    [
+     "net.SendChatPacket",
+     2
+    ],
+    [
+     "background.GlobalPositionToLocalPosition",
+     1
+    ],
+    [
+     "background.GlobalPositionToMapInfo",
+     1
+    ]
+   ]
+  },
+  "miniMap.py": {
+   "lines": 328,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [],
+   "api_calls_top": []
+  },
+  "moblock.py": {
+   "lines": 111,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "chat",
+    "chr",
+    "chrmgr",
+    "net",
+    "player",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "chr.GetInstanceType",
+     2
+    ],
+    [
+     "chat.AppendChat",
+     2
+    ],
+    [
+     "chr.GetPixelPosition",
+     2
+    ],
+    [
+     "player.GetMainCharacterIndex",
+     1
+    ],
+    [
+     "player.GetMainCharacterPosition",
+     1
+    ]
+   ]
+  },
+  "moblock_-_orj.py": {
+   "lines": 103,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "chr",
+    "net",
+    "player",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "player.GetMainCharacterIndex",
+     1
+    ],
+    [
+     "player.GetMainCharacterPosition",
+     1
+    ],
+    [
+     "chr.GetInstanceType",
+     1
+    ],
+    [
+     "chr.SelectInstance",
+     1
+    ],
+    [
+     "chr.SetPixelPosition",
+     1
+    ]
+   ]
+  },
+  "modhack.py": {
+   "lines": 1362,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app"
+   ],
+   "api_calls_top": [
+    [
+     "player.GetStatus",
+     12
+    ],
+    [
+     "player.GetCharacterDistance",
+     5
+    ],
+    [
+     "player.SetAttackKeyState",
+     4
+    ],
+    [
+     "player.GetMainCharacterPosition",
+     4
+    ],
+    [
+     "player.SetSingleDIKKeyState",
+     4
+    ],
+    [
+     "player.SetTarget",
+     3
+    ],
+    [
+     "player.GetMainCharacterIndex",
+     3
+    ],
+    [
+     "net.SendChatPacket",
+     3
+    ],
+    [
+     "player.GetItemIndex",
+     3
+    ],
+    [
+     "chr.GetPixelPosition",
+     3
+    ],
+    [
+     "player.GetTargetVID",
+     2
+    ],
+    [
+     "player.IsMountingHorse",
+     2
+    ],
+    [
+     "app.GetRandom",
+     2
+    ],
+    [
+     "net.SendItemUsePacket",
+     2
+    ],
+    [
+     "chr.MoveToDestPosition",
+     2
+    ]
+   ]
+  },
+  "mouseModule.py": {
+   "lines": 798,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "dbg",
+    "grp",
+    "grpImage",
+    "grpText",
+    "item",
+    "localeInfo",
+    "player",
+    "skill",
+    "sys",
+    "systemSetting",
+    "ui",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "item.SelectItem",
+     2
+    ],
+    [
+     "item.GetIconInstance",
+     2
+    ],
+    [
+     "item.GetItemSize",
+     2
+    ],
+    [
+     "player.GetSkillGrade",
+     2
+    ],
+    [
+     "skill.GetIconInstanceNew",
+     2
+    ],
+    [
+     "player.GetEmotionIconImage",
+     2
+    ],
+    [
+     "wndMgr.AttachIcon",
+     2
+    ],
+    [
+     "app.IsShowCursor",
+     2
+    ],
+    [
+     "app.SetCursor",
+     1
+    ],
+    [
+     "player.GetGlobalQuickSlot",
+     1
+    ],
+    [
+     "player.GetItemIndex",
+     1
+    ],
+    [
+     "player.GetSkillIndex",
+     1
+    ],
+    [
+     "item.DeleteIconInstance",
+     1
+    ],
+    [
+     "skill.DeleteIconInstance",
+     1
+    ],
+    [
+     "wndMgr.SetAttachingFlag",
+     1
+    ]
+   ]
+  },
+  "multihack.py": {
+   "lines": 6210,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "background",
+    "chat",
+    "chr",
+    "chrmgr",
+    "dbg",
+    "grp",
+    "interfacemodule",
+    "item",
+    "locale",
+    "mouseModule",
+    "net",
+    "os",
+    "player",
+    "shop",
+    "textTail",
+    "time",
+    "ui",
+    "uiToolTip",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "item.SelectItem",
+     84
+    ],
+    [
+     "chat.AppendChat",
+     63
+    ],
+    [
+     "item.GetItemType",
+     59
+    ],
+    [
+     "item.GetIconImageFileName",
+     56
+    ],
+    [
+     "net.SendItemUsePacket",
+     29
+    ],
+    [
+     "player.GetItemIndex",
+     28
+    ],
+    [
+     "player.GetStatus",
+     4
+    ],
+    [
+     "player.SetAttackKeyState",
+     2
+    ],
+    [
+     "player.PickCloseItem",
+     1
+    ],
+    [
+     "net.SendChatPacket",
+     1
+    ]
+   ]
+  },
+  "multihack2.py": {
+   "lines": 688,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "Rest",
+    "Restdrp",
+    "app",
+    "background",
+    "chat",
+    "chr",
+    "chrmgr",
+    "constInfo",
+    "dbg",
+    "effect",
+    "exchange",
+    "fly",
+    "game",
+    "grp",
+    "guild",
+    "imp",
+    "interfacemodule",
+    "item",
+    "locale",
+    "messenger",
+    "net",
+    "os",
+    "pack",
+    "player",
+    "playerSettingModule",
+    "quest",
+    "shop",
+    "skill",
+    "snd",
+    "systemSetting",
+    "textTail",
+    "time",
+    "ui",
+    "uiCommon",
+    "uiPhaseCurtain",
+    "uiRestart",
+    "uiTip",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "chat.AppendChat",
+     12
+    ],
+    [
+     "chr.SetMoveSpeed",
+     4
+    ],
+    [
+     "player.GetStatus",
+     3
+    ],
+    [
+     "chr.SetAttackSpeed",
+     2
+    ],
+    [
+     "chr.Revive",
+     1
+    ]
+   ]
+  },
+  "multihack3.py": {
+   "lines": 364,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "background",
+    "chat",
+    "chr",
+    "chrmgr",
+    "constInfo",
+    "dbg",
+    "effect",
+    "exchange",
+    "fly",
+    "grp",
+    "guild",
+    "item",
+    "locale",
+    "messenger",
+    "net",
+    "os",
+    "player",
+    "quest",
+    "skill",
+    "snd",
+    "systemSetting",
+    "textTail",
+    "time",
+    "ui",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "chat.AppendChat",
+     4
+    ],
+    [
+     "wndMgr.GetScreenWidth",
+     2
+    ],
+    [
+     "wndMgr.GetScreenHeight",
+     2
+    ],
+    [
+     "player.SetAttackKeyState",
+     2
+    ],
+    [
+     "net.SendGoldDropPacketNew",
+     1
+    ],
+    [
+     "player.PickCloseItem",
+     1
+    ],
+    [
+     "player.GetItemIndex",
+     1
+    ],
+    [
+     "net.SendItemUsePacket",
+     1
+    ],
+    [
+     "player.HidePlayer",
+     1
+    ]
+   ]
+  },
+  "multihack4.py": {
+   "lines": 1839,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "chat",
+    "chr",
+    "chrmgr",
+    "dbg",
+    "net",
+    "player",
+    "sys",
+    "time",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "player.SetSingleDIKKeyState",
+     48
+    ],
+    [
+     "chat.AppendChat",
+     32
+    ],
+    [
+     "chr.SetPixelPosition",
+     24
+    ],
+    [
+     "player.GetStatus",
+     20
+    ],
+    [
+     "player.GetMainCharacterPosition",
+     17
+    ],
+    [
+     "player.GetItemIndex",
+     7
+    ],
+    [
+     "player.GetMoney",
+     6
+    ],
+    [
+     "net.SendChatPacket",
+     5
+    ],
+    [
+     "net.SendItemUsePacket",
+     3
+    ],
+    [
+     "player.SetAttackKeyState",
+     2
+    ],
+    [
+     "player.PickCloseItem",
+     1
+    ],
+    [
+     "player.GetName",
+     1
+    ],
+    [
+     "chr.SetAttackSpeed",
+     1
+    ]
+   ]
+  },
+  "musicInfo.py": {
+   "lines": 58,
+   "top_funcs": [
+    "SaveLastPlayFieldMusic:15",
+    "LoadLastPlayFieldMusic:37"
+   ],
+   "n_funcs": 2,
+   "modules": [],
+   "api_calls_top": []
+  },
+  "mypy.py": {
+   "lines": 1893,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "_winreg",
+    "app",
+    "background",
+    "chat",
+    "chr",
+    "chrmgr",
+    "dbg",
+    "math",
+    "net",
+    "player",
+    "serverInfo",
+    "time",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "app.IsPressed",
+     9
+    ],
+    [
+     "player.GetStatus",
+     7
+    ],
+    [
+     "chr.GetInstanceType",
+     5
+    ],
+    [
+     "background.GetCurrentMapName",
+     2
+    ],
+    [
+     "player.GetMainCharacterIndex",
+     2
+    ],
+    [
+     "player.GetMainCharacterPosition",
+     2
+    ],
+    [
+     "net.GetMainActorVID",
+     1
+    ],
+    [
+     "net.SetPacketSequenceMode",
+     1
+    ],
+    [
+     "net.SetLoginInfo",
+     1
+    ],
+    [
+     "net.ConnectToAccountServer",
+     1
+    ],
+    [
+     "net.ConnectTCP",
+     1
+    ],
+    [
+     "net.DirectEnter",
+     1
+    ],
+    [
+     "net.SendItemUsePacket",
+     1
+    ],
+    [
+     "net.SendRefinePacket",
+     1
+    ],
+    [
+     "net.SendChatPacket",
+     1
+    ]
+   ]
+  },
+  "networkModule.py": {
+   "lines": 568,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "background",
+    "chr",
+    "chrmgr",
+    "constInfo",
+    "dbg",
+    "exception",
+    "game",
+    "introCreate",
+    "introEmpire",
+    "introLoading",
+    "introLogin",
+    "introLogo",
+    "introSelect",
+    "localeInfo",
+    "net",
+    "player",
+    "playerSettingModule",
+    "snd",
+    "ui",
+    "uiPhaseCurtain"
+   ],
+   "api_calls_top": [
+    [
+     "net.Disconnect",
+     2
+    ],
+    [
+     "net.SetHandler",
+     1
+    ],
+    [
+     "net.SetTCPRecvBufferSize",
+     1
+    ],
+    [
+     "net.SetTCPSendBufferSize",
+     1
+    ],
+    [
+     "net.SetUDPRecvBufferSize",
+     1
+    ],
+    [
+     "app.Exit",
+     1
+    ],
+    [
+     "game.GameWindow",
+     1
+    ],
+    [
+     "net.ConnectToAccountServer",
+     1
+    ],
+    [
+     "net.ConnectTCP",
+     1
+    ],
+    [
+     "net.ConnectUDP",
+     1
+    ],
+    [
+     "net.SetLoginInfo",
+     1
+    ]
+   ]
+  },
+  "okcuhack.py": {
+   "lines": 168,
+   "top_funcs": [
+    "oo:13",
+    "jaja:137"
+   ],
+   "n_funcs": 2,
+   "modules": [
+    "chrmgr",
+    "dbg",
+    "net"
+   ],
+   "api_calls_top": [
+    [
+     "net.SendChatPacket",
+     4
+    ]
+   ]
+  },
+  "pack.py": {
+   "lines": 0,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [],
+   "api_calls_top": []
+  },
+  "padmak.py": {
+   "lines": 492,
+   "top_funcs": [
+    "GuiParser:421"
+   ],
+   "n_funcs": 1,
+   "modules": [
+    "app",
+    "background",
+    "chat",
+    "chr",
+    "chrmgr",
+    "event",
+    "exception",
+    "game",
+    "grp",
+    "item",
+    "math",
+    "miniMap",
+    "net",
+    "nonplayer",
+    "os",
+    "player",
+    "serverInfo",
+    "shop",
+    "skill",
+    "snd",
+    "time",
+    "ui",
+    "uiCommon",
+    "uiminimap"
+   ],
+   "api_calls_top": [
+    [
+     "chat.AppendChat",
+     8
+    ],
+    [
+     "item.GetItemName",
+     4
+    ],
+    [
+     "player.GetTargetVID",
+     3
+    ],
+    [
+     "item.SelectItem",
+     3
+    ],
+    [
+     "app.GetTime",
+     3
+    ],
+    [
+     "player.GetItemIndex",
+     2
+    ],
+    [
+     "event.SelectAnswer",
+     2
+    ],
+    [
+     "net.SendShopBuyPacket",
+     1
+    ],
+    [
+     "net.SendGiveItemPacket",
+     1
+    ],
+    [
+     "net.SendQuestInputStringPacket",
+     1
+    ]
+   ]
+  },
+  "pasha37-levelbot.py": {
+   "lines": 9511,
+   "top_funcs": [
+    "AnswerMinimizedWhisper:8227",
+    "ActivateMinimizedWhisper:8281",
+    "AskCleverbot:8445",
+    "GetVidList:8927",
+    "GetPickUpList:8933",
+    "GetPickUpListNames:8939",
+    "GetPrivateMessages:8945",
+    "GetPositiveValue:8951",
+    "IsMobAlive:9057",
+    "IsBetween:9121",
+    "GuiParser:9143",
+    "IsDivideAble:9211",
+    "DivideToFloat:9223",
+    "GetDegree:9235",
+    "GetTmpTeleport:9253",
+    "ConvertToDegrees:9273",
+    "GetDistance:9279",
+    "GetCurrentMapSize:9291",
+    "GetClass:9339",
+    "NewSkillsEnable:9363",
+    "HookedSetHPTargetBoard:9383",
+    "HookSetHPTargetBoard:9395",
+    "UnHookSetHPTargetBoard:9403",
+    "HookedOnRecvWhisper:9415",
+    "HookOnRecvWhisper:9447",
+    "UnHookHookOnRecvWhisper:9455",
+    "HookOpenTargetBoard:9465",
+    "HookedOpenTargetBoard:9473",
+    "UnHookOpenTargetBoard:9487"
+   ],
+   "n_funcs": 29,
+   "modules": [
+    "ServerInfo",
+    "api",
+    "app",
+    "background",
+    "chat",
+    "chr",
+    "chrmgr",
+    "event",
+    "exception",
+    "game",
+    "grp",
+    "item",
+    "m2BotLib",
+    "m2botlibpadmak",
+    "math",
+    "md5",
+    "miniMap",
+    "net",
+    "nonplayer",
+    "os",
+    "player",
+    "re",
+    "shop",
+    "skill",
+    "snd",
+    "thread",
+    "time",
+    "ui",
+    "uiCommon",
+    "uiminimap"
+   ],
+   "api_calls_top": [
+    [
+     "chat.AppendChat",
+     154
+    ],
+    [
+     "item.SelectItem",
+     42
+    ],
+    [
+     "app.GetTime",
+     38
+    ],
+    [
+     "item.GetItemName",
+     34
+    ],
+    [
+     "player.GetItemIndex",
+     31
+    ],
+    [
+     "net.SendItemUsePacket",
+     19
+    ],
+    [
+     "chr.GetNameByVID",
+     12
+    ],
+    [
+     "item.GetIconImageFileName",
+     12
+    ],
+    [
+     "player.GetStatus",
+     12
+    ],
+    [
+     "player.GetItemCountByVnum",
+     12
+    ],
+    [
+     "net.SendChatPacket",
+     10
+    ],
+    [
+     "player.SetAttackKeyState",
+     10
+    ],
+    [
+     "app.GetGlobalTimeStamp",
+     10
+    ],
+    [
+     "chr.GetInstanceType",
+     9
+    ],
+    [
+     "wndMgr.GetScreenWidth",
+     9
+    ]
+   ]
+  },
+  "pickupstealer.py": {
+   "lines": 919,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "background",
+    "chat",
+    "chr",
+    "dbg",
+    "item",
+    "net",
+    "player",
+    "textTail",
+    "thread",
+    "time",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "chat.AppendChat",
+     3
+    ],
+    [
+     "player.GetMainCharacterPosition",
+     3
+    ],
+    [
+     "chr.Revive",
+     2
+    ],
+    [
+     "player.SetSingleDIKKeyState",
+     2
+    ],
+    [
+     "net.SendChatPacket",
+     1
+    ],
+    [
+     "chr.SetMoveSpeed",
+     1
+    ],
+    [
+     "chr.PushOnceMotion",
+     1
+    ],
+    [
+     "background.LoadMap",
+     1
+    ],
+    [
+     "background.GetCurrentMapName",
+     1
+    ],
+    [
+     "net.LogOutGame",
+     1
+    ]
+   ]
+  },
+  "playerSettingModule.py": {
+   "lines": 1188,
+   "top_funcs": [
+    "DefineSkillIndexDict:113",
+    "RegisterSkill:215",
+    "RegisterSkillAt:297",
+    "SetGeneralMotions:333",
+    "SetIntroMotions:367",
+    "__InitData:385",
+    "__LoadGameSound:399",
+    "__LoadGameEffect:413",
+    "__LoadGameWarrior:429",
+    "__LoadGameAssassin:443",
+    "__LoadGameSura:457",
+    "__LoadGameShaman:471",
+    "__LoadGameSkill:485",
+    "__LoadGameEnemy:499",
+    "__LoadGameNPC:505",
+    "LoadGuildBuildingList:571",
+    "LoadGameData:815",
+    "SetMovingNPC:849",
+    "SetOneNPC:875",
+    "SetGuard:895",
+    "SetWarp:963",
+    "SetDoor:985",
+    "SetGuildBuilding:1003",
+    "OLD_SetNPC:1019"
+   ],
+   "n_funcs": 24,
+   "modules": [
+    "app",
+    "chr",
+    "chrmgr",
+    "constInfo",
+    "cpsm",
+    "dbg",
+    "effect",
+    "emotion",
+    "exception",
+    "item",
+    "localeInfo",
+    "net",
+    "player",
+    "skill",
+    "uiGuild"
+   ],
+   "api_calls_top": [
+    [
+     "player.SetSkill",
+     6
+    ],
+    [
+     "app.Abort",
+     3
+    ],
+    [
+     "chr.RaceToJob",
+     2
+    ],
+    [
+     "app.OpenTextFile",
+     1
+    ],
+    [
+     "app.GetTextFileLineCount",
+     1
+    ],
+    [
+     "app.GetTextFileLine",
+     1
+    ],
+    [
+     "app.CloseTextFile",
+     1
+    ]
+   ]
+  },
+  "rajmultihack.py": {
+   "lines": 2750,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "chat",
+    "chatm2g",
+    "chr",
+    "dbg",
+    "m2netm2g",
+    "net",
+    "player",
+    "playerm2g2",
+    "time",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "player.SetSingleDIKKeyState",
+     40
+    ],
+    [
+     "chr.SelectInstance",
+     29
+    ],
+    [
+     "chr.SetPixelPosition",
+     23
+    ],
+    [
+     "net.SendItemUsePacket",
+     15
+    ],
+    [
+     "player.GetMainCharacterIndex",
+     13
+    ],
+    [
+     "player.RequestUseLocalQuickSlot",
+     8
+    ],
+    [
+     "player.GetMainCharacterPosition",
+     8
+    ],
+    [
+     "player.GetCharacterDistance",
+     7
+    ],
+    [
+     "chr.GetPixelPosition",
+     6
+    ],
+    [
+     "player.GetStatus",
+     6
+    ],
+    [
+     "player.SetAttackKeyState",
+     6
+    ],
+    [
+     "player.GetItemIndex",
+     5
+    ],
+    [
+     "chr.GetNameByVID",
+     5
+    ],
+    [
+     "chr.MoveToDestPosition",
+     4
+    ],
+    [
+     "net.SendChatPacket",
+     4
+    ]
+   ]
+  },
+  "range.py": {
+   "lines": 83,
+   "top_funcs": [
+    "GetPositiveValue:7"
+   ],
+   "n_funcs": 1,
+   "modules": [],
+   "api_calls_top": [
+    [
+     "chat.AppendChat",
+     7
+    ],
+    [
+     "player.GetMainCharacterPosition",
+     2
+    ],
+    [
+     "chr.SetPixelPosition",
+     2
+    ],
+    [
+     "chr.MoveToDestPosition",
+     2
+    ],
+    [
+     "player.GetMainCharacterIndex",
+     2
+    ],
+    [
+     "item.GetItemName",
+     2
+    ],
+    [
+     "item.SelectItem",
+     2
+    ],
+    [
+     "net.SendItemPickUpPacket",
+     2
+    ],
+    [
+     "background.GlobalPositionToLocalPosition",
+     1
+    ],
+    [
+     "background.GlobalPositionToMapInfo",
+     1
+    ]
+   ]
+  },
+  "serverInfo.py": {
+   "lines": 95,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [],
+   "api_calls_top": []
+  },
+  "shopcreator.py": {
+   "lines": 396,
+   "top_funcs": [
+    "GetPrice:371",
+    "SavePrice:381"
+   ],
+   "n_funcs": 2,
+   "modules": [
+    "chatm2g",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "chat.AppendChat",
+     2
+    ],
+    [
+     "player.GetItemIndex",
+     2
+    ],
+    [
+     "player.GetItemMetinSocket",
+     2
+    ],
+    [
+     "player.GetItemCount",
+     1
+    ],
+    [
+     "item.SelectItem",
+     1
+    ],
+    [
+     "item.GetItemName",
+     1
+    ],
+    [
+     "skill.GetSkillName",
+     1
+    ],
+    [
+     "app.OpenTextFile",
+     1
+    ],
+    [
+     "app.GetTextFileLine",
+     1
+    ]
+   ]
+  },
+  "skillhack.py": {
+   "lines": 458,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "background",
+    "chat",
+    "chr",
+    "chrmgr",
+    "constInfo",
+    "dbg",
+    "game",
+    "imp",
+    "locale",
+    "net",
+    "os",
+    "player",
+    "playerSettingModule",
+    "snd",
+    "time",
+    "ui",
+    "uiPhaseCurtain",
+    "uiRestart"
+   ],
+   "api_calls_top": [
+    [
+     "chat.AppendChat",
+     2
+    ],
+    [
+     "chr.testSetComboType",
+     1
+    ],
+    [
+     "player.ToggleCoolTime",
+     1
+    ]
+   ]
+  },
+  "spambot.py": {
+   "lines": 310,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "CY_FIX",
+    "chatm2g",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "chat.AppendChat",
+     3
+    ]
+   ]
+  },
+  "stringCommander.py": {
+   "lines": 130,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "_weakref"
+   ],
+   "api_calls_top": []
+  },
+  "teleport1.py": {
+   "lines": 251,
+   "top_funcs": [
+    "GetCurrentMapSize:211",
+    "GetTmpTeleport:235",
+    "DivideToFloat:245"
+   ],
+   "n_funcs": 3,
+   "modules": [
+    "CY_FIX",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "background.GetCurrentMapName",
+     4
+    ],
+    [
+     "wndMgr.GetMousePosition",
+     2
+    ],
+    [
+     "chr.SetPixelPosition",
+     2
+    ],
+    [
+     "player.SetSingleDIKKeyState",
+     2
+    ],
+    [
+     "player.GetMainCharacterPosition",
+     2
+    ],
+    [
+     "app.IsPressed",
+     1
+    ],
+    [
+     "player.GetMainCharacterIndex",
+     1
+    ],
+    [
+     "chr.MoveToDestPosition",
+     1
+    ],
+    [
+     "chat.AppendChat",
+     1
+    ]
+   ]
+  },
+  "teleport2.py": {
+   "lines": 232,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "chat",
+    "time",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "player.SetSingleDIKKeyState",
+     5
+    ],
+    [
+     "chr.SetPixelPosition",
+     4
+    ],
+    [
+     "chr.SetLoopMotion",
+     2
+    ],
+    [
+     "chr.GetPixelPosition",
+     2
+    ],
+    [
+     "background.GetCurrentMapName",
+     1
+    ],
+    [
+     "player.GetMainCharacterPosition",
+     1
+    ],
+    [
+     "chr.SelectInstance",
+     1
+    ],
+    [
+     "player.GetMainCharacterIndex",
+     1
+    ],
+    [
+     "chr.HasInstance",
+     1
+    ]
+   ]
+  },
+  "teleport3.py": {
+   "lines": 300,
+   "top_funcs": [
+    "GetCurrentMapSize:212",
+    "GetTmpTeleport:236",
+    "DivideToFloat:246"
+   ],
+   "n_funcs": 3,
+   "modules": [
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "background.GetCurrentMapName",
+     4
+    ],
+    [
+     "wndMgr.GetMousePosition",
+     2
+    ],
+    [
+     "chr.SetPixelPosition",
+     2
+    ],
+    [
+     "player.SetSingleDIKKeyState",
+     2
+    ],
+    [
+     "player.GetMainCharacterPosition",
+     2
+    ],
+    [
+     "app.IsPressed",
+     1
+    ],
+    [
+     "player.GetMainCharacterIndex",
+     1
+    ],
+    [
+     "chr.MoveToDestPosition",
+     1
+    ],
+    [
+     "app.OpenTextFile",
+     1
+    ],
+    [
+     "app.GetTextFileLineCount",
+     1
+    ],
+    [
+     "app.GetTextFileLine",
+     1
+    ]
+   ]
+  },
+  "teleport4.py": {
+   "lines": 619,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "background",
+    "chat",
+    "chr",
+    "exception",
+    "ime",
+    "locale",
+    "miniMap",
+    "net",
+    "player",
+    "sys",
+    "ui",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "player.SetSingleDIKKeyState",
+     16
+    ],
+    [
+     "chr.SetPixelPosition",
+     8
+    ],
+    [
+     "chat.AppendChat",
+     6
+    ],
+    [
+     "player.GetMainCharacterPosition",
+     6
+    ],
+    [
+     "app.GetTime",
+     2
+    ],
+    [
+     "app.IsPressed",
+     2
+    ],
+    [
+     "wndMgr.GetMousePosition",
+     2
+    ],
+    [
+     "background.GlobalPositionToMapInfo",
+     1
+    ],
+    [
+     "wndMgr.GetScreenWidth",
+     1
+    ]
+   ]
+  },
+  "ui.py": {
+   "lines": 7186,
+   "top_funcs": [
+    "RegisterCandidateWindowClass:49",
+    "RegisterToolTipWindow:53",
+    "MakeSlotBar:7065",
+    "MakeImageBox:7081",
+    "MakeTextLine:7097",
+    "MakeButton:7117",
+    "RenderRoundBox:7139",
+    "GenerateColor:7161",
+    "EnablePaste:7173",
+    "GetHyperlink:7179"
+   ],
+   "n_funcs": 10,
+   "modules": [
+    "_weakref",
+    "app",
+    "chr",
+    "dbg",
+    "errno",
+    "exception",
+    "exceptions",
+    "grp",
+    "guild",
+    "ime",
+    "item",
+    "localeInfo",
+    "os",
+    "player",
+    "skill",
+    "snd",
+    "sys",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "grp.RenderLine",
+     16
+    ],
+    [
+     "grp.SetColor",
+     14
+    ],
+    [
+     "grp.GenerateColor",
+     9
+    ],
+    [
+     "grp.RenderBar",
+     8
+    ],
+    [
+     "wndMgr.ClearSlot",
+     5
+    ],
+    [
+     "wndMgr.SetSlot",
+     5
+    ],
+    [
+     "wndMgr.SetHorizontalAlign",
+     4
+    ],
+    [
+     "wndMgr.SetColor",
+     4
+    ],
+    [
+     "wndMgr.SetWindowHorizontalAlign",
+     3
+    ],
+    [
+     "wndMgr.SetWindowVerticalAlign",
+     3
+    ],
+    [
+     "wndMgr.SetVerticalAlign",
+     3
+    ],
+    [
+     "snd.PlaySound",
+     3
+    ],
+    [
+     "wndMgr.SetSlotBaseImage",
+     3
+    ],
+    [
+     "wndMgr.SetSlotCount",
+     3
+    ],
+    [
+     "wndMgr.SetParent",
+     2
+    ]
+   ]
+  },
+  "uiCharacter.py": {
+   "lines": 2432,
+   "top_funcs": [
+    "unsigned32:67"
+   ],
+   "n_funcs": 1,
+   "modules": [
+    "app",
+    "chat",
+    "chr",
+    "colorInfo",
+    "constInfo",
+    "dbg",
+    "emotion",
+    "event",
+    "exception",
+    "localeInfo",
+    "mouseModule",
+    "net",
+    "player",
+    "playerSettingModule",
+    "quest",
+    "skill",
+    "snd",
+    "ui",
+    "uiScriptLocale",
+    "uiToolTip",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "player.GetStatus",
+     35
+    ],
+    [
+     "player.GetSkillIndex",
+     6
+    ],
+    [
+     "player.GetSkillGrade",
+     6
+    ],
+    [
+     "net.SendChatPacket",
+     4
+    ],
+    [
+     "player.GetSkillLevel",
+     4
+    ],
+    [
+     "skill.CanUseSkill",
+     3
+    ],
+    [
+     "skill.GetSkillType",
+     3
+    ],
+    [
+     "quest.GetQuestCount",
+     3
+    ],
+    [
+     "net.GetMainActorSkillGroup",
+     3
+    ],
+    [
+     "app.GetDefaultCodePage",
+     2
+    ],
+    [
+     "app.IsPressed",
+     2
+    ],
+    [
+     "player.RequestAddToEmptyLocalQuickSlot",
+     2
+    ],
+    [
+     "net.GetMainActorRace",
+     2
+    ],
+    [
+     "net.GetMainActorEmpire",
+     2
+    ],
+    [
+     "chr.RaceToJob",
+     2
+    ]
+   ]
+  },
+  "uiChat.py": {
+   "lines": 2252,
+   "top_funcs": [
+    "InsertChatInputSetWindow:37",
+    "RefreshChatMode:43",
+    "DestroyChatInputSetWindow:49"
+   ],
+   "n_funcs": 3,
+   "modules": [
+    "app",
+    "chat",
+    "chr",
+    "colorInfo",
+    "constInfo",
+    "exception",
+    "grp",
+    "ime",
+    "localeInfo",
+    "net",
+    "player",
+    "systemSetting",
+    "ui",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "grp.SetColor",
+     8
+    ],
+    [
+     "grp.GenerateColor",
+     7
+    ],
+    [
+     "chat.SetPosition",
+     5
+    ],
+    [
+     "grp.RenderBar",
+     4
+    ],
+    [
+     "app.SetCursor",
+     4
+    ],
+    [
+     "chat.SetBoardState",
+     4
+    ],
+    [
+     "chat.SetHeight",
+     4
+    ],
+    [
+     "chat.GetVisibleLineCount",
+     4
+    ],
+    [
+     "grp.RenderRoundBox",
+     3
+    ],
+    [
+     "chat.Update",
+     3
+    ],
+    [
+     "chat.Render",
+     3
+    ],
+    [
+     "chat.EnableChatMode",
+     3
+    ],
+    [
+     "grp.RenderLine",
+     3
+    ],
+    [
+     "chat.AppendChat",
+     2
+    ],
+    [
+     "app.GetTime",
+     2
+    ]
+   ]
+  },
+  "uiCommon.py": {
+   "lines": 852,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "exception",
+    "ime",
+    "localeInfo",
+    "ui",
+    "uiScriptLocale"
+   ],
+   "api_calls_top": [
+    [
+     "app.GetTime",
+     2
+    ]
+   ]
+  },
+  "uiDragonSoul.py": {
+   "lines": 2756,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "_weakref",
+    "app",
+    "chat",
+    "constInfo",
+    "dbg",
+    "dragon_soul_refine_settings",
+    "exception",
+    "grp",
+    "ime",
+    "item",
+    "localeInfo",
+    "mouseModule",
+    "net",
+    "player",
+    "snd",
+    "sys",
+    "ui",
+    "uiAttachMetin",
+    "uiCommon",
+    "uiInventory",
+    "uiPickMoney",
+    "uiPrivateShopBuilder",
+    "uiRefine",
+    "uiScriptLocale"
+   ],
+   "api_calls_top": [
+    [
+     "player.GetItemIndex",
+     16
+    ],
+    [
+     "item.SelectItem",
+     10
+    ],
+    [
+     "player.GetItemCount",
+     10
+    ],
+    [
+     "player.GetItemMetinSocket",
+     9
+    ],
+    [
+     "item.GetItemSubType",
+     7
+    ],
+    [
+     "chat.AppendChat",
+     7
+    ],
+    [
+     "player.SlotTypeToInvenType",
+     5
+    ],
+    [
+     "snd.PlaySound",
+     4
+    ],
+    [
+     "player.SetItemCount",
+     4
+    ],
+    [
+     "item.GetLimit",
+     3
+    ],
+    [
+     "net.SendChatPacket",
+     3
+    ],
+    [
+     "item.GetItemType",
+     3
+    ],
+    [
+     "app.GetGlobalTimeStamp",
+     2
+    ],
+    [
+     "net.SendItemUseToItemPacket",
+     2
+    ],
+    [
+     "app.GetCursor",
+     2
+    ]
+   ]
+  },
+  "uiExchange.py": {
+   "lines": 438,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "chat",
+    "exchange",
+    "item",
+    "localeInfo",
+    "mouseModule",
+    "net",
+    "player",
+    "ui",
+    "uiPickMoney",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "player.GetMainCharacterPosition",
+     3
+    ],
+    [
+     "net.SendExchangeElkAddPacket",
+     3
+    ],
+    [
+     "chat.AppendChat",
+     2
+    ],
+    [
+     "wndMgr.OnceIgnoreMouseLeftButtonUpEvent",
+     1
+    ],
+    [
+     "player.GetElk",
+     1
+    ],
+    [
+     "net.SendExchangeAcceptPacket",
+     1
+    ],
+    [
+     "player.SlotTypeToInvenType",
+     1
+    ],
+    [
+     "player.GetItemIndex",
+     1
+    ],
+    [
+     "item.SelectItem",
+     1
+    ],
+    [
+     "item.IsAntiFlag",
+     1
+    ],
+    [
+     "net.SendExchangeItemAddPacket",
+     1
+    ],
+    [
+     "net.SendExchangeExitPacket",
+     1
+    ]
+   ]
+  },
+  "uiGameOption.py": {
+   "lines": 964,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "chat",
+    "chrmgr",
+    "constInfo",
+    "exception",
+    "interfaceModule",
+    "localeInfo",
+    "net",
+    "player",
+    "snd",
+    "systemSetting",
+    "ui",
+    "uiCommon",
+    "uiPrivateShopBuilder"
+   ],
+   "api_calls_top": [
+    [
+     "net.SendChatPacket",
+     13
+    ],
+    [
+     "chat.AppendChat",
+     6
+    ],
+    [
+     "player.GetStatus",
+     1
+    ],
+    [
+     "player.GetPKMode",
+     1
+    ],
+    [
+     "player.GetGuildID",
+     1
+    ],
+    [
+     "player.HasMobilePhoneNumber",
+     1
+    ]
+   ]
+  },
+  "uiGuild.py": {
+   "lines": 5594,
+   "top_funcs": [
+    "NumberToMoneyString:53",
+    "GetGVGKey:79",
+    "unsigned32:87"
+   ],
+   "n_funcs": 3,
+   "modules": [
+    "_weakref",
+    "app",
+    "background",
+    "chr",
+    "chrmgr",
+    "constInfo",
+    "dbg",
+    "debugInfo",
+    "exception",
+    "grp",
+    "grpText",
+    "guild",
+    "localeInfo",
+    "miniMap",
+    "mouseModule",
+    "net",
+    "player",
+    "playerSettingModule",
+    "skill",
+    "systemSetting",
+    "ui",
+    "uiCommon",
+    "uiPickMoney",
+    "uiScriptLocale",
+    "uiToolTip",
+    "uiUploadMark",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "net.SendChatPacket",
+     8
+    ],
+    [
+     "chr.SelectInstance",
+     6
+    ],
+    [
+     "chr.SetInstanceType",
+     6
+    ],
+    [
+     "background.GetHeight",
+     5
+    ],
+    [
+     "player.GetSkillIndex",
+     4
+    ],
+    [
+     "chr.CreateInstance",
+     4
+    ],
+    [
+     "chr.SetVirtualID",
+     4
+    ],
+    [
+     "chr.SetRace",
+     4
+    ],
+    [
+     "chr.SetArmor",
+     4
+    ],
+    [
+     "chr.Refresh",
+     4
+    ],
+    [
+     "chr.SetLoopMotion",
+     4
+    ],
+    [
+     "chr.SetBlendRenderMode",
+     4
+    ],
+    [
+     "app.IsEnableTestServerFlag",
+     4
+    ],
+    [
+     "player.SetMouseState",
+     4
+    ],
+    [
+     "chr.SetRotationAll",
+     3
+    ]
+   ]
+  },
+  "uiHelp.py": {
+   "lines": 272,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "exception",
+    "grp",
+    "localeInfo",
+    "mouseModule",
+    "systemSetting",
+    "ui",
+    "uiScriptLocale",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "app.SetMouseHandler",
+     1
+    ],
+    [
+     "app.SetHairColorEnable",
+     1
+    ],
+    [
+     "wndMgr.SetMouseHandler",
+     1
+    ],
+    [
+     "wndMgr.SetScreenSize",
+     1
+    ],
+    [
+     "app.Create",
+     1
+    ],
+    [
+     "app.Loop",
+     1
+    ]
+   ]
+  },
+  "uiInventory.py": {
+   "lines": 2504,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "chat",
+    "constInfo",
+    "exception",
+    "grp",
+    "ime",
+    "item",
+    "localeInfo",
+    "mouseModule",
+    "net",
+    "player",
+    "sash",
+    "snd",
+    "ui",
+    "uiAttachMetin",
+    "uiCommon",
+    "uiPickMoney",
+    "uiPrivateShopBuilder",
+    "uiRefine",
+    "uiScriptLocale",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "player.GetItemIndex",
+     19
+    ],
+    [
+     "chat.AppendChat",
+     17
+    ],
+    [
+     "item.SelectItem",
+     12
+    ],
+    [
+     "snd.PlaySound",
+     9
+    ],
+    [
+     "item.GetItemType",
+     7
+    ],
+    [
+     "player.GetItemCount",
+     6
+    ],
+    [
+     "player.GetItemMetinSocket",
+     6
+    ],
+    [
+     "item.IsRefineScroll",
+     4
+    ],
+    [
+     "item.GetItemSubType",
+     4
+    ],
+    [
+     "player.IsEquipmentSlot",
+     3
+    ],
+    [
+     "net.SendItemUseToItemPacket",
+     3
+    ],
+    [
+     "app.IsPressed",
+     3
+    ],
+    [
+     "item.IsMetin",
+     3
+    ],
+    [
+     "item.IsDetachScroll",
+     3
+    ],
+    [
+     "item.IsKey",
+     3
+    ]
+   ]
+  },
+  "uiMessenger.py": {
+   "lines": 1700,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "_weakref",
+    "app",
+    "constInfo",
+    "exception",
+    "grp",
+    "guild",
+    "localeInfo",
+    "messenger",
+    "net",
+    "ui",
+    "uiCommon",
+    "uiGameOption",
+    "uiToolTip"
+   ],
+   "api_calls_top": [
+    [
+     "app.SetCursor",
+     2
+    ],
+    [
+     "grp.SetColor",
+     1
+    ],
+    [
+     "grp.GenerateColor",
+     1
+    ],
+    [
+     "grp.RenderBar",
+     1
+    ],
+    [
+     "net.SendMessengerRemovePacket",
+     1
+    ],
+    [
+     "net.SendGuildUseSkillPacket",
+     1
+    ],
+    [
+     "net.SendGuildRemoveMemberPacket",
+     1
+    ],
+    [
+     "item.SetPosition",
+     1
+    ],
+    [
+     "item.GetStepWidth",
+     1
+    ],
+    [
+     "item.SetTop",
+     1
+    ],
+    [
+     "item.Show",
+     1
+    ],
+    [
+     "net.SendChatPacket",
+     1
+    ],
+    [
+     "net.SendMobileMessagePacket",
+     1
+    ],
+    [
+     "net.SendMessengerAddByNamePacket",
+     1
+    ],
+    [
+     "item.SetName",
+     1
+    ]
+   ]
+  },
+  "uiMiniMap.py": {
+   "lines": 960,
+   "top_funcs": [
+    "__RegisterMiniMapColor:373"
+   ],
+   "n_funcs": 1,
+   "modules": [
+    "app",
+    "background",
+    "chr",
+    "colorInfo",
+    "constInfo",
+    "exception",
+    "localeInfo",
+    "miniMap",
+    "net",
+    "player",
+    "time",
+    "ui",
+    "uiScriptLocale",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "wndMgr.GetMousePosition",
+     3
+    ],
+    [
+     "wndMgr.GetScreenWidth",
+     2
+    ],
+    [
+     "app.GetGlobalTimeStamp",
+     2
+    ],
+    [
+     "app.GetDefaultCodePage",
+     1
+    ],
+    [
+     "wndMgr.GetScreenHeight",
+     1
+    ],
+    [
+     "chr.IsGameMaster",
+     1
+    ],
+    [
+     "player.GetMainCharacterIndex",
+     1
+    ],
+    [
+     "net.SendChatPacket",
+     1
+    ],
+    [
+     "net.GetServerInfo",
+     1
+    ],
+    [
+     "player.GetMainCharacterPosition",
+     1
+    ]
+   ]
+  },
+  "uiOption.py": {
+   "lines": 838,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "background",
+    "chat",
+    "chr",
+    "chrmgr",
+    "constInfo",
+    "exception",
+    "grp",
+    "localeInfo",
+    "mouseModule",
+    "net",
+    "player",
+    "snd",
+    "systemSetting",
+    "ui",
+    "uiCommon",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "net.SendChatPacket",
+     12
+    ],
+    [
+     "chat.AppendChat",
+     6
+    ],
+    [
+     "player.GetStatus",
+     1
+    ],
+    [
+     "player.GetPKMode",
+     1
+    ],
+    [
+     "player.GetGuildID",
+     1
+    ],
+    [
+     "snd.SetMusicVolume",
+     1
+    ],
+    [
+     "net.GetFieldMusicVolume",
+     1
+    ],
+    [
+     "snd.SetSoundVolumef",
+     1
+    ],
+    [
+     "player.HasMobilePhoneNumber",
+     1
+    ],
+    [
+     "wndMgr.SetOutlineFlag",
+     1
+    ],
+    [
+     "app.SetMouseHandler",
+     1
+    ],
+    [
+     "app.SetHairColorEnable",
+     1
+    ],
+    [
+     "wndMgr.SetMouseHandler",
+     1
+    ],
+    [
+     "wndMgr.SetScreenSize",
+     1
+    ],
+    [
+     "app.Create",
+     1
+    ]
+   ]
+  },
+  "uiPhaseCurtain.py": {
+   "lines": 144,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "grp",
+    "ui",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "wndMgr.GetScreenWidth",
+     1
+    ],
+    [
+     "wndMgr.GetScreenHeight",
+     1
+    ],
+    [
+     "grp.GenerateColor",
+     1
+    ]
+   ]
+  },
+  "uiQuest.py": {
+   "lines": 1802,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "_weakref",
+    "app",
+    "dbg",
+    "event",
+    "grp",
+    "grpImage",
+    "grpText",
+    "item",
+    "localeInfo",
+    "net",
+    "time",
+    "ui",
+    "uiToolTip",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "wndMgr.GetScreenHeight",
+     8
+    ],
+    [
+     "event.AddEventSetLocalYPosition",
+     8
+    ],
+    [
+     "event.SelectAnswer",
+     6
+    ],
+    [
+     "wndMgr.GetScreenWidth",
+     4
+    ],
+    [
+     "event.UpdateEventSet",
+     4
+    ],
+    [
+     "app.GetTime",
+     3
+    ],
+    [
+     "event.GetEventSetLocalYPosition",
+     3
+    ],
+    [
+     "event.SetRestrictedCount",
+     2
+    ],
+    [
+     "event.SetEventSetWidth",
+     2
+    ],
+    [
+     "event.GetLineCount",
+     2
+    ],
+    [
+     "grp.GenerateColor",
+     1
+    ],
+    [
+     "event.EndEventProcess",
+     1
+    ],
+    [
+     "grp.SetColor",
+     1
+    ],
+    [
+     "grp.RenderBar",
+     1
+    ],
+    [
+     "event.RenderEventSet",
+     1
+    ]
+   ]
+  },
+  "uiScriptLocale.py": {
+   "lines": 172,
+   "top_funcs": [
+    "LoadLocaleFile:25"
+   ],
+   "n_funcs": 1,
+   "modules": [
+    "app",
+    "dbg"
+   ],
+   "api_calls_top": [
+    [
+     "app.GetLocaleServiceName",
+     3
+    ],
+    [
+     "app.GetLocalePath",
+     2
+    ],
+    [
+     "app.GetDefaultCodePage",
+     1
+    ],
+    [
+     "app.Abort",
+     1
+    ]
+   ]
+  },
+  "uiShop.py": {
+   "lines": 744,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "chat",
+    "chr",
+    "exception",
+    "item",
+    "localeInfo",
+    "mouseModule",
+    "net",
+    "player",
+    "shop",
+    "snd",
+    "ui",
+    "uiCommon",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "chat.AppendChat",
+     3
+    ],
+    [
+     "app.SetCursor",
+     3
+    ],
+    [
+     "snd.PlaySound",
+     3
+    ],
+    [
+     "player.GetMainCharacterPosition",
+     2
+    ],
+    [
+     "item.SelectItem",
+     2
+    ],
+    [
+     "item.GetItemName",
+     2
+    ],
+    [
+     "net.SendShopBuyPacket",
+     2
+    ],
+    [
+     "wndMgr.RefreshSlot",
+     1
+    ],
+    [
+     "chr.IsNPC",
+     1
+    ],
+    [
+     "player.IsMainCharacterIndex",
+     1
+    ],
+    [
+     "net.SendShopEndPacket",
+     1
+    ],
+    [
+     "net.SendChatPacket",
+     1
+    ],
+    [
+     "player.GetItemIndex",
+     1
+    ],
+    [
+     "item.IsAntiFlag",
+     1
+    ],
+    [
+     "player.IsValuableItem",
+     1
+    ]
+   ]
+  },
+  "uiSystem.py": {
+   "lines": 322,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "background",
+    "chr",
+    "constInfo",
+    "grp",
+    "localeInfo",
+    "mouseModule",
+    "net",
+    "networkModule",
+    "player",
+    "systemSetting",
+    "ui",
+    "uiGameOption",
+    "uiOption",
+    "uiScriptLocale",
+    "uiSystemOption",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "net.ExitGame",
+     1
+    ],
+    [
+     "net.LogOutGame",
+     1
+    ],
+    [
+     "net.ExitApplication",
+     1
+    ],
+    [
+     "net.SendChatPacket",
+     1
+    ],
+    [
+     "wndMgr.SetOutlineFlag",
+     1
+    ],
+    [
+     "app.SetMouseHandler",
+     1
+    ],
+    [
+     "app.SetHairColorEnable",
+     1
+    ],
+    [
+     "wndMgr.SetMouseHandler",
+     1
+    ],
+    [
+     "wndMgr.SetScreenSize",
+     1
+    ],
+    [
+     "app.Create",
+     1
+    ],
+    [
+     "app.Loop",
+     1
+    ]
+   ]
+  },
+  "uiTarget.py": {
+   "lines": 920,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "chr",
+    "constInfo",
+    "guild",
+    "localeInfo",
+    "messenger",
+    "net",
+    "nonplayer",
+    "player",
+    "ui",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "net.SendChatPacket",
+     8
+    ],
+    [
+     "player.IsPartyLeader",
+     3
+    ],
+    [
+     "player.GetMainCharacterIndex",
+     3
+    ],
+    [
+     "player.IsSameEmpire",
+     2
+    ],
+    [
+     "chr.GetInstanceType",
+     2
+    ],
+    [
+     "player.IsObserverMode",
+     2
+    ],
+    [
+     "player.IsPartyMember",
+     2
+    ],
+    [
+     "player.GetCharacterDistance",
+     2
+    ],
+    [
+     "player.ClearTarget",
+     1
+    ],
+    [
+     "player.IsMainCharacterIndex",
+     1
+    ],
+    [
+     "player.IsMountingHorse",
+     1
+    ],
+    [
+     "wndMgr.GetScreenWidth",
+     1
+    ],
+    [
+     "chr.GetNameByVID",
+     1
+    ],
+    [
+     "nonplayer.GetLevelByVID",
+     1
+    ],
+    [
+     "nonplayer.GetGradeByVID",
+     1
+    ]
+   ]
+  },
+  "uiTip.py": {
+   "lines": 654,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "dbg",
+    "grp",
+    "mouseModule",
+    "systemSetting",
+    "ui",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "app.GetTime",
+     9
+    ],
+    [
+     "grp.GenerateColor",
+     2
+    ],
+    [
+     "wndMgr.GetScreenWidth",
+     2
+    ],
+    [
+     "app.IsVisibleNotice",
+     2
+    ],
+    [
+     "grp.CreateTextBar",
+     1
+    ],
+    [
+     "grp.DestroyTextBar",
+     1
+    ],
+    [
+     "grp.ClearTextBar",
+     1
+    ],
+    [
+     "grp.SetTextBarClipRect",
+     1
+    ],
+    [
+     "grp.TextBarTextOut",
+     1
+    ],
+    [
+     "grp.RenderTextBar",
+     1
+    ],
+    [
+     "grp.TextBarSetTextColor",
+     1
+    ],
+    [
+     "grp.TextBarGetTextExtent",
+     1
+    ],
+    [
+     "grp.CreateBigTextBar",
+     1
+    ],
+    [
+     "wndMgr.SetOutlineFlag",
+     1
+    ],
+    [
+     "app.SetMouseHandler",
+     1
+    ]
+   ]
+  },
+  "uiWhisper.py": {
+   "lines": 646,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "chat",
+    "chr",
+    "exception",
+    "grpText",
+    "ime",
+    "localeInfo",
+    "net",
+    "player",
+    "ui",
+    "uiTest"
+   ],
+   "api_calls_top": [
+    [
+     "app.SetCursor",
+     2
+    ],
+    [
+     "chat.SetWhisperBoxSize",
+     2
+    ],
+    [
+     "net.SendChatPacket",
+     2
+    ],
+    [
+     "chat.RenderWhisper",
+     1
+    ],
+    [
+     "chat.CreateWhisper",
+     1
+    ],
+    [
+     "app.IsDevStage",
+     1
+    ],
+    [
+     "chat.ClearWhisper",
+     1
+    ],
+    [
+     "chat.SetWhisperPosition",
+     1
+    ],
+    [
+     "net.IsInsultIn",
+     1
+    ],
+    [
+     "chat.AppendChat",
+     1
+    ],
+    [
+     "net.SendWhisperPacket",
+     1
+    ],
+    [
+     "chat.AppendWhisper",
+     1
+    ],
+    [
+     "player.GetName",
+     1
+    ],
+    [
+     "app.IsPressed",
+     1
+    ],
+    [
+     "chat.GetLinkFromHyperlink",
+     1
+    ]
+   ]
+  },
+  "ui__UIScript_AtlasWindow.py.py": {
+   "lines": 62,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__UIScript_BeltInventoryWindow.py.py": {
+   "lines": 208,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "item",
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__UIScript_CharacterWindow.py.py": {
+   "lines": 1576,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__UIScript_CubeResultWindow.py.py": {
+   "lines": 196,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__UIScript_CubeWindow.py.py": {
+   "lines": 822,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "localeInfo",
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__UIScript_HelpWindow.py.py": {
+   "lines": 554,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__UIScript_LoadingWindow.py.py": {
+   "lines": 64,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__UIScript_MallWindow.py.py": {
+   "lines": 132,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__UIScript_MiniMap.py.py": {
+   "lines": 328,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [],
+   "api_calls_top": []
+  },
+  "ui__UIScript_MouseButtonWindow.py.py": {
+   "lines": 123,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__UIScript_PickMoneyDialog.py.py": {
+   "lines": 197,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__UIScript_PopupDialog.py.py": {
+   "lines": 119,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__UIScript_PrivateShopBuilder.py.py": {
+   "lines": 259,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__UIScript_RightMouseButtonWindow.py.py": {
+   "lines": 123,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__UIScript_SafeboxWindow.py.py": {
+   "lines": 162,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__UIScript_exchangedialog.py.py": {
+   "lines": 433,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__UIScript_gamewindow.py.py": {
+   "lines": 296,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__UIScript_restartdialog.py.py": {
+   "lines": 126,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__UIScript_selectitemwindow.py.py": {
+   "lines": 164,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__UIScript_shopdialog.py.py": {
+   "lines": 247,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__locale_ro_ui_EnergyBar.py.py": {
+   "lines": 140,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__locale_ro_ui_InventoryWindow.py.py": {
+   "lines": 620,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "item",
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__locale_ro_ui_SystemDialog.py.py": {
+   "lines": 276,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__locale_ro_ui_TaskBar.py.py": {
+   "lines": 499,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__locale_ro_ui_WebWindow.py.py": {
+   "lines": 104,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__locale_ro_ui_dragonsoulrefinewindow.py.py": {
+   "lines": 434,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__locale_ro_ui_dragonsoulwindow.py.py": {
+   "lines": 852,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__locale_ro_ui_giftbox.py.py": {
+   "lines": 81,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__locale_ro_ui_passworddialog.py.py": {
+   "lines": 330,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__locale_ro_ui_selectcharacterwindow.py.py": {
+   "lines": 1042,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__uiscript_attachstonedialog.py.py": {
+   "lines": 247,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__uiscript_changepassworddialog.py.py": {
+   "lines": 385,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__uiscript_questiondialog.py.py": {
+   "lines": 153,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__uiscript_questiondialog2.py.py": {
+   "lines": 179,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__uiscript_refinedialog.py.py": {
+   "lines": 209,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__uiscript_sash_absorbwindow.py.py": {
+   "lines": 215,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "item",
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "ui__uiscript_sash_combinewindow.py.py": {
+   "lines": 279,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "item",
+    "uiScriptLocale"
+   ],
+   "api_calls_top": []
+  },
+  "uisidebar.py": {
+   "lines": 138,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "ui",
+    "wndMgr"
+   ],
+   "api_calls_top": [
+    [
+     "wndMgr.GetScreenHeight",
+     3
+    ]
+   ]
+  },
+  "vbmultihack.py": {
+   "lines": 355,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "background",
+    "chat",
+    "chr",
+    "locale",
+    "player",
+    "time",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "chat.AppendChat",
+     7
+    ],
+    [
+     "chr.SetAttackSpeed",
+     2
+    ],
+    [
+     "player.GetStatus",
+     2
+    ],
+    [
+     "chr.SetMoveSpeed",
+     2
+    ]
+   ]
+  },
+  "vidscanner.py": {
+   "lines": 310,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "chr",
+    "player",
+    "thread"
+   ],
+   "api_calls_top": [
+    [
+     "chat.AppendChat",
+     2
+    ],
+    [
+     "chr.GetNameByVID",
+     2
+    ],
+    [
+     "chat.post",
+     1
+    ],
+    [
+     "player.GetCharacterDistance",
+     1
+    ],
+    [
+     "player.GetMainCharacterIndex",
+     1
+    ],
+    [
+     "chr.SelectInstance",
+     1
+    ],
+    [
+     "chr.Show",
+     1
+    ],
+    [
+     "net.SendWhisperPacket",
+     1
+    ],
+    [
+     "app.GetRandom",
+     1
+    ]
+   ]
+  },
+  "yangbug.py": {
+   "lines": 460,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "chat",
+    "dbg",
+    "net",
+    "time",
+    "ui"
+   ],
+   "api_calls_top": [
+    [
+     "chat.AppendChat",
+     3
+    ],
+    [
+     "net.SendShopBuyPacket",
+     2
+    ],
+    [
+     "net.SendShopSellPacket",
+     2
+    ]
+   ]
+  },
+  "zoomhack.py": {
+   "lines": 350,
+   "top_funcs": [],
+   "n_funcs": 0,
+   "modules": [
+    "app",
+    "background",
+    "chat",
+    "chr",
+    "chrmgr",
+    "constInfo",
+    "dbg",
+    "game",
+    "imp",
+    "item",
+    "net",
+    "os",
+    "player",
+    "playerSettingModule",
+    "snd",
+    "time",
+    "ui",
+    "uiPhaseCurtain",
+    "uiRestart"
+   ],
+   "api_calls_top": [
+    [
+     "net.SendGoldDropPacketNew",
+     4
+    ],
+    [
+     "app.SetCameraMaxDistance",
+     2
+    ],
+    [
+     "app.SetMinFog",
+     2
+    ],
+    [
+     "player.ToggleCoolTime",
+     2
+    ],
+    [
+     "background.EnableSnow",
+     2
+    ]
+   ]
+  }
+ },
+ "cpp_bindings": {
+  "PythonApplicationModule.cpp": {
+   "n": 109,
+   "names": [
+    "IsDevStage",
+    "IsTestStage",
+    "IsLiveStage",
+    "SetTextTailLivingTime",
+    "EnablePerformanceTime",
+    "SetHairColorEnable",
+    "SetArmorSpecularEnable",
+    "SetWeaponSpecularEnable",
+    "SetSkillEffectUpgradeEnable",
+    "SetTwoHandedWeaponAttSpeedDecreaseValue",
+    "SetRideHorseEnable",
+    "SetCameraMaxDistance",
+    "SetMinFog",
+    "SetFrameSkip",
+    "GetImageInfo",
+    "GetInfo",
+    "UpdateGame",
+    "RenderGame",
+    "Loop",
+    "Create",
+    "Process",
+    "Exit",
+    "Abort",
+    "SetMouseHandler",
+    "IsExistFile",
+    "GetFileList",
+    "SetCamera",
+    "GetCamera",
+    "GetCameraPitch",
+    "GetCameraRotation",
+    "GetTime",
+    "GetGlobalTime",
+    "GetGlobalTimeStamp",
+    "GetUpdateFPS",
+    "GetRenderFPS",
+    "RotateCamera",
+    "PitchCamera",
+    "ZoomCamera",
+    "MovieRotateCamera",
+    "MoviePitchCamera",
+    "MovieZoomCamera",
+    "MovieResetCamera",
+    "GetAvailableTextureMemory",
+    "GetRenderTime",
+    "GetUpdateTime",
+    "GetLoad",
+    "GetFaceSpeed",
+    "GetFaceCount",
+    "SetFPS",
+    "SetGlobalCenterPosition",
+    "SetCenterPosition",
+    "GetCursorPosition",
+    "GetRandom",
+    "RunPythonFile",
+    "IsWebPageMode",
+    "ShowWebPage",
+    "MoveWebPage",
+    "HideWebPage",
+    "IsPressed",
+    "SetCursor",
+    "GetCursor",
+    "ShowCursor",
+    "HideCursor",
+    "IsShowCursor",
+    "IsLiarCursorOn",
+    "SetSoftwareCursor",
+    "SetHardwareCursor",
+    "SetConnectData",
+    "GetConnectData",
+    "GetRotatingDirection",
+    "GetDegreeDifference",
+    "Sleep",
+    "SetDefaultFontName",
+    "SetGuildSymbolPath",
+    "EnableSpecialCameraMode",
+    "SetCameraSpeed",
+    "SaveCameraSetting",
+    "LoadCameraSetting",
+    "SetDefaultCamera",
+    "SetCameraSetting",
+    "SetSightRange",
+    "IsFileExist",
+    "OpenTextFile",
+    "CloseTextFile",
+    "GetTextFileLineCount",
+    "GetTextFileLine",
+    "GetLocaleServiceName",
+    "GetLocaleName",
+    "GetLocalePath",
+    "ForceSetLocale",
+    "LoadLocaleAddr",
+    "LoadLocaleData",
+    "SetCHEONMA",
+    "IsCHEONMA",
+    "GetDefaultCodePage",
+    "SetControlFP",
+    "SetSpecularSpeed",
+    "testGetAccumulationTime",
+    "testResetAccumulationTime",
+    "testSetSpecularColor",
+    "SetVisibleNotice",
+    "IsVisibleNotice",
+    "EnableTestServerFlag",
+    "IsEnableTestServerFlag",
+    "SetGuildMarkPath",
+    "OnLogoUpdate",
+    "OnLogoRender",
+    "OnLogoOpen",
+    "OnLogoClose"
+   ]
+  },
+  "PythonBackgroundModule.cpp": {
+   "n": 48,
+   "names": [
+    "IsSoftwareTiling",
+    "EnableSoftwareTiling",
+    "EnableSnow",
+    "GlobalPositionToLocalPosition",
+    "GlobalPositionToMapInfo",
+    "GetRenderShadowTime",
+    "LoadMap",
+    "Destroy",
+    "RegisterEnvironmentData",
+    "SetEnvironmentData",
+    "GetCurrentMapName",
+    "GetPickingPoint",
+    "BeginEnvironment",
+    "EndEnvironment",
+    "SetCharacterDirLight",
+    "SetBackgroundDirLight",
+    "Initialize",
+    "Update",
+    "Render",
+    "RenderPCBlocker",
+    "RenderCollision",
+    "RenderSky",
+    "RenderCloud",
+    "RenderWater",
+    "RenderEffect",
+    "RenderBeforeLensFlare",
+    "RenderAfterLensFlare",
+    "RenderCharacterShadowToTexture",
+    "RenderDungeon",
+    "GetHeight",
+    "SetShadowLevel",
+    "SetVisiblePart",
+    "GetShadowMapColor",
+    "SetSplatLimit",
+    "GetRenderedSplatNum",
+    "GetRenderedGraphicThingInstanceNum",
+    "SelectViewDistanceNum",
+    "SetViewDistanceSet",
+    "GetFarClip",
+    "GetDistanceSetInfo",
+    "SetBGLoading",
+    "SetRenderSort",
+    "SetTransparentTree",
+    "SetXMasTree",
+    "RegisterDungeonMapName",
+    "VisibleGuildArea",
+    "DisableGuildArea",
+    "WarpTest"
+   ]
+  },
+  "PythonCharacterManagerModule.cpp": {
+   "n": 38,
+   "names": [
+    "SetEmpireNameMode",
+    "GetVIDInfo",
+    "GetPickedVID",
+    "SetShapeModel",
+    "AppendShapeSkin",
+    "SetPathName",
+    "LoadRaceData",
+    "LoadLocalRaceData",
+    "CreateRace",
+    "SelectRace",
+    "RegisterAttachingBoneName",
+    "RegisterMotionMode",
+    "RegisterMotion",
+    "SetMotionRandomWeight",
+    "RegisterNormalAttack",
+    "ReserveComboAttack",
+    "RegisterComboAttack",
+    "ReserveComboAttackNew",
+    "RegisterComboAttackNew",
+    "RegisterMotionData",
+    "RegisterRaceName",
+    "RegisterRaceSrcName",
+    "RegisterCacheMotionData",
+    "SetAffect",
+    "SetEmoticon",
+    "IsPossibleEmoticon",
+    "RegisterEffect",
+    "RegisterCacheEffect",
+    "RegisterPointEffect",
+    "ShowPointEffect",
+    "ToggleDirectionLine",
+    "SetMovingSpeed",
+    "SetDustGap",
+    "SetHorseDustGap",
+    "RegisterTitleName",
+    "RegisterNameColor",
+    "RegisterTitleColor",
+    "RegisterGuildLeaderGradeName"
+   ]
+  },
+  "PythonCharacterModule.cpp": {
+   "n": 83,
+   "names": [
+    "DismountHorse",
+    "MountHorse",
+    "Destroy",
+    "Update",
+    "Deform",
+    "Render",
+    "RenderCollision",
+    "CreateInstance",
+    "DeleteInstance",
+    "DeleteInstanceByFade",
+    "SelectInstance",
+    "HasInstance",
+    "IsEnemy",
+    "IsNPC",
+    "IsGameMaster",
+    "IsPartyMember",
+    "Select",
+    "SetAddRenderMode",
+    "SetBlendRenderMode",
+    "Unselect",
+    "Hide",
+    "Show",
+    "Pick",
+    "PickAll",
+    "SetArmor",
+    "SetWeapon",
+    "ChangeShape",
+    "SetRace",
+    "SetHair",
+    "ChangeHair",
+    "SetVirtualID",
+    "SetNameString",
+    "SetInstanceType",
+    "SetPixelPosition",
+    "SetDirection",
+    "Refresh",
+    "Revive",
+    "Die",
+    "AttachEffectByID",
+    "AttachEffectByName",
+    "LookAt",
+    "SetMotionMode",
+    "SetLoopMotion",
+    "BlendLoopMotion",
+    "PushOnceMotion",
+    "PushLoopMotion",
+    "GetPixelPosition",
+    "SetRotation",
+    "SetRotationAll",
+    "BlendRotation",
+    "GetRotation",
+    "GetRace",
+    "GetName",
+    "GetNameByVID",
+    "GetGuildID",
+    "GetProjectPosition",
+    "GetVirtualNumber",
+    "GetInstanceType",
+    "GetBoundBoxOnlyXY",
+    "RaceToJob",
+    "RaceToSex",
+    "testGetPKData",
+    "FaintTest",
+    "SetMoveSpeed",
+    "SetAttackSpeed",
+    "WeaponTraceSetTexture",
+    "WeaponTraceUseAlpha",
+    "WeaponTraceUseTexture",
+    "MoveToDestPosition",
+    "testSetComboType",
+    "testSetAddRenderMode",
+    "testSetModulateRenderMode",
+    "testSetAddRenderModeRGB",
+    "testSetModulateRenderModeRGB",
+    "testSetSpecularRenderMode",
+    "testSetSpecularRenderMode2",
+    "testRestoreRenderMode",
+    "testSetRideMan",
+    "SetAcce",
+    "SetAura",
+    "SetScale",
+    "GetLevel",
+    "GetLevelByVID"
+   ]
+  },
+  "PythonChatModule.cpp": {
+   "n": 30,
+   "names": [
+    "SetChatColor",
+    "Clear",
+    "Close",
+    "CreateChatSet",
+    "Update",
+    "Render",
+    "SetBoardState",
+    "SetPosition",
+    "SetHeight",
+    "SetStep",
+    "ToggleChatMode",
+    "EnableChatMode",
+    "DisableChatMode",
+    "SetEndPos",
+    "GetLineCount",
+    "GetVisibleLineCount",
+    "GetLineStep",
+    "AppendChat",
+    "AppendChatWithDelay",
+    "ArrangeShowingChat",
+    "IgnoreCharacter",
+    "IsIgnoreCharacter",
+    "CreateWhisper",
+    "AppendWhisper",
+    "RenderWhisper",
+    "SetWhisperBoxSize",
+    "SetWhisperPosition",
+    "ClearWhisper",
+    "InitWhisper",
+    "GetLinkFromHyperlink"
+   ]
+  },
+  "PythonEffectModule.cpp": {
+   "n": 7,
+   "names": [
+    "RegisterEffect",
+    "CreateEffect",
+    "DeleteEffect",
+    "SetPosition",
+    "RegisterIndexedFlyData",
+    "Update",
+    "Render"
+   ]
+  },
+  "PythonExchangeModule.cpp": {
+   "n": 20,
+   "names": [
+    "InitTrading",
+    "isTrading",
+    "GetElkFromSelf",
+    "GetElkFromTarget",
+    "GetItemVnumFromSelf",
+    "GetItemVnumFromTarget",
+    "GetItemCountFromSelf",
+    "GetItemCountFromTarget",
+    "GetAcceptFromSelf",
+    "GetAcceptFromTarget",
+    "GetNameFromSelf",
+    "GetNameFromTarget",
+    "GetLevelFromSelf",
+    "GetLevelFromTarget",
+    "GetItemMetinSocketFromTarget",
+    "GetItemMetinSocketFromSelf",
+    "GetItemAttributeFromTarget",
+    "GetItemAttributeFromSelf",
+    "GetElkMode",
+    "SetElkMode"
+   ]
+  },
+  "PythonFlyModule.cpp": {
+   "n": 2,
+   "names": [
+    "Update",
+    "Render"
+   ]
+  },
+  "PythonGameEventManagerModule.cpp": {
+   "n": 1,
+   "names": [
+    "Update"
+   ]
+  },
+  "PythonIMEModule.cpp": {
+   "n": 33,
+   "names": [
+    "Enable",
+    "Disable",
+    "EnableCaptureInput",
+    "DisableCaptureInput",
+    "SetMax",
+    "SetUserMax",
+    "SetText",
+    "GetText",
+    "GetCodePage",
+    "GetCandidateCount",
+    "GetCandidate",
+    "GetCandidateSelection",
+    "GetReading",
+    "GetReadingError",
+    "EnableIME",
+    "DisableIME",
+    "GetInputMode",
+    "SetInputMode",
+    "SetNumberMode",
+    "SetStringMode",
+    "AddExceptKey",
+    "ClearExceptKey",
+    "MoveLeft",
+    "MoveRight",
+    "MoveHome",
+    "MoveEnd",
+    "SetCursorPosition",
+    "Delete",
+    "PasteString",
+    "PasteBackspace",
+    "PasteReturn",
+    "PasteTextFromClipBoard",
+    "EnablePaste"
+   ]
+  },
+  "PythonItemModule.cpp": {
+   "n": 45,
+   "names": [
+    "SetUseSoundFileName",
+    "SetDropSoundFileName",
+    "SelectItem",
+    "GetItemName",
+    "GetItemDescription",
+    "GetItemSummary",
+    "GetIconImage",
+    "GetIconImageFileName",
+    "GetItemSize",
+    "GetItemType",
+    "GetItemSubType",
+    "GetIBuyItemPrice",
+    "GetISellItemPrice",
+    "IsAntiFlag",
+    "IsFlag",
+    "IsWearableFlag",
+    "Is1GoldItem",
+    "GetLimit",
+    "GetAffect",
+    "GetValue",
+    "GetSocket",
+    "GetIconInstance",
+    "GetUseType",
+    "DeleteIconInstance",
+    "IsEquipmentVID",
+    "IsRefineScroll",
+    "IsDetachScroll",
+    "IsKey",
+    "IsMetin",
+    "CanAddToQuickSlotItem",
+    "Update",
+    "Render",
+    "CreateItem",
+    "DeleteItem",
+    "Pick",
+    "LoadItemTable",
+    "IsSealScroll",
+    "GetDefaultSealDate",
+    "GetUnlimitedSealDate",
+    "GetDSSetWeight",
+    "GetDSBasicApplyCount",
+    "GetDSBasicApplyValue",
+    "GetDSAdditionalApplyValue",
+    "IsWeddingItem",
+    "GetItemNameByVnum"
+   ]
+  },
+  "PythonMiniMapModule.cpp": {
+   "n": 27,
+   "names": [
+    "SetScale",
+    "ScaleUp",
+    "ScaleDown",
+    "SetMiniMapSize",
+    "SetCenterPosition",
+    "Destroy",
+    "Create",
+    "Update",
+    "Render",
+    "Show",
+    "Hide",
+    "isShow",
+    "GetInfo",
+    "LoadAtlas",
+    "UpdateAtlas",
+    "RenderAtlas",
+    "ShowAtlas",
+    "HideAtlas",
+    "isShowAtlas",
+    "IsAtlas",
+    "GetAtlasInfo",
+    "GetAtlasSize",
+    "AddWayPoint",
+    "RemoveWayPoint",
+    "RegisterAtlasWindow",
+    "UnregisterAtlasWindow",
+    "GetGuildAreaID"
+   ]
+  },
+  "PythonNetworkDatagramModule.cpp": {
+   "n": 2,
+   "names": [
+    "Enable",
+    "Disable"
+   ]
+  },
+  "PythonNetworkStreamModule.cpp": {
+   "n": 135,
+   "names": [
+    "GetBettingGuildWarValue",
+    "EnableChatInsultFilter",
+    "SetServerInfo",
+    "GetServerInfo",
+    "PreserveServerCommand",
+    "GetPreservedServerCommand",
+    "StartGame",
+    "Warp",
+    "IsTest",
+    "SetMarkServer",
+    "IsChatInsultIn",
+    "IsInsultIn",
+    "LoadInsultList",
+    "UploadMark",
+    "UploadSymbol",
+    "GetGuildID",
+    "GetEmpireID",
+    "GetMainActorVID",
+    "GetMainActorRace",
+    "GetMainActorEmpire",
+    "GetMainActorSkillGroup",
+    "GetAccountCharacterSlotDataInteger",
+    "GetAccountCharacterSlotDataString",
+    "GetFieldMusicFileName",
+    "GetFieldMusicVolume",
+    "ToggleGameDebugInfo",
+    "SendTargetInfoLoad",
+    "SetLoginInfo",
+    "SetPhaseWindow",
+    "ClearPhaseWindow",
+    "SetServerCommandParserWindow",
+    "SetAccountConnectorHandler",
+    "SetHandler",
+    "SetTCPRecvBufferSize",
+    "SetTCPSendBufferSize",
+    "SetUDPRecvBufferSize",
+    "DirectEnter",
+    "LogOutGame",
+    "ExitGame",
+    "ExitApplication",
+    "ConnectTCP",
+    "ConnectUDP",
+    "ConnectToAccountServer",
+    "SendLoginPacket",
+    "SendChinaMatrixCardPacket",
+    "SendRunupMatrixCardPacket",
+    "SendNEWCIBNPasspodAnswerPacket",
+    "SendSelectEmpirePacket",
+    "SendSelectCharacterPacket",
+    "SendChangeNamePacket",
+    "SendCreateCharacterPacket",
+    "SendDestroyCharacterPacket",
+    "SendEnterGamePacket",
+    "SendItemUsePacket",
+    "SendItemUseToItemPacket",
+    "SendItemDeletePacket",
+    "SendItemSellPacket",
+    "SendItemDropPacket",
+    "SendItemDropPacketNew",
+    "SendElkDropPacket",
+    "SendGoldDropPacketNew",
+    "SendItemMovePacket",
+    "SendItemPickUpPacket",
+    "SendGiveItemPacket",
+    "SetOfflinePhase",
+    "Disconnect",
+    "IsConnect",
+    "SendChatPacket",
+    "SendEmoticon",
+    "SendWhisperPacket",
+    "SendMobileMessagePacket",
+    "SendCharacterPositionPacket",
+    "SendShopEndPacket",
+    "SendShopBuyPacket",
+    "SendShopSellPacket",
+    "SendShopSellPacketNew",
+    "SendExchangeStartPacket",
+    "SendExchangeItemAddPacket",
+    "SendExchangeItemDelPacket",
+    "SendExchangeElkAddPacket",
+    "SendExchangeAcceptPacket",
+    "SendExchangeExitPacket",
+    "SendOnClickPacket",
+    "RegisterEmoticonString",
+    "SendMessengerAddByVIDPacket",
+    "SendMessengerAddByNamePacket",
+    "SendMessengerRemovePacket",
+    "SendPartyInvitePacket",
+    "SendPartyInviteAnswerPacket",
+    "SendPartyExitPacket",
+    "SendPartyRemovePacket",
+    "SendPartyRemovePacketPID",
+    "SendPartyRemovePacketVID",
+    "SendPartySetStatePacket",
+    "SendPartyUseSkillPacket",
+    "SendPartyParameterPacket",
+    "SendSafeboxSaveMoneyPacket",
+    "SendSafeboxWithdrawMoneyPacket",
+    "SendSafeboxCheckinPacket",
+    "SendSafeboxCheckoutPacket",
+    "SendSafeboxItemMovePacket",
+    "SendMallCheckoutPacket",
+    "SendAnswerMakeGuildPacket",
+    "SendQuestInputStringPacket",
+    "SendQuestConfirmPacket",
+    "SendGuildAddMemberPacket",
+    "SendGuildRemoveMemberPacket",
+    "SendGuildChangeGradeNamePacket",
+    "SendGuildChangeGradeAuthorityPacket",
+    "SendGuildOfferPacket",
+    "SendGuildPostCommentPacket",
+    "SendGuildDeleteCommentPacket",
+    "SendGuildRefreshCommentsPacket",
+    "SendGuildChangeMemberGradePacket",
+    "SendGuildUseSkillPacket",
+    "SendGuildChangeMemberGeneralPacket",
+    "SendGuildInviteAnswerPacket",
+    "SendGuildChargeGSPPacket",
+    "SendGuildDepositMoneyPacket",
+    "SendGuildWithdrawMoneyPacket",
+    "SendRequestRefineInfoPacket",
+    "SendRefinePacket",
+    "SendSelectItemPacket",
+    "SetPacketSequenceMode",
+    "SetEmpireLanguageMode",
+    "SetSkillGroupFake",
+    "SendGuildSymbol",
+    "DisconnectUploader",
+    "RecvGuildSymbol",
+    "RegisterErrorLog",
+    "GetLoginID",
+    "SendAuraRefineCheckIn",
+    "SendAuraRefineCheckOut",
+    "SendAuraRefineAccept",
+    "SendAuraRefineCancel"
+   ]
+  },
+  "PythonNonPlayerModule.cpp": {
+   "n": 21,
+   "names": [
+    "GetEventType",
+    "GetEventTypeByVID",
+    "GetLevelByVID",
+    "GetGradeByVID",
+    "GetMonsterName",
+    "GetRaceNumByVID",
+    "GetMonsterMaxHP",
+    "GetMonsterRaceFlag",
+    "GetMonsterLevel",
+    "GetMonsterDamage",
+    "GetMonsterExp",
+    "GetMonsterDamageMultiply",
+    "GetMonsterST",
+    "GetMonsterDX",
+    "IsMonsterStone",
+    "GetMobRegenCycle",
+    "GetMobRegenPercent",
+    "GetMobGoldMin",
+    "GetMobGoldMax",
+    "GetResist",
+    "LoadNonPlayerData"
+   ]
+  },
+  "PythonPackModule.cpp": {
+   "n": 2,
+   "names": [
+    "Exist",
+    "Get"
+   ]
+  },
+  "PythonPlayerModule.cpp": {
+   "n": 153,
+   "names": [
+    "GetAutoPotionInfo",
+    "SetAutoPotionInfo",
+    "PickCloseItem",
+    "SetGameWindow",
+    "RegisterEffect",
+    "RegisterCacheEffect",
+    "SetMouseState",
+    "SetMouseFunc",
+    "GetMouseFunc",
+    "SetMouseMiddleButtonState",
+    "SetMainCharacterIndex",
+    "GetMainCharacterIndex",
+    "GetMainCharacterName",
+    "GetMainCharacterPosition",
+    "IsMainCharacterIndex",
+    "CanAttackInstance",
+    "IsActingEmotion",
+    "IsPVPInstance",
+    "IsSameEmpire",
+    "IsChallengeInstance",
+    "IsRevengeInstance",
+    "IsCantFightInstance",
+    "GetCharacterDistance",
+    "IsInSafeArea",
+    "IsMountingHorse",
+    "IsObserverMode",
+    "ActEmotion",
+    "ShowPlayer",
+    "HidePlayer",
+    "ComboAttack",
+    "SetAutoCameraRotationSpeed",
+    "SetAttackKeyState",
+    "SetSingleDIKKeyState",
+    "EndKeyWalkingImmediately",
+    "StartMouseWalking",
+    "EndMouseWalking",
+    "ResetCameraRotation",
+    "SetQuickCameraMode",
+    "SetSkill",
+    "GetSkillIndex",
+    "GetSkillSlotIndex",
+    "GetSkillGrade",
+    "GetSkillLevel",
+    "GetSkillCurrentEfficientPercentage",
+    "GetSkillNextEfficientPercentage",
+    "ClickSkillSlot",
+    "ChangeCurrentSkillNumberOnly",
+    "ClearSkillDict",
+    "GetItemIndex",
+    "GetItemFlags",
+    "GetItemCount",
+    "GetItemCountByVnum",
+    "GetItemMetinSocket",
+    "GetItemAttribute",
+    "GetItemUnbindTime",
+    "GetISellItemPrice",
+    "MoveItem",
+    "SendClickItemPacket",
+    "GetName",
+    "GetJob",
+    "GetRace",
+    "GetPlayTime",
+    "SetPlayTime",
+    "IsSkillCoolTime",
+    "GetSkillCoolTime",
+    "IsSkillActive",
+    "UseGuildSkill",
+    "AffectIndexToSkillIndex",
+    "GetEXP",
+    "GetStatus",
+    "SetStatus",
+    "GetElk",
+    "GetMoney",
+    "GetGuildID",
+    "GetGuildName",
+    "GetAlignmentData",
+    "RequestAddLocalQuickSlot",
+    "RequestAddToEmptyLocalQuickSlot",
+    "RequestDeleteGlobalQuickSlot",
+    "RequestMoveGlobalQuickSlotToLocalQuickSlot",
+    "RequestUseLocalQuickSlot",
+    "LocalQuickSlotIndexToGlobalQuickSlotIndex",
+    "GetQuickPage",
+    "SetQuickPage",
+    "GetLocalQuickSlot",
+    "GetGlobalQuickSlot",
+    "RemoveQuickSlotByValue",
+    "isItem",
+    "IsEquipmentSlot",
+    "IsDSEquipmentSlot",
+    "IsCostumeSlot",
+    "IsValuableItem",
+    "IsOpenPrivateShop",
+    "IsBeltInventorySlot",
+    "IsEquippingBelt",
+    "IsAvailableBeltInventoryCell",
+    "GetItemGrade",
+    "CanRefine",
+    "CanDetach",
+    "CanUnlock",
+    "CanAttachMetin",
+    "IsRefineGradeScroll",
+    "ClearTarget",
+    "SetTarget",
+    "OpenCharacterMenu",
+    "Update",
+    "Render",
+    "Clear",
+    "IsPartyMember",
+    "IsPartyLeader",
+    "IsPartyLeaderByPID",
+    "GetPartyMemberHPPercentage",
+    "GetPartyMemberState",
+    "GetPartyMemberAffects",
+    "RemovePartyMember",
+    "ExitParty",
+    "GetPKMode",
+    "HasMobilePhoneNumber",
+    "RegisterEmotionIcon",
+    "GetEmotionIconImage",
+    "SetWeaponAttackBonusFlag",
+    "ToggleCoolTime",
+    "ToggleLevelLimit",
+    "GetTargetVID",
+    "SetItemData",
+    "SetItemMetinSocket",
+    "SetItemAttribute",
+    "SetItemCount",
+    "GetItemLink",
+    "SlotTypeToInvenType",
+    "SendDragonSoulRefine",
+    "CanSealItem",
+    "GetItemSealDate",
+    "GetItemUnSealLeftTime",
+    "IsAntiFlagBySlot",
+    "GetItemTypeBySlot",
+    "GetItemSubTypeBySlot",
+    "GetAuraItemID",
+    "GetAuraItemCount",
+    "GetAuraItemMetinSocket",
+    "GetAuraItemAttribute",
+    "IsAuraRefineWindowEmpty",
+    "GetAuraCurrentItemSlotCount",
+    "IsAuraRefineWindowOpen",
+    "GetAuraRefineWindowType",
+    "FineMoveAuraItemSlot",
+    "SetAuraActivatedItemSlot",
+    "FindActivatedAuraSlot",
+    "FindUsingAuraSlot",
+    "GetAuraRefineInfo",
+    "GetAuraRefineInfoExpPer",
+    "GetAuraRefineInfoLevel",
+    "NPOS"
+   ]
+  },
+  "PythonProfilerModule.cpp": {
+   "n": 2,
+   "names": [
+    "Push",
+    "Pop"
+   ]
+  },
+  "PythonSoundManagerModule.cpp": {
+   "n": 14,
+   "names": [
+    "PlaySound",
+    "PlaySound3D",
+    "PlayMusic",
+    "FadeInMusic",
+    "FadeOutMusic",
+    "FadeOutAllMusic",
+    "FadeLimitOutMusic",
+    "StopAllSound",
+    "SetMusicVolumef",
+    "SetMusicVolume",
+    "SetSoundVolumef",
+    "SetSoundVolume",
+    "SetSoundScale",
+    "SetAmbienceSoundScale"
+   ]
+  },
+  "PythonSystemModule.cpp": {
+   "n": 39,
+   "names": [
+    "GetWidth",
+    "GetHeight",
+    "SetInterfaceHandler",
+    "DestroyInterfaceHandler",
+    "ReserveResource",
+    "isInterfaceConfig",
+    "SaveWindowStatus",
+    "GetWindowStatus",
+    "GetResolutionCount",
+    "GetFrequencyCount",
+    "GetCurrentResolution",
+    "GetResolution",
+    "GetFrequency",
+    "ApplyConfig",
+    "SetConfig",
+    "SaveConfig",
+    "GetConfig",
+    "SetSaveID",
+    "isSaveID",
+    "GetSaveID",
+    "GetMusicVolume",
+    "GetSoundVolume",
+    "SetMusicVolume",
+    "SetSoundVolumef",
+    "IsSoftwareCursor",
+    "SetViewChatFlag",
+    "IsViewChat",
+    "SetAlwaysShowNameFlag",
+    "IsAlwaysShowName",
+    "SetShowDamageFlag",
+    "IsShowDamage",
+    "SetShowSalesTextFlag",
+    "IsShowSalesText",
+    "GetShadowLevel",
+    "SetShadowLevel",
+    "IsShowMobAIFlag",
+    "SetShowMobAIFlag",
+    "IsShowMobLevel",
+    "SetShowMobLevel"
+   ]
+  },
+  "PythonTextTailModule.cpp": {
+   "n": 18,
+   "names": [
+    "Clear",
+    "UpdateAllTextTail",
+    "UpdateShowingTextTail",
+    "Render",
+    "ShowCharacterTextTail",
+    "ShowItemTextTail",
+    "GetPosition",
+    "IsChat",
+    "ArrangeTextTail",
+    "HideAllTextTail",
+    "ShowAllTextTail",
+    "Pick",
+    "SelectItemName",
+    "EnablePKTitle",
+    "RegisterCharacterTextTail",
+    "RegisterChatTail",
+    "RegisterInfoTail",
+    "AttachTitle"
+   ]
+  },
+  "ServerStateCheckerModule.cpp": {
+   "n": 5,
+   "names": [
+    "Create",
+    "Update",
+    "Request",
+    "AddChannel",
+    "Initialize"
+   ]
+  }
+ },
+ "server": {
+  "input_main.cpp": {
+   "n_funcs": 52,
+   "classes": [
+    "CInputDead",
+    "CInputMain"
+   ]
+  },
+  "char.cpp": {
+   "n_funcs": 223,
+   "classes": [
+    "CHARACTER"
+   ]
+  },
+  "char_state.cpp": {
+   "n_funcs": 27,
+   "classes": [
+    "CHARACTER"
+   ]
+  },
+  "char_horse.cpp": {
+   "n_funcs": 11,
+   "classes": [
+    "CHARACTER"
+   ]
+  },
+  "battle.cpp": {
+   "n_funcs": 0,
+   "classes": []
+  }
+ }
+}

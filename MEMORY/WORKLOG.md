@@ -606,3 +606,30 @@ sahne adi notu dokumante edildi. Kod degisikligi YOK, rebuild YOK.
 - download: MaxExecutor_bundle_v1.9.zip (DLL+EXE+py v4.3+KULLANIM+README+PLUSQuest), PLUSMAXGOD_PyScript_v4.3.py
 - KULLANIM.md: v4.3 ozet bolumu (kok-neden + komut tablosu); README v1.9/v4.3.
 - Beklenen saha dogrulama: /i 27610 sonrasi fish -> [LIVE] ISIRTMA + balik adi; fishtp tek dongu; otp yuruyus serbestligi; spawnscan listesi; fishswapnow.
+
+---
+
+## Oturum 17 — DEEP SCAN: dump.rar Python katmanı + adım animasyonu mekanizması (2026-10-28)
+
+### Giris
+- Kullanici gorevi: LegendySF-V2 indir + dump.rar Python fonksiyonlarini cikar + C++ vs Python karsilastirma + "tek ayak havada adim animasyonu" arastirmasi (kod + web + GitHub).
+
+### Kaynak kurulumu
+- MyGameArea pull; LegendySF-V2 full klon (4.8 GB, 73.679 dosya, main dal); dump.rar unrar (156 dosya, 3.3 MB; INDEX.txt = PLUSMAXGOD pydumpall v4.1 ciktisi).
+
+### Kok-neden bulgusu (dosya:satir kanitli)
+- **Tek ayak havada yurume = FUNC_WAIT teleport-step deseni:**
+  - Darealfreakbot.py:688-697: SetPixelPosition + Debug() = DIK_UP 1-kare basma; elitepvpers Auto Hunt 2025 ayni desen.
+  - Transform() (InstanceBase.cpp:1994-2015): hareket vektoru >1 -> OnMoving (FUNC_MOVE @300ms); yoksa OnWaiting (FUNC_WAIT @100ms + >1px). Isinlama vektor ~0 -> hep FUNC_WAIT.
+  - Sunucu (input_main.cpp:1530-1700): FUNC_MOVE -> Goto (yol sim.); FUNC_WAIT -> Move(x,y)+Stop() = ANINDA kabul; dwDuration=0; ENABLE_TP_SPEED_CHECK yorumda (1557) = mesafe kontrolu yok.
+  - Izleyici (InstanceBase.cpp:1434-1490): FUNC_WAIT + >1px -> StartWalking -> aninda varis -> EndWalking; her 100 ms kare-0 restart -> yuruyus dongusu (0.5-1.0s) asla tamamlanmaz = TEK AYAK HAVADA.
+  - Animasyon motoru: SetLoopMotion -> __ClearMotion kare-0 (ActorInstanceMotion.cpp:307,627-637); SetMoveSpeed restart (ActorInstance.cpp:190).
+- SendCharacterStatePacket (PhaseGame.cpp:1152) Python'a ACIK DEGIL (net method tablosunda yok); istemci handler'lari otomatik gonderiyor -> teorinin dogru/yanlis parciralari netlesti.
+- C++/Python matrisi: Kategori A (saf Python: MoveToDestPosition, SetPixelPosition, SetAttackKeyState, item/chat/shop...), B (ozel DLL: ham CG_ATTACK - m2BotLib), C (imkansiz: sniff, inject, bellek).
+- Sunucu tespit seti: 6 onlem (TP_SPEED_CHECK ac, FUNC_WAIT mesafe butcesi, frekans sayaci, tutarlilik istatistigi, dwTime geri-ileri, Goto-celiski denetimi).
+
+### Teslimatlar
+- reports/DEV_DUMP_WALK_ANALYSIS.md (bu raporun MD versiyonu)
+- reports/LegendySF-Dump_Derin_Analiz_Raporu.pdf (19 sayfa; TOC + 2 grafik + 1 diyagram + 11 tablo + 3 kod kaniti)
+- reports/assets/: diagram_flow.png, chart_dump_kategoriler.png, chart_cpp_bindings.png, cover_kaynak.html
+- analysis/dump_inventory.json (154 dosyanin fonksiyon/API envanteri)
