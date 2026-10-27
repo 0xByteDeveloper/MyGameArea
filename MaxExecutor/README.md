@@ -2,11 +2,9 @@
 
 > **Yöntem:** WndProc subclass + dosya kuyruk + ana-thread `PyRun_SimpleString`
 > **Hook:** YOK · **Shared memory:** YOK · **Arka plan Python thread:** YOK
-> **Sürüm:** v1.9 PLUSMAXGOD / pylib v4.3 — GOD MOD paketi v2: ekipman çıkarma,
-> otomatik CH değişimi, yer eşyası tarama, görev raporu, hayalet eşya, sahte
-> instance/klon/kılık, simya (DS) raporu + **otomatik balık sistemi (adaptif
-> gecikme öğrenici + canlı [LIVE] çıktı ekrani)**. 28 yeni komut — detay KULLANIM.md 3e.
-> Saha testi 9 hükümü: serverlist kök nedeni = ui.ListBox2'de GetItemText YOK → v4.2 textDict okur.
+> **Sürüm:** v2.0 PLUSMAXGOD (pylib v4.4 — saha testi 10: fish temizliği,
+> near geniş-tarama, ExitGame relogin/chchange, görsel tazeleme, puan/hız/
+> binis/antifly/efsun komut ailesi, konsol çıkış kilidi)
 
 ---
 

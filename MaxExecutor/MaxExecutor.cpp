@@ -198,6 +198,31 @@ static char PYERR_LOG[MAX_PATH]  = "C:\\MaxExec\\pyerr.log";
 static const int     MAX_CMDS_PER_DRAIN = 4;              // tek mesajda maks. komut (render'i sisirmemek icin)
 
 // ---------------------------------------------------------------------------
+// v2.0: KONSOL CIKIS KILIDI (saha testi 10: 'konsolda saçma karisik yazi')
+// 3 ayri yazar vardi: worker thread (help/prompt), oyun ana thread'i
+// (PyRun icinde python print), LiveMonitorThread ([LIVE]) - hepsi kilitsiz
+// printf -> help metninin ORTASINA [LIVE]/python satirlari giriyordu.
+// COZUM: tum C++ cikislari tek kritik bolumde; python print'leri de
+// DrainQueue'da ayni kilitle korunur.
+// ---------------------------------------------------------------------------
+static CRITICAL_SECTION g_csOut;
+static volatile LONG g_csOutInit = 0;
+
+static void OutP(const char* fmt, ...)
+{
+    char buf[4096];
+    va_list ap;
+    va_start(ap, fmt);
+    _vsnprintf(buf, sizeof(buf) - 1, fmt, ap);
+    buf[sizeof(buf) - 1] = 0;
+    va_end(ap);
+    if (g_csOutInit) EnterCriticalSection(&g_csOut);
+    fputs(buf, stdout);
+    fflush(stdout);
+    if (g_csOutInit) LeaveCriticalSection(&g_csOut);
+}
+
+// ---------------------------------------------------------------------------
 // Python27 sembolleri (yalniz ANA THREAD'den kullanilir!)
 // ---------------------------------------------------------------------------
 typedef int  (*PFN_PyRun_SimpleString)(const char*);
@@ -347,7 +372,12 @@ static void DrainQueue(void)
         {
             LogLine("EXEC %s (%u byte)", fd.cFileName, (unsigned)code.size());
             // >>> ANA THREAD'DE PYTHON CALISTIRMA (GIL zaten ana thread'de) <<<
+            // v2.0: python print'leri cikis kilidinde (diger thread'lerin
+            // help/[LIVE] ciktilariyla karismasin); uzun komutta [LIVE] biraz
+            // bekler - sadece siralama garanti edilir
+            if (g_csOutInit) EnterCriticalSection(&g_csOut);
             int rc = pfn_PyRun_SimpleString(code.c_str());
+            if (g_csOutInit) LeaveCriticalSection(&g_csOut);
             InterlockedIncrement(&g_nExec);
             ++done;
             // FIX-20: traceback pyerr.log'da olur ama sahibi KONSOLDA da
@@ -360,8 +390,8 @@ static void DrainQueue(void)
                 _snprintf(fp, MAX_PATH, "%s\\last_pyfail.txt", RESULT_DIR); fp[MAX_PATH-1]=0;
                 WriteFileAll(fp, std::string("PYTHON HATASI: ") + fd.cFileName +
                     "\nDetay: pyerr komutunu yaz (pyerr.log son satirlari).\n"
-                    "En sik neden: ESKI pylib - PLUSMAXGOD v4.1 ile degistir (bundle zip / GitHub)!\n");
-                printf("[MAXEXEC] !! PYTHON HATASI (%s) - detay icin: pyerr\n", fd.cFileName);
+                    "En sik neden: ESKI pylib - PLUSMAXGOD v4.4 ile degistir (bundle zip / GitHub)!\n");
+                OutP("[MAXEXEC] !! PYTHON HATASI (%s) - detay icin: pyerr\n", fd.cFileName);
                 fflush(stdout);
             }
         }
@@ -399,7 +429,7 @@ static void InstallTimer(void)
     if (!g_hGameWnd) return;
     UINT_PTR id = SetTimer(g_hGameWnd, TIMER_ID_MAXEXEC, 1500, MaxExecTimerProc);
     LogLine("SetTimer: %s (id=%lu, 1500ms)", id ? "KURULDU" : "BASARISIZ", (unsigned long)id);
-    printf("ana-thread timer: %s\n", id ? "KURULDU (WndProc'tan bagimsiz drenaj)" : "BASARISIZ");
+    OutP("ana-thread timer: %s\n", id ? "KURULDU (WndProc'tan bagimsiz drenaj)" : "BASARISIZ");
 }
 
 // Oyunun ana gorunur penceresini bul (bu surece ait, sahibi olmayan, en buyuk)
@@ -441,8 +471,8 @@ static bool HookGameWindow(void)
 static void QRaw(const std::string& code)
 {
     std::string f;
-    if (EnqueueCommand(code, f)) printf("[MAXEXEC] kuyruga yazildi: %s\n", f.c_str());
-    else printf("[MAXEXEC] HATA: kuyruga yazilamadi\n");
+    if (EnqueueCommand(code, f)) OutP("[MAXEXEC] kuyruga yazildi: %s\n", f.c_str());
+    else OutP("[MAXEXEC] HATA: kuyruga yazilamadi\n");
     if (g_hGameWnd) PostMessage(g_hGameWnd, WM_APP_MAXEXEC, 0, 0);
 }
 
@@ -479,7 +509,7 @@ static std::string BootImport(void)
          "    maxlib._MX_OLD_WARNED = True\n"
          "    try:\n"
          "        import sys\n"
-         "        sys.stderr.write('!!! PYLIB ESKI v' + str(getattr(maxlib, 'PYLIB_VERSION', '?')) + ' - DLL v1.9 PLUSMAXGOD v4.2 ister! "
+         "        sys.stderr.write('!!! PYLIB ESKI v' + str(getattr(maxlib, 'PYLIB_VERSION', '?')) + ' - DLL v2.0 PLUSMAXGOD v4.4 ister! "
          "C:\\\\MaxExec\\\\PLUSMAXGOD_PyScript.py dosyasini yenisiyle degistir (bundle zip / GitHub) !!!\\\\n')\n"
          "    except Exception:\n"
          "        pass\n";
@@ -533,9 +563,9 @@ static void CmdLoad(const std::string& path)
                           std::string(BASE_DIR) +
                           "\n(v1.3: dosya oradaysa otomatik yuklenir)\n";
         WriteFileAll(rp, msg);
-        printf("[MAXEXEC] HATA: dosya YOK: %s\n", path.c_str());
-        printf("    pylib.py'yi su klasore kopyala: %s\n", BASE_DIR);
-        printf("    (bundle zip icinde var; v1.3 otomatik yukler)\n");
+        OutP("[MAXEXEC] HATA: dosya YOK: %s\n", path.c_str());
+        OutP("    pylib.py'yi su klasore kopyala: %s\n", BASE_DIR);
+        OutP("    (bundle zip icinde var; v1.3 otomatik yukler)\n");
         LogLine("load HATA: dosya yok: %s", path.c_str());
         return;
     }
@@ -551,8 +581,8 @@ static void CmdLoad(const std::string& path)
         "exec(open(r'%s').read())\n", PYERR_LOG, path.c_str());
     buf[sizeof(buf)-1] = 0;
     QRaw(buf);
-    printf("[MAXEXEC] pylib yukleme komutu kuyruga alindi (kurulum ana thread'de olur)\n");
-    printf("[MAXEXEC] Python hatalari icin: %s\n", PYERR_LOG);
+    OutP("[MAXEXEC] pylib yukleme komutu kuyruga alindi (kurulum ana thread'de olur)\n");
+    OutP("[MAXEXEC] Python hatalari icin: %s\n", PYERR_LOG);
 }
 
 static void CmdLogin(const std::string& id, const std::string& pwd)
@@ -640,7 +670,7 @@ static void CmdLastErr(void)
     std::string s;
     if (ReadFileAll(std::string(RESULT_DIR) + "\\last_error.txt", s))
     {
-        printf("[LASTERR] oyun hatalari (sonlar en altta):\n");
+        OutP("[LASTERR] oyun hatalari (sonlar en altta):\n");
         // son 25 satir
         std::vector<std::string> lines;
         size_t p = 0;
@@ -652,11 +682,11 @@ static void CmdLastErr(void)
             p = q + 1;
         }
         for (size_t i = lines.size() > 25 ? lines.size()-25 : 0; i < lines.size(); ++i)
-            printf("  %s\n", lines[i].c_str());
-        if (lines.empty()) printf("  (bos - henuz oyun hatasi yaklanmadi)\n");
+            OutP("  %s\n", lines[i].c_str());
+        if (lines.empty()) OutP("  (bos - henuz oyun hatasi yaklanmadi)\n");
     }
     else
-        printf("[LASTERR] last_error.txt yok - henuz oyun hatasi yaklanmadi\n");
+        OutP("[LASTERR] last_error.txt yok - henuz oyun hatasi yaklanmadi\n");
 }
 
 static void CmdCharlist(void)
@@ -705,7 +735,7 @@ static void CmdStat(void)   { QRaw(BootImport() + "maxlib.stat()\n"); }
 static void CmdPos(void)    { QRaw(BootImport() + "maxlib.pos()\n"); }
 static void CmdEquip(void)  { QRaw(BootImport() + "maxlib.equip()\n"); }
 static void CmdSkill(void)  { QRaw(BootImport() + "maxlib.skill()\n"); }
-static void CmdNear(void)   { QRaw(BootImport() + "maxlib.near()\n"); }
+static void CmdNear(const std::string& q) { QRaw(BootImport() + "maxlib.near(" + PyStr(q) + ")\n"); }
 static void CmdRide(void)   { QRaw(BootImport() + "maxlib.ride()\n"); }
 static void CmdRevive(void) { QRaw(BootImport() + "maxlib.revive()\n"); }
 static void CmdLogout(void) { QRaw(BootImport() + "maxlib.logout()\n"); }
@@ -809,9 +839,9 @@ static void CmdFakeClear(const std::string& mode)
 {
     QRaw(BootImport() + "maxlib.fakeclear(" + PyStr(mode) + ")\n");
 }
-static void CmdClone(const std::string& off)
+static void CmdClone(const std::string& off, const std::string& hair)
 {
-    QRaw(BootImport() + "maxlib.clone(" + PyStr(off) + ")\n");
+    QRaw(BootImport() + "maxlib.clone(" + PyStr(off) + ", " + PyStr(hair) + ")\n");
 }
 static void CmdUnClone(const std::string& mode)
 {
@@ -841,22 +871,35 @@ static void CmdItemScan(const std::string& mn, const std::string& mx)
 }
 static void CmdFish(void)        { QRaw(BootImport() + "maxlib.fish()\n"); }
 static void CmdFishStop(void)    { QRaw(BootImport() + "maxlib.fishstop()\n"); }
-static void CmdFishDelay(const std::string& v) { QRaw(BootImport() + "maxlib.fishdelay(" + PyStr(v) + ")\n"); }
 static void CmdFishKeep(const std::string& v)  { QRaw(BootImport() + "maxlib.fishkeep(" + PyStr(v) + ")\n"); }
-static void CmdFishSwap(const std::string& v)  { QRaw(BootImport() + "maxlib.fishswap(" + PyStr(v) + ")\n"); }
 static void CmdFishSpot(const std::string& x, const std::string& y)
 {
     QRaw(BootImport() + "maxlib.fishspot(" + PyStr(x) + ", " + PyStr(y) + ")\n");
 }
 static void CmdFishStat(void)    { QRaw(BootImport() + "maxlib.fishstat()\n"); }
 static void CmdFishTest(void)    { QRaw(BootImport() + "maxlib.fishtest()\n"); }
+// --- v2.0 (pylib v4.4): yeni komut ureticileri ---
+static void CmdMorphTarget(void)   { QRaw(BootImport() + "maxlib.morphtarget()\n"); }
+static void CmdClonePlayer(void)   { QRaw(BootImport() + "maxlib.cloneplayer()\n"); }
+static void CmdFakeMount(const std::string& m) { QRaw(BootImport() + "maxlib.fakemount(" + PyStr(m) + ")\n"); }
+static void CmdSpeed(const std::string& v)     { QRaw(BootImport() + "maxlib.speed(" + PyStr(v) + ")\n"); }
+static void CmdASpeed(const std::string& v)    { QRaw(BootImport() + "maxlib.aspeed(" + PyStr(v) + ")\n"); }
+static void CmdStatUp(const std::string& p, const std::string& n)  { QRaw(BootImport() + "maxlib.statup(" + PyStr(p) + ", " + PyStr(n) + ")\n"); }
+static void CmdSkillUp(const std::string& i, const std::string& n) { QRaw(BootImport() + "maxlib.skillup(" + PyStr(i) + ", " + PyStr(n) + ")\n"); }
+static void CmdAntiFly(const std::string& m)   { QRaw(BootImport() + "maxlib.antifly(" + PyStr(m) + ")\n"); }
+static void CmdAntiFlyEffect(const std::string& m) { QRaw(BootImport() + "maxlib.antiflyeffect(" + PyStr(m) + ")\n"); }
+static void CmdItemFind(const std::string& w)  { QRaw(BootImport() + "maxlib.itemfind(" + PyStr(w) + ")\n"); }
+static void CmdItemInfo(const std::string& v)  { QRaw(BootImport() + "maxlib.iteminfo(" + PyStr(v) + ")\n"); }
+static void CmdAttr(const std::string& s)      { QRaw(BootImport() + "maxlib.attr(" + PyStr(s) + ")\n"); }
+static void CmdAttrAll(void)     { QRaw(BootImport() + "maxlib.attrall()\n"); }
+static void CmdUseOn(const std::string& s, const std::string& d) { QRaw(BootImport() + "maxlib.useon(" + PyStr(s) + ", " + PyStr(d) + ")\n"); }
+static void CmdEfsunSw(const std::string& d)   { QRaw(BootImport() + "maxlib.efsunsw(" + PyStr(d) + ")\n"); }
+static void CmdGoTake(const std::string& m)    { QRaw(BootImport() + "maxlib.gotake(" + PyStr(m) + ")\n"); }
 static void CmdCanli(const std::string& msg)
 {
     QRaw(BootImport() + "maxlib.canli(" + PyStr(msg) + ")\n");
 }
 // ---- v1.9 (pylib v4.3): fishtp + fishswapnow + OTP + clonemod + spawnscan + itemscanall ----
-static void CmdFishTP(void)      { QRaw(BootImport() + "maxlib.fishtp()\n"); }
-static void CmdFishSwapNow(void) { QRaw(BootImport() + "maxlib.fishswapnow()\n"); }
 static void CmdOTP(const std::string& x, const std::string& y)
 {
     QRaw(BootImport() + "maxlib.otp(" + PyStr(x) + ", " + PyStr(y) + ")\n");
@@ -892,8 +935,8 @@ static void CmdPyScan(const std::string& mod)
 // C++ TARAFINDA bekler; Python'u kisa patlamalarda calistirir (ana thread dostu)
 static void CmdWaitFor(const std::string& sceneName, int seconds)
 {
-    if (!g_hGameWnd) { printf("[MAXEXEC] oyun penceresi yok\n"); return; }
-    printf("[MAXEXEC] %s bekleniyor (%d sn)...\n", sceneName.c_str(), seconds);
+    if (!g_hGameWnd) { OutP("[MAXEXEC] oyun penceresi yok\n"); return; }
+    OutP("[MAXEXEC] %s bekleniyor (%d sn)...\n", sceneName.c_str(), seconds);
     DWORD start = GetTickCount();
     while ((GetTickCount() - start) < (DWORD)seconds * 1000)
     {
@@ -907,13 +950,13 @@ static void CmdWaitFor(const std::string& sceneName, int seconds)
         {
             if (s.find("SCENE=" + sceneName) != std::string::npos)
             {
-                printf("[MAXEXEC] ULASILDI: %s\n", sceneName.c_str());
-                printf("%s", s.c_str());
+                OutP("[MAXEXEC] ULASILDI: %s\n", sceneName.c_str());
+                OutP("%s", s.c_str());
                 return;
             }
         }
     }
-    printf("[MAXEXEC] TIMEOUT: %s (ipucu: status + pyerr komutlarina bak)\n", sceneName.c_str());
+    OutP("[MAXEXEC] TIMEOUT: %s (ipucu: status + pyerr komutlarina bak)\n", sceneName.c_str());
 }
 
 // ---------------------------------------------------------------------------
@@ -937,7 +980,7 @@ static bool InitConsole(void)
         LogLine("CONOUT$ (stderr) yeniden acilamadi");
     setvbuf(stdout, NULL, _IONBF, 0);   // buffer'siz: crash olsa bile yazar
     setvbuf(stderr, NULL, _IONBF, 0);
-    SetConsoleTitleA("MaxExecutor v1.9 PLUSMAXGOD");
+    SetConsoleTitleA("MaxExecutor v2.0 PLUSMAXGOD");
     HWND cw = GetConsoleWindow();
     if (cw)
     {
@@ -1009,7 +1052,7 @@ static DWORD WINAPI LiveMonitorThread(LPVOID)
                         if (!nl) break;
                         *nl = 0;
                         if (nl > p && nl[-1] == '\r') nl[-1] = 0;
-                        printf("[LIVE] %s\n", p);
+                        OutP("[LIVE] %s\n", p);
                         // \r satir icinde 0'landi ama byte olarak tuketildi
                         consumed += (DWORD)(nl - p) + 1;
                         p = nl + 1;
@@ -1049,101 +1092,78 @@ static std::vector<std::string> SplitArgs(const std::string& line)
 
 static void PrintHelp(void)
 {
-    printf("\n=== MaxExecutor v1.9 PLUSMAXGOD (oyun-ici + py kesif + balik-fix) ===\n");
-    printf("  help                        : bu yardim\n");
-    printf("  status                      : anlik sahne/baglanti snapshot\n");
-    printf("  -- giris akisi (menu) --\n");
-    printf("  serverlist                  : server/CH listbox icerigi\n");
-    printf("  selserver <srv> <ch>        : server+CH sec, OK'a bas\n");
-    printf("  login <id> <pwd>            : login ekraninda UI doldurur + giris\n");
-    printf("  charlist                    : 5 slot tablosunu doken rapor\n");
-    printf("  selchar <slot>              : karakter slotu SEC (0-4)\n");
-    printf("  enter <slot>                : oyuna giris - UI START yolu (DirectEnter yedek)\n");
-    printf("  newchar | empirelist | empireui <1-3> | joblist | mkchar <ad> <race>\n");
-    printf("  delchar <slot> | delcode <kod>\n");
-    printf("  -- OYUN-ICI (oyundayken: waitfor GameWindow 60 sonrasi) --\n");
-    printf("  stat                        : seviye/HP/SP/EXP/race/grup/empire raporu\n");
-    printf("  pos                         : x/y/z + harita adi raporu\n");
-    printf("  inv <sayfa>                 : envanter raporu (sayfa 0/1/..)\n");
-    printf("  equip                       : ekipman raporu\n");
-    printf("  skill                       : beceri raporu (seviye/cooldown)\n");
-    printf("  near                        : yakin varlik taramasi (40'a kadar)\n");
-    printf("  chat <mesaj>                : sohbet/slash paketi (orn. chat /ride)\n");
-    printf("  cmd <slash-komut>           : chat'in /'lu kisa hali (orn. cmd /ride)\n");
-    printf("  whisper <kim> <mesaj>       : ozel mesaj\n");
-    printf("  ride | revive | logout | back | pickup : hizli eylemler\n");
-    printf("  zoom <mesafe>               : kamera menzili (orn. zoom 12000)\n");
-    printf("  use <slot>                  : envanter slotundaki esyayi kullan\n");
-    printf("  drop <slot> <adet>          : esya birak (DESTRUKTIF - dikkat!)\n");
-    printf("  goto <x> <y>                : konuma YURU (yol izler)\n");
-    printf("  tp <x> <y>                  : konuma ISINLAN (anlik)\n");
-    printf("  key <DIK> <0/1>             : tus simule (UP LEFT SPACE F5 ...)\n");
-    printf("  attack <0/1>                : saldiri basili/birak\n");
-    printf("  -- GOD MOD v2: EKIPMAN + BAGLANTI --\n");
-    printf("  unequip <parca|slot>        : ekipman CIKAR (body/head/shoes/wrist/weapon/neck/ear/unique/arrow/costume | 90-109)\n");
-    printf("  unequipall                  : tum ekipmani cikar (envanterde yer lazim)\n");
-    printf("  chchange <ch>               : CH DEGISITIR (oyundan cikmadan; otomatik relogin akisi)\n");
-    printf("  relogin                     : ayni CH ile otomatik yeniden giris\n");
-    printf("  -- GOD MOD v2: YER ESYASI + GOREV --\n");
-    printf("  ground                      : yerdeki esyalari tara (vid + dunya konumu)\n");
-    printf("  groundtake [all|vid]        : yerdeki esyalari al\n");
-    printf("  autotake <0/1>              : surekli otomatik toplama\n");
-    printf("  quest                       : aktif gorev raporu (ad/sayac/kalan sure/idx)\n");
-    printf("  -- GOD MOD v2: HAYALET + SAHTE INSTANCE (istemci tarafi!) --\n");
-    printf("  fakeitem <vnum> [adet]      : HAYALET esya yarat (envanterde gorunur, sunucuda YOK)\n");
-    printf("  fakeclear [slot|all]        : hayaletleri temizle (relogin de temizler)\n");
-    printf("  clone                       : kendimin klonunu yanina spawn et\n");
-    printf("  unclone [all|vid]           : sahte instance sil\n");
-    printf("  spawn <race> [ad]           : sahte NPC spawn (demirci=20016; race ogren: near)\n");
-    printf("  morph <race>                : gorunumunu baska race yap (demirci: morph 20016)\n");
-    printf("  unmorph | setarmor <vnum> | setweapon <vnum> : gorunum islemleri\n");
-    printf("  -- GOD MOD v2: SIMYA (Dragon Soul) --\n");
-    printf("  simya | ds                  : simya (DS) envanter raporu + /i olusturma kodlari\n");
-    printf("  itemscan <min> <max>        : item tablosu tara (simya/balik vnum kesfi)\n");
-    printf("  -- GOD MOD v2: BALIK (otomatik + canli oran ekrani) --\n");
-    printf("  fish                        : otomatik balik dongusu (olta+yem+atis+cekis)\n");
-    printf("  fishdelay <ms|auto>         : cekis gecikmesi (auto=ogrenici; aninda tepki her balikta en iyi DEGIL!)\n");
-    printf("  fishkeep <vnum|0>           : sadece hedef baligi tut, digerlerini birak\n");
-    printf("  fishswap <0/1>              : zirh degistirerek animasyon atlama (hizli recast)\n");
-    printf("  fishspot <x> <y>|0          : su-noktasi modu (at, isinlan, uzaktan balik tut!)\n");
-    printf("  fishtp                      : TEK ATIS (isinla->at->geri isinla->cek->dur)\n");
-    printf("  fishswap <0/1/<vnum>>       : zirh degis animasyon atlama (fishswap 11499 = vnum filtre)\n");
-    printf("  fishswapnow                 : zirh degisimini HEMEN dene (test)\n");
-    printf("  HAPI NOTU: /i 27610 (balik-zihni) kullan -> isirtmada balik adi canli gelir\n");
-    printf("  -- v4.3: OPTIMIZETP + KLON-MOD + TARAMA --\n");
-    printf("  otp <x> <y>                 : sunucu-senkron adimli isinlama (geri-atma YOK)\n");
-    printf("  otpstop | otpstep <px> | otpdelay <ms> : otp ayarlari (240px/1300ms oneri)\n");
-    printf("  clonemod <swap|1|0>         : klon yer-degis / takip / kapat\n");
-    printf("  spawnscan [min] [max]       : mob_proto race taramasi (spawn/morph gecerli race)\n");
-    printf("  itemscanall                 : TUM item taramasi -> itemscan_full.txt\n");
-    printf("  fishstat | fishtest | fishstop | canli <mesaj> : rapor/test/dur\n");
-    printf("  -- KESIF (oyunun py dosyalari) --\n");
-    printf("  pyfiles                     : 5 yontemle py dosyalarini bul\n");
-    printf("  pydump <ad>                 : tek py dosyasini dump klasorune dok\n");
-    printf("  pydumpall                   : BUTUN py'leri dump klasorune + INDEX.txt\n");
-    printf("  pyscan <modul>              : modulun fonksiyonlarini listele\n");
-    printf("  plusquest | pyscanall       : yuklu TUM modulleri tara -> PLUSQuest_live\n");
-    printf("  -- hata takibi --\n");
-    printf("  lasterr                     : OYUN hatalari (yanlis sifre vb.)\n");
-    printf("  pyerr                       : PYTHON hatalari (traceback)\n");
-    printf("  log                         : maxexec.log son satirlari\n");
-    printf("  load <py-dosya>             : pylib yukle (genelde gerekmez - oto)\n");
-    printf("  raw <python kodu>           : serbest Python (ana thread'de)\n");
-    printf("  waitfor <Scene> <sn>        : orn. waitfor GameWindow 60\n");
-    printf("  exit                        : cikis\n");
-    printf("GIRIS AKISI: status -> selserver 0 0 -> waitfor LoginWindow 15 ->\n");
-    printf("  login <id> <pwd> -> waitfor SelectCharacterWindow 30 -> charlist ->\n");
-    printf("  selchar 0 -> enter 0 -> waitfor GameWindow 60 -> stat -> pos -> inv\n");
-    printf("YENI KARAKTER: newchar -> (bayrak: empirelist -> empireui 1) ->\n");
-    printf("  joblist -> mkchar Isim 3 -> waitfor SelectCharacterWindow 15 -> charlist\n");
-    printf("BALIK AKISI: fishtest -> /i 27400 (olta) + /i 27801 200 (solucan) -> fish ->\n");
-    printf("  [LIVE] satirlarini izle | istedigini tut: fishkeep <vnum> | su uzaktan:\n");
-    printf("  goto <su kenari> -> fishspot <x> <y> -> fish (atis aninda suya, sonra isinlan)\n");
-    printf("CH DEGISME: login <id> <pwd> ile bir kez gir (kimlik kaydolur) -> chchange <ch>\n");
-    printf("KESIF AKISI: pyfiles -> pydumpall (dump klasoru) -> plusquest ->\n");
-    printf("  C:\\MaxExec\\dump klasorunu AI'ya gonder (PLUSQuest.md guncellenir)\n");
-    printf("Saglik: %s | oyun hatalari: results\\last_error.txt\n", ALIVE_FILE);
-    printf("dump klasoru: %s | plusquest cikti: %s\\PLUSQuest_live.txt\n\n", DUMP_DIR, DUMP_DIR);
+    OutP("\n=== MaxExecutor v2.0 PLUSMAXGOD (oyun-ici + GOD MOD pylib v4.4) ===\n");
+    OutP("  help                        : bu yardim\n");
+    OutP("  status                      : anlik sahne/baglanti snapshot\n");
+    OutP("  -- giris akisi (menu) --\n");
+    OutP("  serverlist                  : server/CH listbox icerigi\n");
+    OutP("  selserver <srv> <ch>        : server+CH sec, OK'a bas\n");
+    OutP("  login <id> <pwd>            : login ekraninda UI doldurur + giris\n");
+    OutP("  charlist                    : 5 slot tablosunu doken rapor\n");
+    OutP("  selchar <slot>              : karakter slotu SEC (0-4)\n");
+    OutP("  enter <slot>                : oyuna giris - UI START yolu (DirectEnter yedek)\n");
+    OutP("  newchar | empirelist | empireui <1-3> | joblist | mkchar <ad> <race>\n");
+    OutP("  delchar <slot> | delcode <kod>\n");
+    OutP("  -- OYUN-ICI --\n");
+    OutP("  stat | pos | inv <sayfa> | equip | skill : raporlar\n");
+    OutP("  near [vid-siniri]           : GENIS varlik taramasi (v4.4: anlik 1..50000\n");
+    OutP("                                + arka plan 4M tarama -> near_full.txt)\n");
+    OutP("  chat <mesaj> | cmd <slash> | whisper <kim> <mesaj> : sohbet\n");
+    OutP("  ride | revive | logout | back | pickup : hizli eylemler\n");
+    OutP("  zoom <mesafe> | use <slot> | drop <slot> <adet> | goto <x> <y> | tp <x> <y>\n");
+    OutP("  key <DIK> <0/1> | attack <0/1>\n");
+    OutP("  -- v4.4: PUAN + HIZ + BINIS + ANTIFLY --\n");
+    OutP("  statup <ht|iq|st|dx> [adet] : stat puani ver (orn: statup st 10)\n");
+    OutP("  skillup <skill-idx> [adet]  : skill puani ver (idx: skill raporundan)\n");
+    OutP("  speed <0-1100>              : hareket hizi (100=normal, 200=2x, 0=geri yukle)\n");
+    OutP("  aspeed <0-1100>             : saldiri hizi (0=geri yukle)\n");
+    OutP("  fakemount <0/1>             : SAHTE at binisi - at ustunde gorunursun ama\n");
+    OutP("                                sunucu binmemis sayar: skill SERBEST\n");
+    OutP("  antifly <0/1/2>             : itilme engeli (1=TAM AntiFly.py kaniti, 2=soft)\n");
+    OutP("  antiflyeffect <id>          : efekt yontemi (chrmgr.SetAffect)\n");
+    OutP("  -- GOD MOD v2: EKIPMAN + BAGLANTI --\n");
+    OutP("  unequip <parca|slot> | unequipall\n");
+    OutP("  chchange <ch>               : CH DEGISITIR (v4.4 ExitGame yolu - sahne DUZGUN doner)\n");
+    OutP("  relogin                     : ayni CH hizli yeniden giris (login gerekmez)\n");
+    OutP("  -- GOD MOD v2: YER ESYASI + GOREV --\n");
+    OutP("  ground | groundtake [all|vid] | autotake <0/1> | quest\n");
+    OutP("  gotake <vid|all>            : v4.4 - esyaya YURU + TOPLA (yakinlasip alir)\n");
+    OutP("  -- GOD MOD v2: HAYALET + SAHTE INSTANCE (istemci tarafi!) --\n");
+    OutP("  fakeitem <vnum> [adet] | fakeclear [slot|all]\n");
+    OutP("  clone [offset] [sac]        : klon (v4.4: Z-fix + SAC otomatik okunur)\n");
+    OutP("  unclone [all|vid]\n");
+    OutP("  spawn <race> [ad]           : sahte NPC (v4.4: z-fix + konum dogrulama + gorsel tazeleme)\n");
+    OutP("  morph <race> | unmorph      : gorunum (v4.4: gorsel tazeleme - zirh takip cikma YOK)\n");
+    OutP("  morphtarget                 : v4.4 - HEDEF NPC/mob/OYUNCU'ya donus (once tikla)\n");
+    OutP("  cloneplayer                 : v4.4 - hedef OYUNCUYA donus (irk+ad)\n");
+    OutP("  setarmor <vnum> | setweapon <vnum> | clonemod <swap|1|0>\n");
+    OutP("  spawnscan [min] [max]       : mob_proto race taramasi\n");
+    OutP("  -- GOD MOD v2: SIMYA + ESYA KESIF + EFSUN --\n");
+    OutP("  simya | ds                  : DS envanter raporu\n");
+    OutP("  itemscan <min> <max>        : item tablo taramasi\n");
+    OutP("  itemscanall                 : TUM item taramasi 1-99999 (v4.4: 50k parcasi FIX)\n");
+    OutP("  itemfind <kelime>           : v4.4 - isimle ara (itemfind simya | itemfind kostum)\n");
+    OutP("  iteminfo <vnum>             : v4.4 - esyanin TAM proto bilgisi\n");
+    OutP("  attr <slot> | attrall       : v4.4 - EFSUNLARI oku (efsunlu mu, ne efsunlu)\n");
+    OutP("  useon <src> <dst>           : v4.4 - esyayi esya uzerinde kullan\n");
+    OutP("                                (efsun ekle/degistir/5.attr/kostum efsunu)\n");
+    OutP("  efsunsw <esya-slot>         : v4.4 - efsun kagidini bul + uygula\n");
+    OutP("  -- GOD MOD v2: BALIK --\n");
+    OutP("  fish | fishstop             : otomatik balik dongusu / durdur\n");
+    OutP("  fishkeep <vnum|0>           : sadece hedef baligi tut\n");
+    OutP("  fishspot <x> <y>|0          : su-noktasi modu (atis aninda suya, sonra geri)\n");
+    OutP("  fishstat | fishtest | canli <mesaj>\n");
+    OutP("  (v4.4 not: fishdelay/fishswap/fishswapnow/fishtp KALDIRILDI)\n");
+    OutP("  -- KESIF --\n");
+    OutP("  pyfiles | pydump <ad> | pydumpall | pyscan <modul> | plusquest\n");
+    OutP("  -- hata takibi --\n");
+    OutP("  lasterr | pyerr | log | load <py> | raw <kod> | waitfor <Scene> <sn> | exit\n");
+    OutP("GIRIS: status -> selserver 0 0 -> login <id> <pwd> -> charlist -> selchar 0 -> enter 0\n");
+    OutP("BALIK: fishtest -> /i 27400 (olta) + /i 27801 200 (solucan) -> fish -> [LIVE] izle\n");
+    OutP("  uzaktan: goto <su kenari> -> fishspot <x> <y> -> fish\n");
+    OutP("CH/RELOGIN: bir kez login <id> <pwd> (kimlik kaydolur) -> chchange <ch> | relogin\n");
+    OutP("Saglik: %s | oyun hatalari: results\\last_error.txt\n", ALIVE_FILE);
+    OutP("dump klasoru: %s | plusquest cikti: %s\\PLUSQuest_live.txt\n\n", DUMP_DIR, DUMP_DIR);
 }
 
 // ---------------------------------------------------------------------------
@@ -1216,37 +1236,39 @@ static void SyncEmbeddedPylib(void)
     {
         LogLine("pylib sync: gomulu PLUSMAXGOD v%s diske yazildi (eskisi: %s)",
                 EMBEDDED_PYLIB_VERSION, hasDisk ? diskVer : "yok");
-        printf("PLUSMAXGOD_PyScript.py : GUNCELLENDI -> v%s (DLL icinden yazildi%s)\n",
+        OutP("PLUSMAXGOD_PyScript.py : GUNCELLENDI -> v%s (DLL icinden yazildi%s)\n",
                EMBEDDED_PYLIB_VERSION,
                hasDisk ? ", eski dosya PLUSMAXGOD_eski_*.py olarak yedeklendi" : "");
     }
     else
     {
         LogLine("pylib sync HATA: %s yazilamadi", pylibPath);
-        printf("PLUSMAXGOD_PyScript.py : GUNCELLENEMEDI (yazma hatasi!) - elle kopyala\n");
+        OutP("PLUSMAXGOD_PyScript.py : GUNCELLENEMEDI (yazma hatasi!) - elle kopyala\n");
     }
 }
 
 static DWORD WINAPI WorkerThread(LPVOID)
 {
+    InitializeCriticalSection(&g_csOut);          // v2.0: cikis kilidi
+    InterlockedExchange(&g_csOutInit, 1);
     InitPaths();                                  // FIX-12: basedir.txt (D:\ destegi)
     LogLine("worker thread basladi (base=%s)", BASE_DIR);
     EnsureDirs();
     const bool con = InitConsole();
 
-    printf("\n=============================================\n");
-    printf("  MaxExecutor v1.9 PLUSMAXGOD - ana-thread executor\n");
-    printf("  oyun-ici + kesif + GOD MOD v2 (pylib v4.2 cifti)\n");
-    printf("  canli cikti: C:\\MaxExec\\live.txt izlenir -> [LIVE] akar\n");
-    printf("=============================================\n");
+    OutP("\n=============================================\n");
+    OutP("  MaxExecutor v2.0 PLUSMAXGOD - ana-thread executor\n");
+    OutP("  oyun-ici + kesif + GOD MOD v2 (pylib v4.4 cifti)\n");
+    OutP("  canli cikti: C:\\MaxExec\\live.txt izlenir -> [LIVE] akar\n");
+    OutP("=============================================\n");
     if (!con)
-        printf("[!] KONSOL ACILAMADI (headless). Komutlari %s\\queue klasorune\n"
+        OutP("[!] KONSOL ACILAMADI (headless). Komutlari %s\\queue klasorune\n"
                "    elle .cmd dosyasi olarak birak - 2 sn icinde otomatik islenir.\n", BASE_DIR);
     for (int i = 0; i < 40 && !ResolvePython(); ++i) Sleep(500);
     LogLine("python27: %s (Py_IsInitialized=%d)",
             pfn_PyRun_SimpleString ? "BULUNDU" : "YOK",
             pfn_PyIsInitialized ? pfn_PyIsInitialized() : -1);   // FIX-11
-    printf("python27.dll : %s%s\n", pfn_PyRun_SimpleString ? "BULUNDU" : "YOK (oyun python'u daha baslamamis olabilir)",
+    OutP("python27.dll : %s%s\n", pfn_PyRun_SimpleString ? "BULUNDU" : "YOK (oyun python'u daha baslamamis olabilir)",
            (pfn_PyIsInitialized && pfn_PyIsInitialized()) ? " [initialized]" : "");
     if (pfn_PyRun_SimpleString)
     {
@@ -1288,9 +1310,9 @@ static DWORD WINAPI WorkerThread(LPVOID)
                 LogLine("AUTO-LOAD: PLUSMAXGOD_PyScript.py kuyruga kondu (%s)", pylibPath);
             if (okVer)
             {
-                printf("PLUSMAXGOD_PyScript.py : v%s (uyumlu) - otomatik yuklenecek\n", ver);
-                printf("                        oyun-ici: stat pos inv equip skill near chat goto tp |\n");
-                printf("                        kesif: pyfiles pydumpall pyscan plusquest\n");
+                OutP("PLUSMAXGOD_PyScript.py : v%s (uyumlu) - otomatik yuklenecek\n", ver);
+                OutP("                        oyun-ici: stat pos inv equip skill near chat goto tp |\n");
+                OutP("                        kesif: pyfiles pydumpall pyscan plusquest\n");
             }
             else
             {
@@ -1298,15 +1320,15 @@ static DWORD WINAPI WorkerThread(LPVOID)
                 char rp[MAX_PATH];
                 _snprintf(rp, MAX_PATH, "%s\\last_warning.txt", RESULT_DIR); rp[MAX_PATH-1]=0;
                 WriteFileAll(rp, std::string("! PYLIB ESI SURUM: v") + vShow +
-                    "  (DLL v1.9 PLUSMAXGOD v4.2 ister)\n"
+                    "  (DLL v2.0 PLUSMAXGOD v4.4 ister)\n"
                     "Yeni PLUSMAXGOD_PyScript.py'yi " + std::string(BASE_DIR) + " icine kopyala (bundle zip / GitHub).\n"
                     "ESKI pylib ILE: stat/pos/inv/equip/skill/near/chat/goto/tp/pyfiles/pydumpall/plusquest CALISMAZ.\n");
-                LogLine("UYARI: pylib ESI v%s - PLUSMAXGOD v4.1 gerekli! (%s)", vShow, pylibPath);
-                printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-                printf("!! PYLIB ESI: diskteki PLUSMAXGOD_PyScript.py = v%s  (gereken: v4.1)\n", vShow);
-                printf("!! Yeni PLUSMAXGOD_PyScript.py'yi %s icine kopyala (bundle zip)\n", BASE_DIR);
-                printf("!! Eski pylib ile v4.0 komutlari CALISMAZ (stat/inv/tp/pyfiles..)\n");
-                printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+                LogLine("UYARI: pylib ESI v%s - PLUSMAXGOD v4.4 gerekli! (%s)", vShow, pylibPath);
+                OutP("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+                OutP("!! PYLIB ESI: diskteki PLUSMAXGOD_PyScript.py = v%s  (gereken: v4.4)\n", vShow);
+                OutP("!! Yeni PLUSMAXGOD_PyScript.py'yi %s icine kopyala (bundle zip)\n", BASE_DIR);
+                OutP("!! Eski pylib ile v4.0 komutlari CALISMAZ (stat/inv/tp/pyfiles..)\n");
+                OutP("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
             }
         }
         else
@@ -1317,16 +1339,16 @@ static DWORD WINAPI WorkerThread(LPVOID)
                              "bundle zip icindeki PLUSMAXGOD_PyScript.py'yi " + std::string(BASE_DIR) +
                              " klasorune kopyala.\n");
             LogLine("UYARI: PLUSMAXGOD_PyScript.py YOK — komutlar calismaz! (%s)", pylibPath);
-            printf("PLUSMAXGOD_PyScript.py : YOK!! (%s)\n", pylibPath);
-            printf("                bundle zip'ten PLUSMAXGOD_PyScript.py'yi %s icine kopyala.\n", BASE_DIR);
-            printf("                Kopyalamadan komut yazarsan: ImportError maxlib.\n");
+            OutP("PLUSMAXGOD_PyScript.py : YOK!! (%s)\n", pylibPath);
+            OutP("                bundle zip'ten PLUSMAXGOD_PyScript.py'yi %s icine kopyala.\n", BASE_DIR);
+            OutP("                Kopyalamadan komut yazarsan: ImportError maxlib.\n");
         }
     }
     for (int i = 0; i < 40 && !HookGameWindow(); ++i) Sleep(500);
     if (!g_hGameWnd) LogLine("oyun penceresi 20 sn icinde bulunamadi");
-    printf("oyun penceresi: %s (hwnd=%p)\n", g_hGameWnd ? "SUBCLASS EDILDI" : "BULUNAMADI",
+    OutP("oyun penceresi: %s (hwnd=%p)\n", g_hGameWnd ? "SUBCLASS EDILDI" : "BULUNAMADI",
            (void*)g_hGameWnd);
-    printf("kuyruk: %s | sonuc: %s\n", QUEUE_DIR, RESULT_DIR);
+    OutP("kuyruk: %s | sonuc: %s\n", QUEUE_DIR, RESULT_DIR);
     InstallTimer();                               // FIX-8: WndProc'tan bagimsiz ana yol
     CreateThread(NULL, 0, AutoDrainThread, NULL, 0, NULL);
     CreateThread(NULL, 0, LiveMonitorThread, NULL, 0, NULL);   // FIX-36
@@ -1335,7 +1357,7 @@ static DWORD WINAPI WorkerThread(LPVOID)
     char line[4096];
     while (true)
     {
-        printf("maxexec> ");
+        OutP("maxexec> ");
         fflush(stdout);
         if (!fgets(line, sizeof(line), stdin)) break;
         std::string ln(line);
@@ -1353,62 +1375,62 @@ static DWORD WINAPI WorkerThread(LPVOID)
         else if (cmd == "login")
         {
             if (a.size() >= 3) CmdLogin(a[1], a[2]);
-            else printf("kullanim: login <id> <sifre>\n");
+            else OutP("kullanim: login <id> <sifre>\n");
         }
         else if (cmd == "selserver")
         {
             if (a.size() >= 3) CmdSelServer(atoi(a[1].c_str()), atoi(a[2].c_str()));
-            else printf("kullanim: selserver <server> <kanal>   (orn. selserver 0 0)\n");
+            else OutP("kullanim: selserver <server> <kanal>   (orn. selserver 0 0)\n");
         }
         else if (cmd == "empire")
         {
             if (a.size() >= 2) CmdEmpire(atoi(a[1].c_str()));
-            else printf("kullanim: empire <1-3>   (1=Shinsoo 2=Chunjo 3=Jinno)\n");
+            else OutP("kullanim: empire <1-3>   (1=Shinsoo 2=Chunjo 3=Jinno)\n");
         }
         else if (cmd == "create")
         {
             if (a.size() >= 5) CmdCreate(atoi(a[1].c_str()), a[2], atoi(a[3].c_str()), atoi(a[4].c_str()));
-            else printf("kullanim: create <slot> <ad> <race> <shape>\n");
+            else OutP("kullanim: create <slot> <ad> <race> <shape>\n");
         }
         else if (cmd == "enter")
         {
             if (a.size() >= 2) CmdEnter(atoi(a[1].c_str()));
-            else printf("kullanim: enter <slot>\n");
+            else OutP("kullanim: enter <slot>\n");
         }
         else if (cmd == "selchar")
         {
             if (a.size() >= 2) CmdSelChar(atoi(a[1].c_str()));
-            else printf("kullanim: selchar <slot 0-4>\n");
+            else OutP("kullanim: selchar <slot 0-4>\n");
         }
         else if (cmd == "newchar") CmdNewChar();
         else if (cmd == "joblist") CmdJobList();
         else if (cmd == "mkchar")
         {
             if (a.size() >= 3) CmdMkChar(a[1], atoi(a[2].c_str()));
-            else printf("kullanim: mkchar <isim> <race 0-8>   (orn. mkchar Isim 3 = Shaman(K))\n");
+            else OutP("kullanim: mkchar <isim> <race 0-8>   (orn. mkchar Isim 3 = Shaman(K))\n");
         }
         else if (cmd == "empirelist") CmdEmpireList();
         else if (cmd == "empireui")
         {
             if (a.size() >= 2) CmdEmpireUI(atoi(a[1].c_str()));
-            else printf("kullanim: empireui <1-3>   (1=Shinsoo 2=Chunjo 3=Jinno)\n");
+            else OutP("kullanim: empireui <1-3>   (1=Shinsoo 2=Chunjo 3=Jinno)\n");
         }
         else if (cmd == "delchar")
         {
             if (a.size() >= 2) CmdDelChar(atoi(a[1].c_str()));
-            else printf("kullanim: delchar <slot 0-4>   (sonra delcode <silme-kodu>)\n");
+            else OutP("kullanim: delchar <slot 0-4>   (sonra delcode <silme-kodu>)\n");
         }
         else if (cmd == "delcode")
         {
             if (a.size() >= 2) CmdDelCode(a[1]);
-            else printf("kullanim: delcode <silme-kodu>   (once delchar <slot>)\n");
+            else OutP("kullanim: delcode <silme-kodu>   (once delchar <slot>)\n");
         }
         // ---- FIX-33 (v1.8): PLUSMAXGOD komut ailesi ----
         else if (cmd == "stat") CmdStat();
         else if (cmd == "pos") CmdPos();
         else if (cmd == "equip") CmdEquip();
         else if (cmd == "skill") CmdSkill();
-        else if (cmd == "near") CmdNear();
+        else if (cmd == "near") CmdNear(a.size() >= 2 ? a[1] : "0");
         else if (cmd == "ride") CmdRide();
         else if (cmd == "revive") CmdRevive();
         else if (cmd == "logout") CmdLogout();
@@ -1424,7 +1446,7 @@ static DWORD WINAPI WorkerThread(LPVOID)
         else if (cmd == "chat")
         {
             if (a.size() >= 2) CmdChat(JoinArgs(a, 1));
-            else printf("kullanim: chat <mesaj>   (orn. chat merhaba | chat /ride)\n");
+            else OutP("kullanim: chat <mesaj>   (orn. chat merhaba | chat /ride)\n");
         }
         else if (cmd == "cmd")
         {
@@ -1434,42 +1456,42 @@ static DWORD WINAPI WorkerThread(LPVOID)
                 if (j[0] != '/') j = "/" + j;
                 CmdChat(j);
             }
-            else printf("kullanim: cmd <slash-komut>   (orn. cmd /ride | cmd /logout)\n");
+            else OutP("kullanim: cmd <slash-komut>   (orn. cmd /ride | cmd /logout)\n");
         }
         else if (cmd == "whisper")
         {
             if (a.size() >= 3) CmdWhisper(a[1], JoinArgs(a, 2));
-            else printf("kullanim: whisper <kim> <mesaj>\n");
+            else OutP("kullanim: whisper <kim> <mesaj>\n");
         }
         else if (cmd == "zoom")
         {
             if (a.size() >= 2) CmdZoom(atoi(a[1].c_str()));
-            else printf("kullanim: zoom <mesafe>   (orn. zoom 12000)\n");
+            else OutP("kullanim: zoom <mesafe>   (orn. zoom 12000)\n");
         }
         else if (cmd == "use")
         {
             if (a.size() >= 2) CmdUse(atoi(a[1].c_str()));
-            else printf("kullanim: use <slot>   (slot: inv raporundan)\n");
+            else OutP("kullanim: use <slot>   (slot: inv raporundan)\n");
         }
         else if (cmd == "drop")
         {
             if (a.size() >= 3) CmdDrop(atoi(a[1].c_str()), atoi(a[2].c_str()));
-            else printf("kullanim: drop <slot> <adet>   (DESTRUKTIF - dikkat!)\n");
+            else OutP("kullanim: drop <slot> <adet>   (DESTRUKTIF - dikkat!)\n");
         }
         else if (cmd == "goto")
         {
             if (a.size() >= 3) CmdGoto(atoi(a[1].c_str()), atoi(a[2].c_str()));
-            else printf("kullanim: goto <x> <y>   (once pos yaz)\n");
+            else OutP("kullanim: goto <x> <y>   (once pos yaz)\n");
         }
         else if (cmd == "tp")
         {
             if (a.size() >= 3) CmdTp(atoi(a[1].c_str()), atoi(a[2].c_str()));
-            else printf("kullanim: tp <x> <y>   (once pos yaz)\n");
+            else OutP("kullanim: tp <x> <y>   (once pos yaz)\n");
         }
         else if (cmd == "key")
         {
             if (a.size() >= 2) CmdKey(a[1], a.size() >= 3 ? a[2] : "1");
-            else printf("kullanim: key <DIK> <0/1>   (orn. key UP 1, key LEFT 0)\n");
+            else OutP("kullanim: key <DIK> <0/1>   (orn. key UP 1, key LEFT 0)\n");
         }
         else if (cmd == "attack")
         {
@@ -1478,24 +1500,24 @@ static DWORD WINAPI WorkerThread(LPVOID)
         else if (cmd == "pydump")
         {
             if (a.size() >= 2) CmdPyDump(a[1]);
-            else printf("kullanim: pydump <dosya-ad>   (orn. pydump intrologin | adaylar: pyfiles)\n");
+            else OutP("kullanim: pydump <dosya-ad>   (orn. pydump intrologin | adaylar: pyfiles)\n");
         }
         else if (cmd == "pyscan")
         {
             if (a.size() >= 2) CmdPyScan(a[1]);
-            else printf("kullanim: pyscan <modul>   (orn. pyscan player | pyscan net)\n");
+            else OutP("kullanim: pyscan <modul>   (orn. pyscan player | pyscan net)\n");
         }
         // --- FIX-37 (v1.9): GOD MOD komutlari ---
         else if (cmd == "unequip")
         {
             if (a.size() >= 2) CmdUnequip(a[1]);
-            else printf("kullanim: unequip <parca|slot>   (body/head/shoes/wrist/weapon/neck/ear/unique/arrow/costume | 90-109)\n");
+            else OutP("kullanim: unequip <parca|slot>   (body/head/shoes/wrist/weapon/neck/ear/unique/arrow/costume | 90-109)\n");
         }
         else if (cmd == "unequipall") CmdUnequipAll();
         else if (cmd == "chchange")
         {
             if (a.size() >= 2) CmdChChange(atoi(a[1].c_str()));
-            else printf("kullanim: chchange <ch>   (orn. chchange 2; kimlik login.dat'tan okunur - login ile giris yaptiysan hazir)\n");
+            else OutP("kullanim: chchange <ch>   (orn. chchange 2; kimlik login.dat'tan okunur - login ile giris yaptiysan hazir)\n");
         }
         else if (cmd == "relogin") CmdRelogin();
         else if (cmd == "ground") CmdGround();
@@ -1511,7 +1533,7 @@ static DWORD WINAPI WorkerThread(LPVOID)
         else if (cmd == "fakeitem")
         {
             if (a.size() >= 2) CmdFakeItem(a[1], a.size() >= 3 ? a[2] : "1");
-            else printf("kullanim: fakeitem <vnum> [adet]   (HAYALET esya - istemci gorunumu)\n");
+            else OutP("kullanim: fakeitem <vnum> [adet]   (HAYALET esya - istemci gorunumu)\n");
         }
         else if (cmd == "fakeclear")
         {
@@ -1519,7 +1541,7 @@ static DWORD WINAPI WorkerThread(LPVOID)
         }
         else if (cmd == "clone")
         {
-            CmdClone(a.size() >= 2 ? a[1] : "80");
+            CmdClone(a.size() >= 2 ? a[1] : "80", a.size() >= 3 ? a[2] : "-1");
         }
         else if (cmd == "unclone")
         {
@@ -1528,43 +1550,35 @@ static DWORD WINAPI WorkerThread(LPVOID)
         else if (cmd == "spawn")
         {
             if (a.size() >= 2) CmdSpawn(a[1], a.size() >= 3 ? a[2] : "NPC");
-            else printf("kullanim: spawn <race> [ad]   (demirci=20016, satici=20010, simyaci=20001; race ogrenme: near)\n");
+            else OutP("kullanim: spawn <race> [ad]   (demirci=20016, satici=20010, simyaci=20001; race ogrenme: near)\n");
         }
         else if (cmd == "morph")
         {
             if (a.size() >= 2) CmdMorph(a[1]);
-            else printf("kullanim: morph <race>   (demirci gorunumu: morph 20016; geri: unmorph)\n");
+            else OutP("kullanim: morph <race>   (demirci gorunumu: morph 20016; geri: unmorph)\n");
         }
         else if (cmd == "unmorph") CmdUnMorph();
         else if (cmd == "setarmor")
         {
             if (a.size() >= 2) CmdSetArmor(a[1]);
-            else printf("kullanim: setarmor <vnum>   (gorunum zirhi - istemci tarafi)\n");
+            else OutP("kullanim: setarmor <vnum>   (gorunum zirhi - istemci tarafi)\n");
         }
         else if (cmd == "setweapon")
         {
             if (a.size() >= 2) CmdSetWeapon(a[1]);
-            else printf("kullanim: setweapon <vnum>   (gorunum silahi - istemci tarafi)\n");
+            else OutP("kullanim: setweapon <vnum>   (gorunum silahi - istemci tarafi)\n");
         }
         else if (cmd == "simya" || cmd == "ds") CmdSimya();
         else if (cmd == "itemscan")
         {
             if (a.size() >= 3) CmdItemScan(a[1], a[2]);
-            else printf("kullanim: itemscan <min> <max>   (orn. itemscan 55000 55999 - simya vnum kesfi)\n");
+            else OutP("kullanim: itemscan <min> <max>   (orn. itemscan 55000 55999 - simya vnum kesfi)\n");
         }
         else if (cmd == "fish") CmdFish();
         else if (cmd == "fishstop") CmdFishStop();
-        else if (cmd == "fishdelay")
-        {
-            CmdFishDelay(a.size() >= 2 ? a[1] : "auto");
-        }
         else if (cmd == "fishkeep")
         {
             CmdFishKeep(a.size() >= 2 ? a[1] : "0");
-        }
-        else if (cmd == "fishswap")
-        {
-            CmdFishSwap(a.size() >= 2 ? a[1] : "1");
         }
         else if (cmd == "fishspot")
         {
@@ -1573,17 +1587,78 @@ static DWORD WINAPI WorkerThread(LPVOID)
         }
         else if (cmd == "fishstat") CmdFishStat();
         else if (cmd == "fishtest") CmdFishTest();
-        else if (cmd == "fishtp") CmdFishTP();
-        else if (cmd == "fishswapnow") CmdFishSwapNow();
+        // --- v2.0 (pylib v4.4) komutlari ---
+        else if (cmd == "morphtarget") CmdMorphTarget();
+        else if (cmd == "cloneplayer") CmdClonePlayer();
+        else if (cmd == "fakemount" || cmd == "ridefake")
+        {
+            CmdFakeMount(a.size() >= 2 ? a[1] : "1");
+        }
+        else if (cmd == "speed")
+        {
+            CmdSpeed(a.size() >= 2 ? a[1] : "0");
+        }
+        else if (cmd == "aspeed")
+        {
+            CmdASpeed(a.size() >= 2 ? a[1] : "0");
+        }
+        else if (cmd == "statup")
+        {
+            if (a.size() >= 2) CmdStatUp(a[1], a.size() >= 3 ? a[2] : "1");
+            else OutP("kullanim: statup <ht|iq|st|dx> [adet]   (orn: statup st 10)\n");
+        }
+        else if (cmd == "skillup")
+        {
+            if (a.size() >= 2) CmdSkillUp(a[1], a.size() >= 3 ? a[2] : "1");
+            else OutP("kullanim: skillup <skill-idx> [adet]   (idx: skill raporundan)\n");
+        }
+        else if (cmd == "antifly")
+        {
+            CmdAntiFly(a.size() >= 2 ? a[1] : "1");
+        }
+        else if (cmd == "antiflyeffect")
+        {
+            CmdAntiFlyEffect(a.size() >= 2 ? a[1] : "1");
+        }
+        else if (cmd == "itemfind")
+        {
+            if (a.size() >= 2) CmdItemFind(JoinArgs(a, 1));
+            else OutP("kullanim: itemfind <kelime>   (orn: itemfind simya | itemfind kostum)\n");
+        }
+        else if (cmd == "iteminfo")
+        {
+            if (a.size() >= 2) CmdItemInfo(a[1]);
+            else OutP("kullanim: iteminfo <vnum>\n");
+        }
+        else if (cmd == "attr")
+        {
+            if (a.size() >= 2) CmdAttr(a[1]);
+            else OutP("kullanim: attr <slot>   (envanter 0-89, ekipman 90+)\n");
+        }
+        else if (cmd == "attrall") CmdAttrAll();
+        else if (cmd == "useon")
+        {
+            if (a.size() >= 3) CmdUseOn(a[1], a[2]);
+            else OutP("kullanim: useon <kagit-slot> <esya-slot>\n");
+        }
+        else if (cmd == "efsunsw")
+        {
+            if (a.size() >= 2) CmdEfsunSw(a[1]);
+            else OutP("kullanim: efsunsw <esya-slot>\n");
+        }
+        else if (cmd == "gotake")
+        {
+            CmdGoTake(a.size() >= 2 ? a[1] : "all");
+        }
         else if (cmd == "otp" || cmd == "optimizetp")
         {
             if (a.size() >= 3) CmdOTP(a[1], a[2]);
-            else printf("kullanim: otp <x> <y>   (sunucu-senkron adimli isinlama; ayar: otpstep/otpdelay, dur: otpstop)\n");
+            else OutP("kullanim: otp <x> <y>   (sunucu-senkron adimli isinlama; ayar: otpstep/otpdelay, dur: otpstop)\n");
         }
         else if (cmd == "otpstop")  CmdOTPStop();
-        else if (cmd == "otpstep")  { if (a.size() >= 2) CmdOTPStep(a[1]); else printf("kullanim: otpstep <px> (240 oneri)\n"); }
-        else if (cmd == "otpdelay") { if (a.size() >= 2) CmdOTPDelay(a[1]); else printf("kullanim: otpdelay <ms> (1300 oneri)\n"); }
-        else if (cmd == "clonemod") { if (a.size() >= 2) CmdCloneMod(a[1]); else printf("kullanim: clonemod <swap|1|0>\n"); }
+        else if (cmd == "otpstep")  { if (a.size() >= 2) CmdOTPStep(a[1]); else OutP("kullanim: otpstep <px> (240 oneri)\n"); }
+        else if (cmd == "otpdelay") { if (a.size() >= 2) CmdOTPDelay(a[1]); else OutP("kullanim: otpdelay <ms> (1300 oneri)\n"); }
+        else if (cmd == "clonemod") { if (a.size() >= 2) CmdCloneMod(a[1]); else OutP("kullanim: clonemod <swap|1|0>\n"); }
         else if (cmd == "spawnscan")
         {
             if (a.size() >= 3) CmdSpawnScan(a[1], a[2]);
@@ -1601,40 +1676,40 @@ static DWORD WINAPI WorkerThread(LPVOID)
         else if (cmd == "load")
         {
             if (a.size() >= 2) CmdLoad(a[1]);
-            else printf("kullanim: load <py-dosyasi>   (v1.3+ zaten otomatik)\n");
+            else OutP("kullanim: load <py-dosyasi>   (v1.3+ zaten otomatik)\n");
         }
         else if (cmd == "raw")
         {
             if (ln.size() > 4) QRaw(ln.substr(4));
-            else printf("kullanim: raw <python kodu>   (orn. raw import sys)\n");
+            else OutP("kullanim: raw <python kodu>   (orn. raw import sys)\n");
         }
         else if (cmd == "waitfor")
         {
             if (a.size() >= 3) CmdWaitFor(a[1], atoi(a[2].c_str()));
-            else printf("kullanim: waitfor <SahneAdi> <saniye>   (orn. waitfor GameWindow 60)\n");
+            else OutP("kullanim: waitfor <SahneAdi> <saniye>   (orn. waitfor GameWindow 60)\n");
         }
         else if (cmd == "pyerr")   // FIX-17: Python hatalarini konsolda gor
         {
             FILE* f = fopen(PYERR_LOG, "r");
-            if (!f) { printf("pyerr.log yok (henuz Python hatasi olusmadi)\n"); continue; }
+            if (!f) { OutP("pyerr.log yok (henuz Python hatasi olusmadi)\n"); continue; }
             char buf[512]; std::vector<std::string> lines;
             while (fgets(buf, sizeof(buf), f)) lines.push_back(buf);
             fclose(f);
-            printf("--- pyerr.log son %d satir ---\n", (int)(lines.size() > 30 ? 30 : lines.size()));
+            OutP("--- pyerr.log son %d satir ---\n", (int)(lines.size() > 30 ? 30 : lines.size()));
             for (size_t i = lines.size() > 30 ? lines.size()-30 : 0; i < lines.size(); ++i)
-                printf("%s", lines[i].c_str());
+                OutP("%s", lines[i].c_str());
         }
         else if (cmd == "log")
         {
             FILE* f = fopen(EXEC_LOG, "r");
-            if (!f) { printf("log yok\n"); continue; }
+            if (!f) { OutP("log yok\n"); continue; }
             char buf[512]; std::vector<std::string> lines;
             while (fgets(buf, sizeof(buf), f)) lines.push_back(buf);
             fclose(f);
             for (size_t i = lines.size() > 25 ? lines.size()-25 : 0; i < lines.size(); ++i)
-                printf("%s", lines[i].c_str());
+                OutP("%s", lines[i].c_str());
         }
-        else printf("bilinmeyen komut (help)\n");
+        else OutP("bilinmeyen komut (help)\n");
     }
     return 0;
 }
@@ -1656,7 +1731,7 @@ BOOL APIENTRY DllMain(HMODULE hMod, DWORD reason, LPVOID)
         DisableThreadLibraryCalls(hMod);
         EnsureDirs();
         CreateThread(NULL, 0, WorkerThread, NULL, 0, NULL);
-        LogLine("MaxExecutor v1.9 PLUSMAXGOD yuklendi (pid=%lu) — worker baslatiliyor",
+        LogLine("MaxExecutor v2.0 PLUSMAXGOD yuklendi (pid=%lu) — worker baslatiliyor",
                 GetCurrentProcessId());
     }
     return TRUE;
