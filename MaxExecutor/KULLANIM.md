@@ -2,9 +2,11 @@
 
 > Paket içeriği, kurulum, komutlar, giriş akışı, sorun giderme — hepsi bu dosyada.
 > Mimari gerekçe için: `reports/DEV_REAL_BINARY_TEST.md` (RC18/RC19) + `reports/DEV_GIL_ANALYSIS.md` (RC1-RC17).
-> Son güncelleme: **Oturum 13 — v1.8 PLUSMAXGOD / pylib v4.0 (PLUSMAXGOD_PyScript.py)**
+> Son güncelleme: **Oturum 14 — v1.8.1 PLUSMAXGOD / pylib v4.1 (pack.Get keşif zinciri)**
 >
-> **v1.8 ÖZET — oturum 13 (kullanıcı raporu: v1.7 HEPSİ ÇALIŞTI ✓):** Saha doğrulaması sonrası iki yeni yetenek ailesi eklendi. **(A) OYUN-İÇİ KOMUTLAR:** `stat` (seviye/HP/SP/EXP), `pos` (x/y/z + harita), `inv <sayfa>` (envanter), `equip` (ekipman), `skill` (beceriler), `near` (yakın varlıklar), `chat <mesaj>` / `cmd /komut` (sohbet), `whisper`, `ride/revive/logout/back/pickup`, `zoom <mesafe>`, `use <slot>`, `drop <slot> <adet>` (DİKKAT), `goto <x> <y>` (yürü), `tp <x> <y>` (ışınla), `key <DIK> <0/1>`, `attack <0/1>`. Hepsi kanıtlı API'ler — nighttown koleksiyonu 4000+ kullanım + cycu.py. **(B) KESİF KOMUTLARI:** `pyfiles` (5 yöntemle py dosyalarını bul), `pydump <ad>` (tek dosyayı dök), `pydumpall` (HEPSİNİ `C:\MaxExec\dump`'a + INDEX.txt), `pyscan <modul>` (modülün fonksiyonları), `plusquest` (tüm modülleri tara → PLUSQuest_live.txt). **Eski AI doğrulaması:** `app.GetFileList` bu istemcide YOK (0 kanıt) — asıl okuma yolu `app.OpenTextFile` (kanıtlı, cycu.py). **(C) YENİ ADLANDIRMA:** pylib artık diskte **PLUSMAXGOD_PyScript.py** olarak yaşar (DLL v1.8 otomatik yazar/yükseltir; eski pylib.py hâlâ yedek yol olarak kabul edilir — BootImport yerinde yükseltir). Katalog: **PLUSQuest.md** (MaxExecutor klasöründe).
+> **v4.1 ÖZET — saha testi 8 dersi (kullanıcı: "oyunun kendi kullandıklarını 1kb dumpladı, tam dumplayamamış"):** v4.0 `pydumpall` 144 hedef buldu; diskteki 73 bot dosyasını TAM döktü (pasha37-levelbot.py = 178KB ✓) AMA oyunun kendi 59 modülü (app/chr/player/game/ui/introLogin...) **2 bayt BOŞ** çıktı. Kök neden 3 katman: (1) `app.GetFileList` bu istemcede **SADECE DISK** listeliyor — 73 dosyanın hepsi senin sonradan attığın botlar (oyun onları kullanmıyor; root/epx'te yok — senin gözlemin doğruydu); (2) oyunun kendi modülleri root **PACK** içinde; (3) `app.OpenTextFile` pack dosyalarında handle verip **0 satır** döndürüyor. **v4.1 çözümü — KANITLI OKUMA ZİNCİRİ** (dump edilen ÇALIŞAN botların kendi kodundan çıkarıldı): `pack.Exist`+`pack.Get` (FileExtractor.py "ScriptStealer" + New_Levelbot.py:363 `pack.Get("playersettingmodule.py")` root pack'ten KAYNAK okuyor!) → `pack_open(ad,"r")` (edithack.py:888 + itemcreator.py:418) → `app.OpenTextFile` (artık YEDEK) → disk. `pydumpall` hedefleri artık **canlı sys.modules'ten** (130 modül) + UI script yollarından (locale/ro/ui + UIScript, oyun log kanıtlı) üretilir; INDEX.txt'e **yöntem + byte kolonu** geldi; 0 byte = `BOS` işaretli (sahte OK yok). `pyfiles`'a `[6] pack API keşfi` + `[7] modül __file__` raporu geldi. **Saha testi 8'de ÇALIŞANLAR:** stat/pos/skill/near/tp/goto/attack/chat/revive/pyfiles/pyscan/plusquest (439KB canlı katalog) — hepsi temiz. Komut yazım hatası notu: `player.ClickSkillSlot(15)` tek başına komut DEĞİL → `raw player.ClickSkillSlot(15)` yaz.
+>
+> **v1.8 ÖZET — oturum 13 (kullanıcı raporu: v1.7 HEPSİ ÇALIŞTI ✓):** Saha doğrulaması sonrası iki yeni yetenek ailesi eklendi. **(A) OYUN-İÇİ KOMUTLAR:** `stat` (seviye/HP/SP/EXP), `pos` (x/y/z + harita), `inv <sayfa>` (envanter), `equip` (ekipman), `skill` (beceriler), `near` (yakın varlıklar), `chat <mesaj>` / `cmd /komut` (sohbet), `whisper`, `ride/revive/logout/back/pickup`, `zoom <mesafe>`, `use <slot>`, `drop <slot> <adet>` (DİKKAT), `goto <x> <y>` (yürü), `tp <x> <y>` (ışınla), `key <DIK> <0/1>`, `attack <0/1>`. Hepsi kanıtlı API'ler — nighttown koleksiyonu 4000+ kullanım + cycu.py. **(B) KESİF KOMUTLARI:** `pyfiles`, `pydump <ad>`, `pydumpall` (HEPSİNİ `C:\MaxExec\dump`'a + INDEX.txt), `pyscan <modul>`, `plusquest` (tüm modülleri tara → PLUSQuest_live.txt). **(C) YENİ ADLANDIRMA:** pylib artık diskte **PLUSMAXGOD_PyScript.py** olarak yaşar (DLL v1.8 otomatik yazar/yükseltir; eski pylib.py hâlâ yedek yol olarak kabul edilir — BootImport yerinde yükseltir). Katalog: **PLUSQuest.md** (MaxExecutor klasöründe).
 >
 > **v1.7 ÖZET — saha testi 7 dersi (oturum 12):** v1.6'nın 30 komutu da temiz çalıştı (pyfail=0) ve iki gerçek oyun-düzeyi bulgu çıktı. **(1) `enter` oyuna sokmuyor:** `net.DirectEnter` YENİ oluşturulan karakterde sunucu tarafından reddediliyor (loading penceresi açılıp login ekranına geri atıyor); eski karakterlerde (raynare) çalışıyor. Oyunun kendi START butonu ise çalışıyor — kullanıcı doğrulaması + MaximumPyScript_Merged_calisan kanıtı. **v1.7 `enter`: önce SelectSlot + StartGame/startButton (UI yolu); DirectEnter sadece UI yolu bulunamazsa YEDEK.** Çift-giriş yasağı (RC12) korunur: UI yolu seçilince DirectEnter hiç çağrılmaz. **(2) mkchar'dan sahte CREATE_FAILURE:** çift paket gidiyordu — UI OLUSTUR butonu paketi kendisi yolluyor + pylib bir de direkt SendCreateCharacterPacket yolluyordu → 1. paket başarı, 2. paket `CREATE_FAILURE: 0 (0 karakter yaratılamaz)`. Karakter zaten oluşmuştu; sahte hataydı. **v1.7 mkchar: paket yolu SADECE buton bulunamazsa.**
 >
@@ -22,7 +24,7 @@
 |---|---|---|
 | `bin/MaxExecutor.dll` | **Ana proje.** Oyun içine enjekte edilen 32-bit DLL. Ana thread'de (WndProc + SetTimer) Python çalıştırır. Hook YOK, SHM YOK, arka-plan PyRun YOK. **v1.8: PLUSMAXGOD komut ailesi (oyun-ici + kesif) + surum-ongoer BootImport + dump klasoru.** | Bu repo — derlendi (32-bit PE, `-O2`; zig cc `x86-windows-gnu`) |
 | `bin/MaxInject.exe` | DLL enjektörü. `metin2client.exe` sürecini bulur, DLL'i LoadLibrary ile yükler. | Bu repo — derlendi |
-| `PLUSMAXGOD_PyScript.py` | **pylib v4.0 (maxlib).** DLL içine gömülü; diskte eksik/eskiyse otomatik yazılır. Tüm komutlar: menü (login/charlist/mkchar...) + oyun-ici (stat/inv/tp...) + kesif (pyfiles/pydumpall/plusquest). | Bu repo |
+| `PLUSMAXGOD_PyScript.py` | **pylib v4.1 (maxlib).** DLL içine gömülü; diskte eksik/eskiyse otomatik yazılır. Tüm komutlar: menü (login/charlist/mkchar...) + oyun-ici (stat/inv/tp...) + kesif (pyfiles/pydumpall/plusquest). | Bu repo |
 | `pylib.py` | Eski v3.2 adı — YEDEK yolu olarak kabul edilir (BootImport önce PLUSMAXGOD'u dener). Silinebilir; DLL yeniden yazmaz. | Bu repo |
 | `MaximumPyScript_STABLE.py` | Eski mimarinin (SHM'li v17) RC12/RC13/RC14 yamalı hali. Alternatif yol. | Bu repo |
 | `MaxExecutor.cpp` / `MaxInject.cpp` | Kaynak kodlar (değişiklik yaparsan yeniden derlersin) | Bu repo |
@@ -55,11 +57,11 @@
    İlk satırlarda şunları görmelisin:
    ```
    python27.dll : BULUNDU [initialized]
-   PLUSMAXGOD_PyScript.py : v4.0 (uyumlu) - otomatik yuklenecek
+   PLUSMAXGOD_PyScript.py : v4.1 (uyumlu) - otomatik yuklenecek
    oyun penceresi: SUBCLASS EDILDI (hwnd=0x...)
    ana-thread timer: KURULDU
    ```
-   > `PLUSMAXGOD_PyScript.py : GUNCELLENDI -> v4.0 (DLL icinden yazildi)` görürsen: diskteki pylib eskiymiş (veya v3.2 idi), v1.8 gömülü kopyayı yazdı — ekstra bir şey yapmana gerek yok. Eski dosya `PLUSMAXGOD_eski_*.py` olarak yedeklenir.
+   > `PLUSMAXGOD_PyScript.py : GUNCELLENDI -> v4.1 (DLL icinden yazildi)` görürsen: diskteki pylib eskiymiş (veya v3.2 idi), v1.8 gömülü kopyayı yazdı — ekstra bir şey yapmana gerek yok. Eski dosya `PLUSMAXGOD_eski_*.py` olarak yedeklenir.
    > Eski `pylib.py` v3.2 yerinde duruyorsa bile sorun yok: BootImport sürümü okur, v4'ten küçükse PLUSMAXGOD_PyScript.py ile YERİNDE yükseltir (FIX-32).
    > `!! PYLIB ESI` uyarısı görürsen: pylib yazılamadı demektir (yazma hatası) — o zaman elle kopyala.
    > `python27.dll : YOK` ise oyunun Python'u henüz başlamamıştır → konsolda bekle,
@@ -288,25 +290,36 @@ attack 1 / attack 0      saldırı basılı tut / bırak (player.SetAttackKeySta
 > `goto` yürümedir (animasyonlu, mesafe kademeli), `tp` anlıktır. Bazı sunucular tp'yi
 > sunucu tarafında doğrular — ışınlanma sonrası `pos` ile doğrula, geri atarsan `goto` kullan.
 
-### d) Kesif akışı (oyunun python dosyalarını çek + incele)
+### d) Kesif akışı (oyunun python dosyalarını çek + incele) — v4.1
 ```
-pyfiles                 5 yöntem: app.GetFileList (bu client'ta yok olabilir) +
-                        sys.modules + pkgutil + disk taraması (cwd/sys.path/TEMP-TMP —
-                        nighttown workspace'te veya temp/tmp'te) + import-probe (80 modül)
-pydump intrologin       TEK dosyayı pack'ten oku (app.OpenTextFile — KANITLI yol) →
-                        C:\MaxExec\dump\intrologin.py + konsola ilk 40 satır
-pydumpall               HEPSİNİ dök → C:\MaxExec\dump\*.py + INDEX.txt
-                        (800 dosya üst sınırı; her 25'te ilerleme yazar)
+pyfiles                 6 rapor: app.GetFileList (SADECE DISK - saha testi 8) +
+                        sys.modules (canli 130 modul) + pkgutil (yok - beklenen) +
+                        disk taramasi + import-probe + [6] pack API kesfi (dir(pack),
+                        Exist/Get/pack_open var mi) + [7] modul __file__ raporu
+pydump introLogin       TEK dosyayi KANITLI ZINCIRLE oku → C:\MaxExec\dump\ + ilk 40 satir
+                        (zincir: pack.Get → pack_open → app.OpenTextFile → disk;
+                        buyuk-kucuk harf varyantlari otomatik denenir)
+pydumpall               HEPSINI dok → C:\MaxExec\dump\*.py + INDEX.txt
+                        hedefler: sys.modules canlisi (oyunun KENDI modulleri!) +
+                        probe + disk + UI script yollari (locale/ro/ui + UIScript);
+                        INDEX'te yontem + byte kolonu; 0 byte = BOS isaretli
 pyscan player           yüklü modülün fonksiyonları + argüman adları (py2 func_code)
 plusquest               TÜM yüklü modülleri tara → C:\MaxExec\dump\PLUSQuest_live.txt
                         (oyundayken çalıştır — daha fazla modül yüklü olur)
 ```
 > **SONRAKI ADIM:** `C:\MaxExec\dump` klasörünü ZIP'le → AI'ya gönder → PLUSQuest.md kataloğu
 > senin istemcinin gerçek dosyalarıyla zenginleştirilir.
-> **Eski AI hükmü:** `app.GetFileList("*.py")` eski AI'nin "en iyi yöntem" dediği şeydi —
-> bu istemcide 0 kanıt (nighttown koleksiyonunda hiç kullanılmamış). Gerçek okuma yolu
-> `app.OpenTextFile + GetTextFileLineCount + GetTextFileLine` (cycu.py + serverinfo.py
-> deneyin ile doğrulandı). Şifreli pack'ten bile okur!
+>
+> **SAHA TESTİ 8 HÜKMÜ (v4.1'in nedeni):** v4.0 `pydumpall` 144 hedef buldu; diskteki 73
+> bot dosyasını TAM döktü AMA oyunun kendi 59 modülü (app/chr/player/game/ui...) **2 bayt
+> boş** çıktı. Nedenler: (1) `app.GetFileList` bu istemcede SADECE DISK listeliyor — 73
+> dosyanın hepsi senin sonradan attığın botlar (oyun onları kullanmıyor, root/epx'te yok);
+> (2) oyunun kendi modülleri root **PACK** içinde; (3) `app.OpenTextFile` pack dosyalarında
+> handle verip **0 satır** döndürüyor. **GERÇEK pack okuma yolu** (çalışan botların kendi
+> kodundan çıkarıldı): `pack.Exist(ad)` + `pack.Get(ad)` (FileExtractor.py + New_Levelbot.py:363
+> `pack.Get("playersettingmodule.py")` = root pack'ten kaynak okuyor!) ve `pack_open(ad,"r")`
+> (edithack.py:888 + itemcreator.py:418, pack içindeki item_list.txt'yi okuyor). v4.1
+> `pydump`/`pydumpall` tam bu zincirle çalışır.
 
 ---
 
@@ -397,7 +410,7 @@ Visual Studio kullanacaksan: x86 platform, DLL projesi, `/MT` (statik CRT), ek i
 ## 8. TEST KONTROL LİSTESİ (kullanıcı tarafında)
 
 - [ ] `MaxInject.exe` → konsol açıldı, `python27.dll : BULUNDU`
-- [ ] `PLUSMAXGOD_PyScript.py : v4.0 (uyumlu)` ya da `GUNCELLENDI -> v4.0` satırı göründü
+- [ ] `PLUSMAXGOD_PyScript.py : v4.1 (uyumlu)` ya da `GUNCELLENDI -> v4.1` satırı göründü
 - [ ] 30 sn sonra `results\last_pylib_load.txt` VAR (oto-yükleme kanıtı)
 - [ ] `status` → `SCENE=LoginWindow+ServerList` benzeri çıktı
 - [ ] `login id pwd` → `waitfor SelectCharacterWindow 30` ile ekran geçişi

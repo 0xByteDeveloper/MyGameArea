@@ -1,9 +1,42 @@
 # -*- coding: utf-8 -*-
 """
 ===========================================================================
- PLUSMAXGOD_PyScript.py - MaxExecutor Ana-Thread Komut Kutuphanesi (v4.0)
+ PLUSMAXGOD_PyScript.py - MaxExecutor Ana-Thread Komut Kutuphanesi (v4.1)
  "PLUSMAXGOD" SURUMU - pylib v3.2'nin tamami + oyun-ici + kesif komutlari
 ===========================================================================
+ v4.1 DEGISIKLIKLER (saha testi 8 - pydumpall 2 bayt sorunu sonrasi):
+   Saha bulgusu: v4.0 pydumpall 144 hedefin 73'unu doktu (diskteki botlar)
+   AMA oyunun KENDI modulleri (app/chr/player/game/ui/introLogin...) 2 bayt
+   cikti. Kok nedeni: app.GetFileList bu istemcide SADECE DISK dosyalarini
+   listeliyor (73'ü de kullanici botlari); oyun modulleri root PACK icinde;
+   app.OpenTextFile pack dosyalarinda handle verip 0 SATIR donduruyor.
+
+   YENI KANITLI OKUMA ZINCIRI (dump klasorunden cikan calisan botlarin
+   kendi kodunda birebir kullanildigi GORULDU - GOD MOD kanit taramasi):
+     1) pack.Exist(ad) + pack.Get(ad)      <- FileExtractor.py:407
+                                            New_Levelbot.py:363
+        "playersettingmodule.py" icerigini pack'ten STRING olarak okuyor!
+     2) pack_open(ad, 'r').readlines()     <- edithack.py:888/911/939
+                                            itemcreator.py:418/441/469
+        pack icindeki item_list.txt'yi okuyor (diskte DEGIL!)
+     3) app.OpenTextFile + GetTextFileLineCount + GetTextFileLine
+        (cycu.py:92-105; SAHA TESTI: pack dosyalarinda 0 satir - disk
+        dosyalarinda calisir, YEDEK olarak kalir)
+     4) disk open (en son yedek)
+
+   * _pack_read(ad)  : yukaridaki 4 katmanli zincir; (yontem, icerik) doner
+   * _name_variants(): introLogin/intrologin/IntroLogin gibi buyuk-kucuk
+     harf varyantlari + locale/ro/ui/ + UIScript/ yollari turenir
+   * pydump v2       : pack-first zincir + varyant taramasi; yontem raporu
+   * pydumpall v2    : hedef listesi ARTIK CANLI sys.modules'ten (130 modul)
+     + import-probe + disk/GetFileList + UI script yollari (oyun log'unda
+     gorulen locale/ro/ui/*.py + UIScript/*.py); INDEX'e yontem + byte
+     kolonu; 0 byte -> 'BOS' isaretli (sahte OK yok)
+   * pyfiles v2      : [6] pack API kesfi (dir(pack) + hasattr Exist/Get/
+     pack_open) + GetFileList=disk-only saha notu + modul __file__ raporu
+   * plusquest/pyscan: dokunulmadi (saha testi 8'de mukemmel calisti,
+     PLUSQuest_live.txt 439KB canli katalog)
+
  v4.0 DEGISIKLIKLER (oturum 13 - "hepsi calisti" sonrasi GOD MOD genisleme):
    Diskteki dosya adi: pylib.py -> PLUSMAXGOD_PyScript.py (DLL v1.8 cifti;
    eski pylib.py hala YEDEK olarak kabul edilir - BootImport once yenisini
@@ -114,7 +147,7 @@ DUMP_DIR   = r'C:\MaxExec\dump'   # v4.0: py dump + PLUSQuest_live buraya
 # SURUM ISARETI - DLL v1.8 bunu okur (FIX-19). PLUSMAXGOD_PyScript.py
 # degistirmeden bu satiri silme/degistirme! Eski pylib (v3.x) major 3
 # oldugu icin DLL v1.8 acilista KOSKOCA uyar basar.
-PYLIB_VERSION = '4.0'
+PYLIB_VERSION = '4.1'
 
 RACE_TABLE = {
     0: ('Warrior', 'E'), 1: ('Ninja', 'K'), 2: ('Sura', 'E'), 3: ('Shaman', 'K'),
@@ -1763,21 +1796,182 @@ def attack(mode):
         _write('attack', 'HATA ' + _fmt_error(e) + '\n')
 
 # ===========================================================================
-# v4.0 - KESIF KOMUTLARI (oyundaki Python dosyalarini bulma + dokme + tarama)
-# ESKI AI DOGRULARI/YANLISLARI (eski_ai_sohbet.txt) - GOD MOD hukmu:
-#   * app.GetFileList("*.py"): eski AI "en iyi yontem" dedi - AMA nighttown
-#     koleksiyonunda 0 kullanim -> bu istemcide YOK olabilir. Aday olarak
-#     denenir, yoksa diger yontemler devreye girer.
-#   * app.OpenTextFile + GetTextFileLineCount + GetTextFileLine: KANITLI
-#     (cycu.py + 24 kullanim; kullanici serverinfo.py okumayi dogruladi).
-#     Pack sifreli olsa bile okur - ASIL okuma yolu bu.
-#   * sys.modules: dogru - yuklu modulleri verir (bedava, risksiz).
-#   * pkgutil.iter_modules: embedded importer'da genelde calismaz - denemesi
-#     bedava, notla raporlanir.
-#   * os.listdir: root.eix sifrelis diskte yoksa bos doner; AMMA client
-#     klasoru (nighttown: workspace'te veya temp/tmp'te - kullanici notu)
-#     taranarak script/modul koleksiyonlari yakalanir.
+# v4.1 - KESIF KOMUTLARI (oyundaki Python dosyalarini bulma + dokme + tarama)
+# ESKI AI DOGRULARI/YANLISLARI - GOD MOD hukmu + SAHA TESTI 8 hukmu:
+#   * app.GetFileList("*.py"): eski AI "en iyi yontem" dedi - YALANDI.
+#     SAHA TESTI 8: calisiyor AMA SADECE DISK dosyalarini veriyor (73'ü de
+#     kullanici botlari; oyunun kendi modulleri listede YOK). Disk keşfi
+#     icin faydali, pack icin ise YARARSIZ.
+#   * app.OpenTextFile + GetTextFileLineCount + GetTextFileLine: KISMEN.
+#     cycu.py kanitli AMA SAHA TESTI 8: pack dosyalarinda handle verip
+#     0 SATIR donduruyor (59 modul 2 bayt cikti). Disk dosyalarinda
+#     calisir. YEDEK olarak kalir.
+#   * pack.Exist + pack.Get: GERCEK YOL - dump'lanan calisan botlarin
+#     kendi kodunda kanitli (FileExtractor.py ExtractScript + New_Levelbot
+#     pack.Get("playersettingmodule.py") root pack'ten KAYNAK okuyor!).
+#   * pack_open(ad, mod): dosya-objesi (read/readlines) - edithack +
+#     itemcreator'un pack icindeki item_list.txt'yi okuma yolu.
+#   * sys.modules: dogru - yuklu 130 modulu verir (bedava, risksiz);
+#     v4.1 pydumpall hedef listesi ARTIK buradan canli uretilir.
+#   * pkgutil.iter_modules: embedded importer'da calismaz (saha: ImportError)
+#   * os.listdir: disk aciksa calisir (saha: 73 bot dosyasi buldu)
 # ===========================================================================
+
+# --- v4.1: pack API kanit durumu (pyfiles raporunda guncellenir) ---
+_PACK_API = {'Exist': False, 'Get': False, 'pack_open': False, 'dir': []}
+
+# SAHA KANITI: oyunun kendi log'unda gorulen UI script dosyalari
+# (locale/ro/ui/ + UIScript/ + uiscript/ pack yollari)
+_UI_SCRIPT_PATHS = (
+    'locale/ro/ui/selectcharacterwindow.py', 'locale/ro/ui/InventoryWindow.py',
+    'locale/ro/ui/dragonsoulwindow.py', 'locale/ro/ui/dragonsoulrefinewindow.py',
+    'locale/ro/ui/SystemDialog.py', 'locale/ro/ui/passworddialog.py',
+    'locale/ro/ui/giftbox.py', 'locale/ro/ui/EnergyBar.py',
+    'locale/ro/ui/WebWindow.py', 'locale/ro/ui/TaskBar.py',
+    'UIScript/LoadingWindow.py', 'UIScript/CharacterWindow.py',
+    'UIScript/BeltInventoryWindow.py', 'UIScript/PickMoneyDialog.py',
+    'UIScript/PopupDialog.py', 'UIScript/AtlasWindow.py',
+    'UIScript/SafeboxWindow.py', 'UIScript/MallWindow.py',
+    'UIScript/exchangedialog.py', 'UIScript/shopdialog.py',
+    'UIScript/restartdialog.py', 'UIScript/PrivateShopBuilder.py',
+    'UIScript/MouseButtonWindow.py', 'UIScript/RightMouseButtonWindow.py',
+    'UIScript/HelpWindow.py', 'UIScript/CubeWindow.py',
+    'UIScript/CubeResultWindow.py', 'UIScript/selectitemwindow.py',
+    'UIScript/MiniMap.py', 'UIScript/gamewindow.py',
+    'uiscript/questiondialog.py', 'uiscript/questiondialog2.py',
+    'uiscript/refinedialog.py', 'uiscript/attachstonedialog.py',
+    'uiscript/popupdialog.py', 'uiscript/changepassworddialog.py',
+    'uiscript/restartdialog.py', 'uiscript/sash_combinewindow.py',
+    'uiscript/sash_absorbwindow.py',
+)
+
+# stdlib/sistem modulleri - pack'te kaynagi YOK, Exist denemesi ziyan
+_STDLIB_SKIP = (
+    'sys', 'os', 'nt', 'ntpath', 'stat', 'string', 're', 'math', 'time',
+    'imp', 'marshal', 'signal', 'site', 'types', 'errno', 'abc', 'codecs',
+    'operator', 'functools', 'traceback', 'linecache', 'encodings',
+    'copy_reg', 'genericpath', 'sre_compile', 'sre_constants', 'sre_parse',
+    'sysconfig', 'UserDict', 'exceptions', 'locale', '_locale',
+)
+
+def _name_variants(name):
+    """v4.1: bir modul adini pack icinde aranabilir tam yol adaylarina
+    genisletir (buyuk-kucuk harf oyunu kanitli: introLogin.py + intrologin)."""
+    nm = str(name).strip().replace('\\', '/').lstrip('/')
+    while nm.startswith('./'):
+        nm = nm[2:]
+    base = nm[:-3] if nm.lower().endswith('.py') else nm
+    low = base.lower()
+    cap = low[0].upper() + low[1:]
+    # dogrudan yol zaten klasorlu geldiyse varyantlara dokunma
+    out = []
+    def _push(v):
+        if v and v not in out:
+            out.append(v)
+    if '/' in nm:
+        _push(nm if nm.lower().endswith('.py') else nm + '.py')
+        _push(nm)
+        return out
+    for cand in (base, low, cap):
+        _push(cand + '.py')
+        _push(cand)
+    for pre in ('root/', 'locale/ro/ui/', 'locale/tr/ui/',
+                'UIScript/', 'uiscript/'):
+        _push(pre + low + '.py')
+        _push(pre + cap + '.py')
+    return out
+
+def _pack_read(name):
+    """v4.1 KANITLI 4-KATMANLI OKUMA ZINCIRI (en guclu once):
+      1) pack.Exist + pack.Get  (FileExtractor.py:407 + New_Levelbot.py:363)
+      2) pack_open(ad,'r')      (edithack.py:888 + itemcreator.py:418)
+      3) app.OpenTextFile + GetTextFileLineCount/Line (cycu.py:92; pack'te
+         0 satir verdigi icin yedek)
+      4) disk open
+    Donus: (yontem-adi, icerik-str) | (None, hata-aciklamasi)
+    icerik her zaman str; binary ise repr degil ham bytes-decode denenir."""
+    nm = str(name)
+    # --- 1) pack.Get (EN GUCLU - root pack kaynak okuma kaniti) ---
+    try:
+        import pack as _packmod
+        try:
+            if _packmod.Exist(nm):
+                try:
+                    c = _packmod.Get(nm)
+                    if c:
+                        try:
+                            return ('pack.Get', str(c))
+                        except:
+                            return ('pack.Get', repr(c))
+                    if c == '':
+                        # var ama bos: notla ama devam etme - pack'te gercekten bos
+                        return ('pack.Get', '')
+                except AttributeError:
+                    _PACK_API['Get'] = False
+        except AttributeError:
+            _PACK_API['Exist'] = False
+        # --- 2) pack_open (dosya-objesi yolu) ---
+        po = None
+        try:
+            po = pack_open  # global builtin (istemci injected)
+            _PACK_API['pack_open'] = True
+        except NameError:
+            po = getattr(_packmod, 'pack_open', None)
+            if po is not None:
+                _PACK_API['pack_open'] = True
+        if po is not None:
+            for mode in ('r', 'rb'):
+                try:
+                    f = po(nm, mode)
+                    data = f.read()
+                    try:
+                        f.close()
+                    except:
+                        pass
+                    if data:
+                        try:
+                            return ('pack_open.' + mode, str(data))
+                        except:
+                            return ('pack_open.' + mode, repr(data))
+                    if data == '':
+                        return ('pack_open.' + mode, '')
+                except:
+                    continue
+    except ImportError:
+        pass
+    # --- 3) app.OpenTextFile (cycu deseni - disk dosyalarinda calisir) ---
+    try:
+        import app as _app
+        try:
+            h = _app.OpenTextFile(nm)
+            if h:
+                n = 0
+                try:
+                    n = int(_app.GetTextFileLineCount(h))
+                except:
+                    n = 0
+                if n > 0:
+                    ln = []
+                    for i in range(min(n, 20000)):
+                        try:
+                            ln.append(_app.GetTextFileLine(h, i))
+                        except:
+                            ln.append('')
+                    return ('app.OpenTextFile', '\n'.join(ln) + '\n')
+        except:
+            pass
+    except ImportError:
+        pass
+    # --- 4) disk (en son yedek) ---
+    try:
+        f2 = open(nm, 'r')
+        data = f2.read()
+        f2.close()
+        return ('disk', data)
+    except:
+        pass
+    return (None, 'acilamadi: ' + nm)
+
 
 _KNOWN_CLIENT_MODULES = (
     # C modulleri (dahili)
@@ -1905,6 +2099,47 @@ def _discover_pyfiles():
             res['probe'].append(mname)
         except:
             pass
+    # --- [6] v4.1: pack API kesfi + modul __file__ taramasi (SAHA TESTI 8
+    #      sonrasi: pack.Exist/pack.Get/pack_open GERCEK okuma yolu) ---
+    try:
+        import pack as _pk
+        try:
+            _PACK_API['dir'] = [str(x) for x in dir(_pk)]
+        except:
+            pass
+        for fn in ('Exist', 'Get', 'GetList', 'Open', 'pack_open', 'IsExist'):
+            try:
+                if hasattr(_pk, fn):
+                    _PACK_API[fn] = True
+            except:
+                pass
+        res['pack_api'] = dict(_PACK_API)
+    except Exception, e:
+        res['notlar'].append('pack modulu yok/okunamadi: ' + _fmt_error(e))
+    try:
+        po = None
+        try:
+            po = pack_open
+            _PACK_API['pack_open'] = True
+        except NameError:
+            pass
+        res['pack_open_global'] = (po is not None)
+    except:
+        res['pack_open_global'] = False
+    mf = []
+    try:
+        for k in sys.modules.keys():
+            try:
+                m = sys.modules[k]
+                f = getattr(m, '__file__', None)
+                if f:
+                    mf.append(str(k) + ' -> ' + str(f))
+            except:
+                pass
+        mf.sort()
+    except:
+        pass
+    res['modfiles'] = mf
     return res
 
 def pyfiles():
@@ -1950,51 +2185,66 @@ def pyfiles():
         for n in disc.get('notlar', []):
             L.append('NOT: ' + n)
         L.append('')
+        # v4.1: pack API kesfi (SAHA TESTI 8: GERCEK pack okuma yolu)
+        pa = disc.get('pack_api') or {}
+        L.append('[6] pack API kesfi (v4.1 - GERCEK pack okuma yolu):')
+        try:
+            import pack as _pk
+            L.append('    pack.Exist  : %s' % ('VAR' if pa.get('Exist') else 'YOK?'))
+            L.append('    pack.Get    : %s  (kanit: New_Levelbot.py 363 - root pack kaynak okuyor)' % ('VAR' if pa.get('Get') else 'YOK?'))
+            L.append('    pack_open   : %s  (kanit: edithack.py 888 + itemcreator.py 418)' % ('VAR' if (pa.get('pack_open') or disc.get('pack_open_global')) else 'YOK?'))
+            dd = pa.get('dir') or []
+            if dd:
+                L.append('    dir(pack)   : %s' % ', '.join(dd[:40]))
+        except ImportError:
+            L.append('    pack modulu import edilemedi')
+        L.append('    NOT: app.GetFileList SADECE DISK listeler (saha testi 8);')
+        L.append('    oyun modulleri root PACK icinde -> pack.Get yolu kullanilir')
+        L.append('')
+        mf = disc.get('modfiles', [])
+        L.append('[7] modul __file__ raporu: %d modul dosya yolu bildiriyor' % len(mf))
+        for row in mf[:40]:
+            L.append('    ' + row)
+        if len(mf) > 40:
+            L.append('    ... +%d daha' % (len(mf) - 40))
+        L.append('')
         L.append('SONRAKI: pydump <ad> (tek dosya) | pydumpall (hepsi) | pyscan <modul> | plusquest')
         _write('pyfiles', '\n'.join(L) + '\n')
     except Exception, e:
         _write('pyfiles', 'HATA ' + _fmt_error(e) + '\n')
 
 # ---------------------------------------------------------------------------
-# pydump(name) - tek dosyayi pack'ten/duzenden okuyup dump\ klasorune doker
-# (app.OpenTextFile kanitli yolu - cycu GetTextFileTuple deseni)
+# pydump(name) - v4.1: tek dosyayi KANITLI zincirle dok
+#   pack.Get -> pack_open -> app.OpenTextFile -> disk  (cycu v4.0'daki tek
+#   yontem pack'te 0 satir veriyordu - saha testi 8 kaniti)
 # ---------------------------------------------------------------------------
 def pydump(name=None):
     try:
-        import app
         if not name:
-            _write('pydump', 'kullanim: pydump <dosya-ad>  (orn. pydump intrologin | adaylar: pyfiles)\n')
+            _write('pydump', 'kullanim: pydump <dosya-ad>  (orn. pydump introLogin | pydump game | adaylar: pyfiles)\n')
             return
         nm = str(name).strip()
         base = nm[:-3] if nm.lower().endswith('.py') else nm
-        cands = [nm, base + '.py', base.lower() + '.py', 'root/' + base + '.py']
-        handle = None
+        cands = _name_variants(base)
         used = None
+        method = None
+        text = None
         for c in cands:
-            try:
-                h = app.OpenTextFile(c)
-                if h:
-                    handle = h
-                    used = c
-                    break
-            except:
-                pass
-        if handle is None:
-            _write('pydump', 'HATA: acilamadi: %s (denenenler: %s)\nNot: pack icinden okuma icin dosya adini pyfiles/INDEX listesinden al\n' % (nm, ', '.join(cands)))
+            m, data = _pack_read(c)
+            if m is not None and data:
+                used = c
+                method = m
+                text = data
+                break
+            if m is not None and data == '':
+                # var ama bos - kaydet ve dur (pack'te gercekten bos dosya)
+                used = c
+                method = m + ' (BOS!)'
+                text = ''
+                break
+        if text is None:
+            _write('pydump', 'HATA: hicbir yontemle acilamadi: %s\nDenenen adaylar (%d): %s\nNot: pyfiles raporundaki isimleri kullan; oyun modulleri pack icindedir (pack.Get yolu)\n' % (nm, len(cands), ', '.join(cands[:12])))
             return
-        n = 0
-        try:
-            n = int(app.GetTextFileLineCount(handle))
-        except:
-            n = 0
-        cap = 12000
-        ln = []
-        for i in range(min(n, cap)):
-            try:
-                ln.append(app.GetTextFileLine(handle, i))
-            except:
-                ln.append('')
-        text = '\n'.join(ln) + '\n'
         safe = ''.join([ch if (ch.isalnum() or ch in '._-') else '_' for ch in base]) or 'adsiz'
         try:
             f = open(_dump_name(safe + '.py'), 'w')
@@ -2003,7 +2253,8 @@ def pydump(name=None):
         except Exception, e2:
             _write('pydump', 'HATA yazma: %s\n' % _fmt_error(e2))
             return
-        L = ['OK: %s -> dump\\%s.py  (%d satir, %d byte)' % (used, safe, len(ln), len(text)),
+        ln = text.split('\n')
+        L = ['OK: %s -> dump\\%s.py  (yontem: %s | %d satir, %d byte)' % (used, safe, method, len(ln), len(text)),
              '--- ilk 40 satir ---']
         L.extend(ln[:40])
         if len(ln) > 40:
@@ -2013,23 +2264,54 @@ def pydump(name=None):
         _write('pydump', 'HATA ' + _fmt_error(e) + '\n')
 
 # ---------------------------------------------------------------------------
-# pydumpall() - bulunan TUM py dosyalarini dump\ klasorune + INDEX.txt
+# pydumpall() - v4.1: TUM py dosyalarini KANITLI zincirle dump\ + INDEX.txt
+#   hedefler: canli sys.modules (oyunun kendi modulleri!) + import-probe +
+#   disk/GetFileList + UI script yollari. Okuma: pack.Get -> pack_open ->
+#   app.OpenTextFile -> disk. 0 byte'lar 'BOS' isaretlenir (sahte OK yok).
 # ---------------------------------------------------------------------------
 def pydumpall():
     try:
-        import app
         disc = _discover_pyfiles()
-        files = []
-        for k in ('app.GetFileList', 'disk', 'probe'):
-            for f in disc.get(k, []):
-                if f and f not in files:
-                    files.append(str(f))
-        cap = 800
-        files = files[:cap]
-        idx = ['PLUSMAXGOD pydumpall INDEX  t=' + time.strftime('%Y-%m-%d %H:%M:%S'),
-               'kaynaklar: app.GetFileList=%d  disk=%d  probe=%d  |  birlesik hedef=%d (cap %d)' % (
-                   len(disc.get('app.GetFileList', [])), len(disc.get('disk', [])),
-                   len(disc.get('probe', [])), len(files), cap),
+        # --- hedef listesi v4.1 ---
+        # (1) canli sys.modules: oyunun kendi modulleri (en degerli kisim)
+        targets = []          # (gorunen-ad, arama-adi, hedef-kaynak-not)
+        seen_names = []
+        for mn in disc.get('sys.modules', []):
+            if mn in _STDLIB_SKIP:
+                continue
+            if mn not in seen_names:
+                seen_names.append(mn)
+                targets.append((mn, mn, 'sys.modules'))
+        # (2) import-probe artiklari (sys.modules'te olmayan varsa)
+        for mn in disc.get('probe', []):
+            if mn in _STDLIB_SKIP or mn in seen_names:
+                continue
+            seen_names.append(mn)
+            targets.append((mn, mn, 'probe'))
+        # (3) disk + GetFileList (kullanici botlari - birebir isim)
+        gfl = disc.get('app.GetFileList', [])
+        for fname in disc.get('disk', []) + gfl:
+            base = fname[:-3] if str(fname).lower().endswith('.py') else fname
+            if base not in seen_names:
+                seen_names.append(base)
+                targets.append((base, base, 'disk'))
+        # (4) UI script yollari (oyun log kanitli pack yollari)
+        uihit = []
+        for upath in _UI_SCRIPT_PATHS:
+            m, data = _pack_read(upath)
+            if m is not None:
+                uihit.append((upath, m, len(data or '')))
+        cap = 600
+        targets = targets[:cap]
+        pa = disc.get('pack_api') or {}
+        n_sys = len([t for t in targets if t[2] == 'sys.modules'])
+        n_prb = len([t for t in targets if t[2] == 'probe'])
+        n_dsk = len([t for t in targets if t[2] == 'disk'])
+        idx = ['PLUSMAXGOD pydumpall INDEX (v4.1 kanitli zincir)  t=' + time.strftime('%Y-%m-%d %H:%M:%S'),
+               'pack API: Exist=%s Get=%s pack_open=%s (kanit: FileExtractor/New_Levelbot/edithack/itemcreator)' % (
+                   pa.get('Exist', '?'), pa.get('Get', '?'), pa.get('pack_open', disc.get('pack_open_global', '?'))),
+               'hedefler: sys.modules=%d probe-artigi=%d disk=%d UI-script-hit=%d | cap %d' % (
+                   n_sys, n_prb, n_dsk, len(uihit), cap),
                '']
         if disc.get('notlar'):
             for n in disc['notlar']:
@@ -2037,64 +2319,82 @@ def pydumpall():
             idx.append('')
         okc = 0
         errc = 0
+        boc = 0
         errs = []
+        methods = {}
         c = 0
-        for fname in files:
+        for gname, sname, src in targets:
             c += 1
             if (c % 25) == 0:
                 try:
-                    sys.stdout.write('[PYDUMPALL] ilerleme %d/%d\n' % (c, len(files)))
+                    sys.stdout.write('[PYDUMPALL] ilerleme %d/%d\n' % (c, len(targets)))
                 except:
                     pass
-            base = fname[:-3] if fname.lower().endswith('.py') else fname
-            handle = None
+            text = None
             used = None
-            for cd in (fname, base + '.py'):
-                try:
-                    h = app.OpenTextFile(cd)
-                    if h:
-                        handle = h
-                        used = cd
-                        break
-                except:
-                    pass
-            if handle is None:
-                try:
-                    f2 = open(fname, 'r')
-                    data = f2.read()
-                    f2.close()
-                    used = fname + ' (disk open)'
-                    ln = data.split('\n')
-                    n = len(ln)
-                except:
-                    errc += 1
-                    errs.append(fname)
-                    idx.append('OKUNAMADI      %s' % fname)
+            method = None
+            for cand in _name_variants(sname):
+                m, data = _pack_read(cand)
+                if m is None:
                     continue
-            else:
-                try:
-                    n = int(app.GetTextFileLineCount(handle))
-                except:
-                    n = 0
-                ln = []
-                for i in range(min(n, 12000)):
-                    try:
-                        ln.append(app.GetTextFileLine(handle, i))
-                    except:
-                        ln.append('')
-            safe = ''.join([ch if (ch.isalnum() or ch in '._-') else '_' for ch in base]) or 'adsiz'
+                if data:
+                    text = data
+                    used = cand
+                    method = m
+                    break
+                if data == '':
+                    text = ''
+                    used = cand
+                    method = m
+                    break
+            if text is None:
+                # stdlib C-modulleri (app/net/chr/player) kaynak dosyasizdir -
+                # bunlar hata DEGIL, 'KAYNAKSIZ(C)' olarak isaretlenir
+                if gname not in _KNOWN_CLIENT_MODULES:
+                    errc += 1
+                    errs.append(gname)
+                    idx.append('OKUNAMADI   %-28s (%s)' % (gname, src))
+                else:
+                    idx.append('KAYNAKSIZ(C) %-28s (dahili C modulu - .py kaynagi yok)' % gname)
+                continue
+            safe = ''.join([ch if (ch.isalnum() or ch in '._-') else '_' for ch in (gname if '/' not in gname else gname.split('/')[-1][:-3])]) or 'adsiz'
+            if '/' in gname:
+                safe = ''.join([ch if (ch.isalnum() or ch in '._-') else '_' for ch in gname.replace('/', '_')])
             try:
                 f = open(_dump_name(safe + '.py'), 'w')
-                f.write('\n'.join(ln) + '\n')
+                f.write(text)
                 f.close()
-                okc += 1
-                idx.append('OK %6d satir  %-30s (kaynak: %s)' % (len(ln), safe + '.py', used))
+                nb = len(text)
+                if nb == 0:
+                    boc += 1
+                    idx.append('BOS         %-28s 0 byte (yontem: %s | ad: %s)' % (safe + '.py', method, used))
+                else:
+                    okc += 1
+                    methods[method] = methods.get(method, 0) + 1
+                    idx.append('OK %6d byte %-28s (yontem: %s | ad: %s)' % (nb, safe + '.py', method, used))
             except:
                 errc += 1
-                errs.append(fname)
-                idx.append('YAZILAMADI     %s' % fname)
+                errs.append(gname)
+                idx.append('YAZILAMADI  %s' % gname)
+        # UI script hasilari INDEX'e
+        if uihit:
+            idx.append('')
+            idx.append('--- UI script yollari (oyun log kanitli pack yollari) ---')
+            for upath, m, nb in uihit:
+                safe = 'ui__' + ''.join([ch if (ch.isalnum() or ch in '._-') else '_' for ch in upath.replace('/', '_')])
+                try:
+                    m2, data2 = _pack_read(upath)
+                    if m2 is not None:
+                        f = open(_dump_name(safe + '.py'), 'w')
+                        f.write(data2 or '')
+                        f.close()
+                    idx.append('%s %8d byte %-44s (yontem: %s)' % ('BOS ' if nb == 0 else 'OK  ', nb, upath, m2 or m))
+                except:
+                    idx.append('HATA         %-44s' % upath)
         idx.append('')
-        idx.append('ozet: %d OK, %d hata  |  klasor: C:\\MaxExec\\dump' % (okc, errc))
+        idx.append('ozet: %d OK, %d BOS, %d hata | yontem dagilimi: %s' % (
+            okc, boc, errc, ', '.join(['%s=%d' % (k, v) for k, v in methods.items()])))
+        idx.append('klasor: C:\\MaxExec\\dump')
         if errs:
             idx.append('hatalilar: ' + ', '.join(errs[:24]))
         try:
@@ -2103,10 +2403,8 @@ def pydumpall():
             f.close()
         except:
             pass
-        L = ['hedef: %d dosya (app.GetFileList=%d disk=%d probe=%d)' % (
-                 len(files), len(disc.get('app.GetFileList', [])),
-                 len(disc.get('disk', [])), len(disc.get('probe', []))),
-             'ozet: %d OK, %d hata' % (okc, errc),
+        L = ['hedef: %d modul/dosya (+%d UI yolu)' % (len(targets), len(uihit)),
+             'ozet: %d OK, %d BOS, %d hata | yontemler: %s' % (okc, boc, errc, ', '.join(['%s=%d' % (k, v) for k, v in methods.items()])),
              'INDEX: C:\\MaxExec\\dump\\INDEX.txt',
              'SONRAKI ADIM: dump klasorunu zipleyip AI\'ya gonder -> PLUSQuest.md guncellenir']
         _write('pydumpall', '\n'.join(L) + '\n')

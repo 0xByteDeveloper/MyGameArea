@@ -343,7 +343,7 @@ static void DrainQueue(void)
                 _snprintf(fp, MAX_PATH, "%s\\last_pyfail.txt", RESULT_DIR); fp[MAX_PATH-1]=0;
                 WriteFileAll(fp, std::string("PYTHON HATASI: ") + fd.cFileName +
                     "\nDetay: pyerr komutunu yaz (pyerr.log son satirlari).\n"
-                    "En sik neden: ESKI pylib - PLUSMAXGOD v4.0 ile degistir (bundle zip / GitHub)!\n");
+                    "En sik neden: ESKI pylib - PLUSMAXGOD v4.1 ile degistir (bundle zip / GitHub)!\n");
                 printf("[MAXEXEC] !! PYTHON HATASI (%s) - detay icin: pyerr\n", fd.cFileName);
                 fflush(stdout);
             }
@@ -462,7 +462,7 @@ static std::string BootImport(void)
          "    maxlib._MX_OLD_WARNED = True\n"
          "    try:\n"
          "        import sys\n"
-         "        sys.stderr.write('!!! PYLIB ESKI v' + str(getattr(maxlib, 'PYLIB_VERSION', '?')) + ' - DLL v1.8 PLUSMAXGOD v4.0 ister! "
+         "        sys.stderr.write('!!! PYLIB ESKI v' + str(getattr(maxlib, 'PYLIB_VERSION', '?')) + ' - DLL v1.8.1 PLUSMAXGOD v4.1 ister! "
          "C:\\\\MaxExec\\\\PLUSMAXGOD_PyScript.py dosyasini yenisiyle degistir (bundle zip / GitHub) !!!\\\\n')\n"
          "    except Exception:\n"
          "        pass\n";
@@ -824,7 +824,7 @@ static bool InitConsole(void)
         LogLine("CONOUT$ (stderr) yeniden acilamadi");
     setvbuf(stdout, NULL, _IONBF, 0);   // buffer'siz: crash olsa bile yazar
     setvbuf(stderr, NULL, _IONBF, 0);
-    SetConsoleTitleA("MaxExecutor v1.8 PLUSMAXGOD");
+    SetConsoleTitleA("MaxExecutor v1.8.1 PLUSMAXGOD");
     HWND cw = GetConsoleWindow();
     if (cw)
     {
@@ -877,7 +877,7 @@ static std::vector<std::string> SplitArgs(const std::string& line)
 
 static void PrintHelp(void)
 {
-    printf("\n=== MaxExecutor v1.8 PLUSMAXGOD (oyun-ici + py kesif komutlari) ===\n");
+    printf("\n=== MaxExecutor v1.8.1 PLUSMAXGOD (oyun-ici + py kesif komutlari) ===\n");
     printf("  help                        : bu yardim\n");
     printf("  status                      : anlik sahne/baglanti snapshot\n");
     printf("  -- giris akisi (menu) --\n");
@@ -1021,8 +1021,8 @@ static DWORD WINAPI WorkerThread(LPVOID)
     const bool con = InitConsole();
 
     printf("\n=============================================\n");
-    printf("  MaxExecutor v1.8 PLUSMAXGOD - ana-thread executor\n");
-    printf("  oyun-ici komutlar + py kesif (pylib v4.0 cifti)\n");
+    printf("  MaxExecutor v1.8.1 PLUSMAXGOD - ana-thread executor\n");
+    printf("  oyun-ici komutlar + py kesif (pylib v4.1 cifti)\n");
     printf("  hook yok | SHM yok | arka-plan PyRun yok\n");
     printf("=============================================\n");
     if (!con)
@@ -1084,12 +1084,12 @@ static DWORD WINAPI WorkerThread(LPVOID)
                 char rp[MAX_PATH];
                 _snprintf(rp, MAX_PATH, "%s\\last_warning.txt", RESULT_DIR); rp[MAX_PATH-1]=0;
                 WriteFileAll(rp, std::string("! PYLIB ESI SURUM: v") + vShow +
-                    "  (DLL v1.8 PLUSMAXGOD v4.0 ister)\n"
+                    "  (DLL v1.8.1 PLUSMAXGOD v4.1 ister)\n"
                     "Yeni PLUSMAXGOD_PyScript.py'yi " + std::string(BASE_DIR) + " icine kopyala (bundle zip / GitHub).\n"
                     "ESKI pylib ILE: stat/pos/inv/equip/skill/near/chat/goto/tp/pyfiles/pydumpall/plusquest CALISMAZ.\n");
-                LogLine("UYARI: pylib ESI v%s - PLUSMAXGOD v4.0 gerekli! (%s)", vShow, pylibPath);
+                LogLine("UYARI: pylib ESI v%s - PLUSMAXGOD v4.1 gerekli! (%s)", vShow, pylibPath);
                 printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-                printf("!! PYLIB ESI: diskteki PLUSMAXGOD_PyScript.py = v%s  (gereken: v4.0)\n", vShow);
+                printf("!! PYLIB ESI: diskteki PLUSMAXGOD_PyScript.py = v%s  (gereken: v4.1)\n", vShow);
                 printf("!! Yeni PLUSMAXGOD_PyScript.py'yi %s icine kopyala (bundle zip)\n", BASE_DIR);
                 printf("!! Eski pylib ile v4.0 komutlari CALISMAZ (stat/inv/tp/pyfiles..)\n");
                 printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
@@ -1330,7 +1330,7 @@ BOOL APIENTRY DllMain(HMODULE hMod, DWORD reason, LPVOID)
         DisableThreadLibraryCalls(hMod);
         EnsureDirs();
         CreateThread(NULL, 0, WorkerThread, NULL, 0, NULL);
-        LogLine("MaxExecutor v1.8 PLUSMAXGOD yuklendi (pid=%lu) — worker baslatiliyor",
+        LogLine("MaxExecutor v1.8.1 PLUSMAXGOD yuklendi (pid=%lu) — worker baslatiliyor",
                 GetCurrentProcessId());
     }
     return TRUE;

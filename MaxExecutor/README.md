@@ -55,7 +55,7 @@ DLL'i alışkanlık olduran loader'ınla (Kaynak.cpp v6 loader'ın veya mevcut l
 
 ```
 status                                   -> sahne/bağlantı snapshot (sonuc: results\last_status.txt)
-                                            (pylib v4.0 otomatik yüklenir; load artık gerekmez)
+                                            (pylib v4.1 otomatik yüklenir; load artık gerekmez)
 login <id> <pwd>                         -> net.SetLoginInfo + Connect (auth → key → game-login zinciri client'ta otomatik)
 waitfor SelectCharacterWindow 30         -> karakter seçim ekranı geldi mi?
 charlist                                 -> 5 slot: isim/level/sınıf/cinsiyet/guild (results\last_charlist.txt)

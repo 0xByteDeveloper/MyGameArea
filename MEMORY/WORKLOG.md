@@ -521,3 +521,62 @@ sahne adi notu dokumante edildi. Kod degisikligi YOK, rebuild YOK.
 - Commit: MaxExecutor v1.8 + pylib v4.0 (PLUSMAXGOD_PyScript.py) + PLUSQuest.md + dokumanlar.
 - Beklenen saha dogrulama: stat/pos/inv/equip/skill raporlari, goto/tp hareket,
   chat/use paketleri, pyfiles->pydumpall->plusquest kesif zinciri (dump klasoru -> AI'ya).
+
+## OTURUM 14 (2026-10-27) — SAHA TESTI 8: v4.0 pydumpall analizi -> v1.8.1 + pylib v4.1 (pack.Get zinciri)
+
+### Saha raporu (kullanici: MaxExec_plus_sonuc.rar)
+- OYUN-ICI KOMUTLAR TEMIZ: stat (Lv100 Ninja-E Jinno, HP/SP 100%), pos (vid 26977,
+  x38421/y39017 z18093, metin2_map_c1), skill (9 slot, Rumence isimler), near (0 buldu -
+  bos alan, kod calisti), tp (SetPixelPosition 2-arg OK), goto (MoveToDestPosition OK),
+  attack 1/0, chat /ride, revive. lasterr: NOID + WRONGPWD + CREATE_FAILURE:0 (gercek
+  oyun hatalari, dogru yakalandi). alive.txt: pyfail=0, exec=29.
+- KULLANICI YANLIS YAZANLAR: "player.ClickSkillSlot(15)" tek basina komut degil (bilinmeyen
+  komut) -> "raw player.ClickSkillSlot(15)" olmali. "client koordinat /100" ayni sekilde.
+  serverlist oyundayken HATA: LoginWindow sahnesinde degil (davranis dogru).
+- KESIF BULGUSU (kullanicinin gozlemi DOGRU): diskteki bot dosyalari tam dumplandi
+  (pasha37-levelbot.py 178KB) AMA oyunun KENDI 59 modulu (app/chr/player/game/ui/
+  introLogin...) 2 BAYT bos cikti. Oyun bunlari kullanmiyor - kullanici sonradan atmada
+  (root/epx'te yok).
+
+### Kok neden (INDEX.txt + pyfiles raporu kanitlari)
+- app.GetFileList("*.py") BU ISTEMCIDE CALISIYOR ama SADECE DISK listeliyor: 73 dosya =
+  73 kullanici botu. Eski AI'nin "en iyi yontem" iddiasi yine yalandi (disk icin faydali,
+  pack icin yararsiz).
+- app.OpenTextFile pack dosyalarinda handle verip 0 SATIR donduruyor (59x "OK 0 satir").
+  cycu.py GetTextFileTuple(mode=0) zaten bos liste dondurur (kendi bug'i).
+- Oyunun kendi 130 modulu root PACK icinde (sys.modules kaniti).
+
+### GOD MOD kanit taramasi (dump'lanan CALISAN botlarin kendi kodunda)
+- pack.Exist + pack.Get: FileExtractor.py (ScriptStealer!) ExtractScript + New_Levelbot.py:363
+  pack.Get("playersettingmodule.py") = ROOT PACK'TEN KAYNAK STRING OKUYOR.
+- pack_open(ad,"r").readlines(): edithack.py:888/911/939 + itemcreator.py:418/441/469
+  (pack icindeki locale/de/item_list.txt - diskte DEGIL).
+- Root pack = duz .py kaynak (compiled pyc degil - New_Levelbot'un find() karsilastirmasi
+  kaynak metinde calisiyor).
+
+### pylib v4.1 (PLUSMAXGOD_PyScript.py, 108KB)
+- _pack_read(ad): 4-katmanli zincir pack.Get -> pack_open(r/rb) -> app.OpenTextFile -> disk.
+- _name_variants(ad): buyuk-kucuk harf + root//locale/ro/ui//UIScript//uiscript/ yollari.
+- _UI_SCRIPT_PATHS: oyun log'unda gorulen 39 UI script yolu (saha kanitli).
+- _STDLIB_SKIP: C-stdlib modullerine Exist denemesi ziyan etmez; KAYNAKSIZ(C) etiketi.
+- pydump v2: zincir + varyant taramasi + yontem raporu.
+- pydumpall v2: hedefler CANLI sys.modules'ten + probe + disk/GetFileList + UI yollari;
+  INDEX.txt'de yontem + byte kolonu; 0 byte = BOS isaretli (sahte OK yok); UI hit'leri
+  ayri bolumde ui__*.py olarak dokulur.
+- pyfiles v2: [6] pack API kesfi (dir(pack) + hasattr Exist/Get/GetList/Open/pack_open/
+  IsExist) + [7] modul __file__ raporu + GetFileList=disk-only saha notu.
+- plusquest/pyscan dokunulmadi (439KB PLUSQuest_live mukemmel calisti).
+
+### MaxExecutor v1.8.1
+- Sadece surum dizgileri (banner "v1.8.1" + "v4.1 ister"); BootImport guard majer 4 ->
+  yerinde yukseltme calisir. DLL 628KB + EXE 222KB (zig x86-windows-gnu, kaynakta 0 uyari).
+- pylib_embedded.h v4.1 (567KB) scripts/embed_pylib.py ile uretildi.
+
+### Dokuman
+- PLUSQuest.md: baslik v4.1/oturum-14; kesif yontemleri tablosu SAHA TESTI 8 hukumleriyle
+  yeniden yazildi (GetFileList=[K-disk], OpenTextFile=[K-disk/X-pack YEDEK], pack.Get=[K]
+  GERCEK YOL, pack_open=[K], pkgutil=[X]); hizli erisim tablosu pydump satirlari zincire
+  guncellendi; bolum 5'e calisanlar listesi + komut yazim notu eklendi.
+- KULLANIM.md: v4.1 ozeti (bastaki blok) + 3d kesif bolumu v4.1 akisi + SAHA TESTI 8 HUKMU
+  notu; paket tablosu + banner metinleri + test listesi v4.1'e cekildi.
+- README.md: v1.8.1/pylib v4.1.

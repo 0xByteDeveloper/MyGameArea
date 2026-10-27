@@ -1,5 +1,5 @@
 # PLUSQuest — Metin2 İstemci Python Fonksiyon Kataloğu
-### (PLUSMAXGOD Edition · v4.0 · Oturum 13)
+### (PLUSMAXGOD Edition · v4.1 · Oturum 14 — SAHA TESTİ 8 hükümleri işlendi)
 
 > **Bu dosya nedir?** MaxExecutor'un oyunun Python'undan erişebildiği **tüm bilinen modül ve
 > fonksiyonların** kataloğudur: ne işe yararlar, hangileri bu istemcide **kanıtlı** (saha
@@ -42,26 +42,36 @@
 | `tp` | `chr.SetPixelPosition(x, y)` | [K] 211 (!) |
 | `key` | `player.SetSingleDIKKeyState(app.DIK_x, TRUE/FALSE)` | [K] 368 (!) |
 | `attack` | `player.SetAttackKeyState(TRUE/FALSE)` | [K] 100 |
-| `pyfiles` | `app.GetFileList` [?] + `sys.modules` + `pkgutil` + `os.listdir` + import-probe | karışık |
-| `pydump` / `pydumpall` | `app.OpenTextFile` + `app.GetTextFileLineCount` + `app.GetTextFileLine` | [K] cycu + 24 |
+| `pyfiles` | `app.GetFileList` [K-disk] + `sys.modules` + `pkgutil` + `os.listdir` + import-probe + **pack API keşfi (v4.1)** | karışık |
+| `pydump` / `pydumpall` | **v4.1 zinciri:** `pack.Exist`+`pack.Get` → `pack_open` → `app.OpenTextFile` → disk | [K] FileExtractor:407, New_Levelbot:363, edithack:888, itemcreator:418 |
 | `pyscan` / `plusquest` | `sys.modules` + `dir()` + `func_code.co_varnames` | [S] py2 çekirdeği |
 
 ---
 
-## 1. KEŞİF YÖNTEMLERİ — eski AI'nin doğruları / yanlışları (GOD MOD hükmü)
+## 1. KEŞİF YÖNTEMLERİ — eski AI'nin doğruları / yanlışları (GOD MOD hükmü + SAHA TESTİ 8)
 
-Eski sohbetteki AI 5 yöntem saymıştı. İşte kesin hükümler:
+Eski sohbetteki AI 5 yöntem saymıştı. İşte kesin hükümler — artık **saha testi 8** (v4.0'ın
+144 hedeflik ilk pydumpall'ı + 439KB PLUSQuest_live) ile birebir doğrulanmış hali:
 
-| Yöntem | Hüküm | Açıklama |
+| Yöntem | Hüküm | Saha testi 8 kanıtı |
 |---|---|---|
-| `app.GetFileList("*.py")` | **[?] YANLIŞ vaat** — eski AI "en iyi yöntem" dedi ama nighttown koleksiyonunda **0 kullanım** → bu istemcide büyük olasılıkla YOK. `pyfiles` komutu yine de dener; yoksa not düşer. | Varsa bedava dosya listesi verir. |
-| `app.OpenTextFile` + `GetTextFileLineCount` + `GetTextFileLine` | **[K] GERÇEK OKUMA YOLU** — cycu.py bu üçlüyle `intrologin.py`'i okuyor; sen `serverinfo.py` okumayı doğruladın; nighttown'da 24 kullanım. **Şifreli pack'ten bile okur** (oyun pack'i kendi çözer). `pydump`/`pydumpall` tam buna kurulu. | Asıl yöntem bu. |
-| `sys.modules` | **[K] DOĞRU** — yüklü tüm modüllerin adlarını verir. Bedava, risksiz. `plusquest` bunun üstüne `dir()` ile fonksiyonları da çıkarır. | Menüde az, oyunda çok modül görünür → `plusquest`'i **oyundayken** çalıştır. |
-| `pkgutil.iter_modules()` | **[?] ZAYIF** — gömülü interpreter'ın importer'ı desteklemeyebilir. Denemesi bedava; sonuç raporda not olarak düşer. | Beklenti düşük tut. |
-| `os.listdir()` | **[K-koşullu] DOĞRU ama farklı amaçla** — root pack şifrelis DISKTE .py yoksa pack dosyalarını bulamaz; AMA **client klasörünü** (senin deyiminle: nighttown workspace'te, değilse temp/tmp'te) tarayarak script/modül koleksiyonlarını (m2kmod, Modules/, scripts_root/...) yakalar. `pyfiles` cwd + sys.path + TEMP/TMP tarar. | Koleksiyon taraması için altın. |
+| `app.GetFileList("*.py")` | **[K-disk] ÇALIŞTI ama VAADİ YANLIŞ** — eski AI "en iyi yöntem" dedi. Gerçek: VAR ve çalışıyor **ama SADECE DISK dosyalarını** listeliyor. 73 dosya döndü — **73'ü de kullanıcının kendi eklediği botlar** (pasha37-levelbot vb., oyunun kullanmadığı, root/epx'te olmayan dosyalar). Oyunun kendi modülleri listede YOK. | INDEX.txt: `app.GetFileList=73 disk=73` — aynı 73 dosya iki kez. |
+| `app.OpenTextFile` + `GetTextFileLineCount` + `GetTextFileLine` | **[K-disk / X-pack] YEDEK** — disk dosyalarında çalışır (73 bot tam döküldü). AMA pack içi dosyalarda handle verip **0 SATIR** döndürüyor: oyunun kendi 59 modülü (app/chr/player/game/ui/introLogin...) **2 bayt boş** çıktı. cycu.py'nin `GetTextFileTuple`'u da (mode=0'da zaten boş liste döndürür — kendi bug'ı) bu yolda. | INDEX: 59× `OK 0 satir` → 2 bayt dosyalar. |
+| `pack.Exist(ad)` + `pack.Get(ad)` | **[K] GERÇEK PACK OKUMA YOLU (v4.1)** — dump edilen **çalışan botların kendi kodunda** kanıtlı: `FileExtractor.py` (ScriptStealer!) `pack.Exist` + `pack_open` zinciriyle pack'ten extract ediyor; `New_Levelbot.py:363` = `pack.Get("playersettingmodule.py")` ile **root pack'ten kaynak metni string olarak okuyor**. | Bot ekosistemi birebir kanıt. |
+| `pack_open(ad, mod)` | **[K] DOSYA-OBJESİ YOLU (v4.1)** — `edithack.py:888/911/939` + `itemcreator.py:418/441/469`: `pack_open("locale/de/item_list.txt", "r").readlines()` — item_list **pack içindedir, diskte değil** → pack okuma ispatlı. Bare global (istemci injected) ya da `pack.pack_open`. | 6 ayrı satır, çalışan botlarda. |
+| `sys.modules` | **[K] DOĞRU** — yüklü **130 modül** sayıldı (app, chr, player, game, ui*, introLogin..., cpsm, maxlib...). v4.1 `pydumpall` hedef listesi ARTIK buradan canlı üretilir. | pyfiles raporu [2]: 130. |
+| `pkgutil.iter_modules()` | **[X] ÇALIŞMIYOR** — `ImportError: No module named pkgutil` (gömülü importer taşımiyor). Beklenen buydu; not olarak raporlanır. | pyfiles raporu [3]. |
+| `os.listdir()` | **[K-koşullu] DOĞRU** — disk açık: 73 bot dosyası + client klasörü (`C:\Users\Admin\Desktop\NightTownFullpack`) yakalandı. Pack içini göremez (onun işi `pack.Get`). | pyfiles raporu [4]. |
 
-**Özet yargı:** dosya *listesi* için `sys.modules` + disk taraması + import-probe; dosya *içeriği*
-için her durumda `app.OpenTextFile` üçlüsü. `pyfiles` hepsini tek raporda birleştirir.
+**Özet yargı (v4.1):** dosya *listesi* için `sys.modules` (canlı 130 modül) + disk taraması;
+dosya *içeriği* için **`pack.Get` → `pack_open` → `app.OpenTextFile` → disk** zinciri
+(`_pack_read`). `pyfiles` artık `[6] pack API keşfi` (dir(pack) + Exist/Get/pack_open
+hasattr tablosu) ve `[7] modül __file__ raporu` da basar.
+
+**Not (kullanıcı gözlemi, doğru):** dump'a karışan `pasha37-levelbot.py`, `darealfreakbot.py`
+gibi dosyalar **oyunun kullanmadığı, sonradan klasöre atılmış** botlar (root/epx modüllerinde
+yok) — oyun onları import etmez. Oyunun **kendi** dosyaları pack içindedir ve v4.1 ile
+`pack.Get` zinciriyle dökülecektir.
 
 ---
 
@@ -352,13 +362,26 @@ hızlı, taşınabilir, basedir.txt ile D:\'ye taşınabilir.
 
 ## 5. SÜRÜM DURUMU VE CANLI GÜNCELLEME
 
-- Katalog tabanı: **v1.8 PLUSMAXGOD / pylib v4.0** (oturum 13) — kanıt havuzu:
+- Katalog tabanı: **v1.8.1 PLUSMAXGOD / pylib v4.1** (oturum 14) — kanıt havuzu:
   nighttown koleksiyonu (Modules/, m2kmod/, pyDetour/, scripts_root/ — 4000+ kullanım)
-  + cycu.py + oturum 9-12 saha testleri.
+  + cycu.py + oturum 9-13 saha testleri + **saha testi 8** (v4.0'ın ilk pydumpall'ı:
+  73 disk dosyası tam döküldü; oyun modüllerinin pack'te olduğu + OpenTextFile'ın
+  pack'te 0 satır verdiği tespit edildi; çalışan botların KENDİ kodundan `pack.Get` /
+  `pack.Exist` / `pack_open` kanıtı çıkarıldı).
+- **Saha testi 8'de birebir ÇALIŞANLAR** (kullanıcı log'u): `stat` (Lv100 Ninja-E Jinno
+  tam rapor), `pos` (vid/x/y/z + metin2_map_c1), `skill` (9 slot + Rumence isimler),
+  `near`, `tp` (SetPixelPosition 2-arg), `goto` (MoveToDestPosition), `attack`,
+  `chat /ride`, `revive`, `pyfiles` (5 yöntem + 130 modül), `pyscan`, `plusquest`
+  (439KB canlı katalog), `pydumpall` (disk dosyaları). Hatalı yazılanlar:
+  `player.ClickSkillSlot(15)` komut değil → `raw player.ClickSkillSlot(15)` yaz;
+  `serverlist` menü sahnesinde çalışır (oyundayken `HATA: LoginWindow sahnesinde
+  degil` — doğru davranış).
 - **Canlı zenginleştirme:** oyunda `plusquest` → `PLUSQuest_live.txt` → AI'ya gönder.
   - Menüde az modül, oyunda çok modül yüklü → **oyundayken** çalıştır.
-  - `pydumpall` ile pack içi kaynaklar → `C:\MaxExec\dump\` → gönder → bu katalog
-    dosya-dosya doğrulanır ve yeni bölümler eklenir.
+  - **v4.1 `pydumpall`** ile pack içi kaynaklar (sys.modules canlı hedefler + UI
+    script yolları, pack.Get zinciri) → `C:\MaxExec\dump\` + INDEX.txt (yöntem + byte
+    kolonlu; 0 byte = BOS işaretli) → gönder → bu katalog dosya-dosya doğrulanır
+    ve yeni bölümler eklenir.
 - Bu dosyadaki her [K] işareti, kullanıcının kendi istemcisinden gelen saha kanıtıdır;
   [S] işaretleri resmî API bilgi birikimidir; [?] işaretleri `pyscan`/`pyfiles` ile
   tek seferlik doğrulanabilir.
