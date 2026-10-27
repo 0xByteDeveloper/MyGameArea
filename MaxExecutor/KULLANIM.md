@@ -2,7 +2,12 @@
 
 > Paket içeriği, kurulum, komutlar, giriş akışı, sorun giderme — hepsi bu dosyada.
 > Mimari gerekçe için: `reports/DEV_REAL_BINARY_TEST.md` (RC18/RC19) + `reports/DEV_GIL_ANALYSIS.md` (RC1-RC17).
-> Son güncelleme: **Oturum 14 — v1.8.1 PLUSMAXGOD / pylib v4.1 (pack.Get keşif zinciri)**
+> Son güncelleme: **Oturum 15 — v1.9 PLUSMAXGOD / pylib v4.2 (GOD MOD paketi v2 + balık sistemi + canlı çıktı)**
+
+> **v1.9/v4.2 ÖZET — saha testi 9 (kullanıcı: "hepsi başarılı, sadece serverlist hatalı") + GOD MOD istek listesi:**
+> **Serverlist kök nedeni:** ServerList pencere öğesi `listbox2` → `ui.ListBox2` sınıfı; **GetItemText metodu YOK** (ui.py:3094-3274, isimler `keyDict`/`textDict` sözlüğünde). v4.1 "isim okunamadı" basıyordu; v4.2 sözlüğü doğrudan okur + kendi sonuç dosyası (last_serverlist.txt — selserver üstüne basmıyor).
+> **YENİ 28 KOMUT:** `unequip <parça|slot>` `unequipall` `chchange <ch>` `relogin` `ground` `groundtake` `autotake` `quest` `fakeitem` `fakeclear` `clone` `unclone` `spawn <race> [ad]` `morph <race>` `unmorph` `setarmor` `setweapon` `simya|ds` `itemscan` `fish` `fishstop` `fishdelay` `fishkeep` `fishswap` `fishspot` `fishstat` `fishtest` `canli`. Detay: **bölüm 3e**.
+> **CANLI ÇIKTI (FIX-36):** pylib `C:\MaxExec\live.txt`'ye durum yazar; DLL her 700ms okur, konsola `[LIVE]` önekiyle AKITIR. Balık/CH değişimi/otomatik toplama durumları canlı izlenir.
 >
 > **v4.1 ÖZET — saha testi 8 dersi (kullanıcı: "oyunun kendi kullandıklarını 1kb dumpladı, tam dumplayamamış"):** v4.0 `pydumpall` 144 hedef buldu; diskteki 73 bot dosyasını TAM döktü (pasha37-levelbot.py = 178KB ✓) AMA oyunun kendi 59 modülü (app/chr/player/game/ui/introLogin...) **2 bayt BOŞ** çıktı. Kök neden 3 katman: (1) `app.GetFileList` bu istemcede **SADECE DISK** listeliyor — 73 dosyanın hepsi senin sonradan attığın botlar (oyun onları kullanmıyor; root/epx'te yok — senin gözlemin doğruydu); (2) oyunun kendi modülleri root **PACK** içinde; (3) `app.OpenTextFile` pack dosyalarında handle verip **0 satır** döndürüyor. **v4.1 çözümü — KANITLI OKUMA ZİNCİRİ** (dump edilen ÇALIŞAN botların kendi kodundan çıkarıldı): `pack.Exist`+`pack.Get` (FileExtractor.py "ScriptStealer" + New_Levelbot.py:363 `pack.Get("playersettingmodule.py")` root pack'ten KAYNAK okuyor!) → `pack_open(ad,"r")` (edithack.py:888 + itemcreator.py:418) → `app.OpenTextFile` (artık YEDEK) → disk. `pydumpall` hedefleri artık **canlı sys.modules'ten** (130 modül) + UI script yollarından (locale/ro/ui + UIScript, oyun log kanıtlı) üretilir; INDEX.txt'e **yöntem + byte kolonu** geldi; 0 byte = `BOS` işaretli (sahte OK yok). `pyfiles`'a `[6] pack API keşfi` + `[7] modül __file__` raporu geldi. **Saha testi 8'de ÇALIŞANLAR:** stat/pos/skill/near/tp/goto/attack/chat/revive/pyfiles/pyscan/plusquest (439KB canlı katalog) — hepsi temiz. Komut yazım hatası notu: `player.ClickSkillSlot(15)` tek başına komut DEĞİL → `raw player.ClickSkillSlot(15)` yaz.
 >
@@ -320,6 +325,113 @@ plusquest               TÜM yüklü modülleri tara → C:\MaxExec\dump\PLUSQue
 > `pack.Get("playersettingmodule.py")` = root pack'ten kaynak okuyor!) ve `pack_open(ad,"r")`
 > (edithack.py:888 + itemcreator.py:418, pack içindeki item_list.txt'yi okuyor). v4.1
 > `pydump`/`pydumpall` tam bu zincirle çalışır.
+
+### e) GOD MOD v2 komutları (v4.2 — saha testi 9 istekleri) + BALIK REHBERİ
+
+#### Ekipman
+```
+equip                   rapor: [90..109] slotlar (kanıt: 90=zırh, 94=silah, 97=unique, 99=ok)
+unequip body            ÇIKAR (parça: body/head/shoes/wrist/weapon/neck/ear/unique/arrow/costume
+                        | doğrudan slot: 90-109) — takılı slota use paketi = çıkarma (kullanıcı doğruladı)
+unequipall              hepsini çıkar (envanterde yer lazım)
+use <slot>              TAK (kullanıcı saha testi 9'da doğruladı ✓)
+```
+
+#### Kanal değiştirme (oyundan çıkmadan) — farmbot yolu
+```
+login deneme2 1         (bir kez; kimlik C:\MaxExec\login.dat'a kaydolur)
+chchange 2              otomatik akış: bağlantıyı kes → login ekranı → server+CH seç →
+                        giris → karakter → oyun. 8-20 sn, oyun süreci AÇIK kalır.
+relogin                 aynı CH ile otomatik yeniden giriş
+```
+> Gerçek protokolde CH = TCP bağlantısı; bağlantı değiştirmeden CH değişmez. Bu komut
+> süreci kapatmadan TÜM akışı otomatik oynatır (farmbotların klasik yolu). İlerleme [LIVE] ile akar.
+
+#### Yerdeki eşyalar + görevler
+```
+ground                  yerdeki eşyaları tara → vid + dünya konumu + mesafe
+                        (KANIT: textTail.Pick(x,y) ekran taraması — senin pickupstealer.py + Itemstealer.py)
+groundtake all | groundtake <vid>    al
+autotake 1              sürekli otomatik toplama (0.4sn'de bir tarama; durdur: autotake 0)
+quest                   aktif görev raporu — ad + sayaç + kalan süre + idx
+                        (KANIT: uicharacter.py:812-876 quest.GetQuestCount/GetQuestData/GetQuestLastTime)
+```
+
+#### Hayalet eşya (FAKE ITEM)
+```
+fakeitem 119            slot 0'dan başlayarak boş slota hayalet yazar (itemcreator.py CreateItem kanıtı:
+                        player.SetItemData(slot, vnum, adet); bonus: raw player.SetItemAttribute(slot,0,tip,deger);
+                        metin: raw player.SetItemMetinSocket(slot,0,vnum))
+fakeclear all           temizle (relogin de temizler)
+```
+> **DÜRÜST HÜKÜM:** hayalet eşya İSTEMCİ GÖSTERGESİDİR — sunucuda yok; kullan/sat olmaz, takas atamaz,
+> diğerleri görmez. Görsel/test amaçlı.
+
+#### Sahte instance / klon / kılık (FAKE INSTANCE)
+```
+clone                   kendimin klonunu yanına spawn (aynı ırk+zırh+silah; introselect.py MakeCharacter kanıt sırası)
+spawn 20016 Demirci     sahte NPC spawn (demirci=20016, genel satıcı=20010, simyacı=20001; race öğrenme: near kolonu race=)
+unclone all             sahteleri sil (unclone <vid> tek)
+morph 20016             KENDİNİ demirci görüntüsüne dönüştür (ninja yerine); SelectInstance(ben)+SetRace
+                        (CInstanceBase::SetRace aktörü yeniden kurar — InstanceBase.cpp:996)
+unmorph                 geri (eski ırk kayıtlı)
+setarmor 12019          görünüm zırhı (EQChanger.py kanıtı, tek-arg)
+setweapon 189           görünüm silahı
+```
+> **DÜRÜST HÜKÜM:** bunların HEPSİ istemci tarafıdır — sunucu ve DİĞER oyuncular seni gerçek
+> karakterin olarak görür; warp/relogin sahte instance'ları temizler, morph'u geri alır.
+
+#### Simya (Dragon Soul) + eşya oluşturma kodu
+```
+simya | ds              DS (simya) envanteri + ana envanterdeki DS-tipi eşyalar → HER EŞYA İÇİN /i KODU YAZAR
+itemscan 55000 55999    eşya tablosu tarama (vnum keşfi; tip kolonlu; ITEM_TYPE_DS/FISH işaretli)
+/i <vnum> <adet>        sunucu komutu — saha testi 9 kanıtı: /i 27400 olta, /i 27801 200 solucan
+```
+> "Simya oluşturma kodu internetten olmuyor" = bu sunucunun `/i` komutu çalışıyor; sorun vnum bilmekti.
+> `simya` senin sahip olduklarını listeler (her satırda `/i <vnum> <adet>` hazır), `itemscan` ile
+> sunucudaki tabloda var olan tüm vnum'ları keşfedersin.
+
+#### BALIK REHBERİ (A / A+ / AX / AX+ / XX / XY sorularının cevabı)
+
+**TAM MEKANİK** (LegendySF-V2 `fishing.cpp` — klasik mainline; NightTown aynı aile):
+1. Atış → sunucu **10-40 sn rastgele** bekler → `GC_REACT` (ısırtma; başta baloncuk = `chrmgr.IsPossibleEmoticon(-1)==0`)
+2. Isırtmada **6 saniye pencere**; tepki ms'si ölçülür: `kova = (ms+99)/200` (200ms kova)
+3. Başarı zarı: `number(1,100) <= aFishingTime[tip][kova]` — **ANINDA TEPKI HER BALIKTA EN İYİ DEĞİL!**
+   Resmî tablo (kova index'ine göre %): tip0: kova 0-4 = **%0**, kova 13-15 = %30-80 · tip1: 3.2-6sn arası (%80, 5sn) ·
+   tip2: anında (%80) · tip3: **her zaman %100** · tip4: 3sn (%70-100)
+4. Sonra zorluk zarı: `number(1, zorluk) <= olta-seviyesi (soket2+value0)`
+5. **KAÇIRIRSAN olta-skilli SIFIRLANIR** (`rod->SetSocket(2,0)`) — 6 sn'den yavaş çıkma!
+6. Fish Mind (benekli/71072) → daha iyi balık tablosu (prob_idx 2)
+
+**SORULARIN CEVABI:**
+- **A) Deniz kenarı olmadan tutma:** Client atış için 400 birim içinde SU İSTER (`GetFishingRot`, 10'ar derece tarama)
+  AMA sunucu su kontrolü YAPMAZ (sadece `ATTR_BLOCK` bakar!). Çözüm `fishspot`: su kenarına `goto` → `fishspot <x> <y>` →
+  `fish` → her atış anında su kenarına ışınla-at-geri-dön → **haritanın HER YERİNDE balık tutarsın**. Hiç su olmayan
+  haritada (dungeon) ilk atış zaten yapılamaz — istemci paketi hiç göndermez (Python'a balık paketi fonksiyonu da kapalı).
+- **A+) Canlı oran ekranı:** VAR. `fish` başlat → cmd penceresinde `[LIVE]` satırları AKITIR: durum, atış/ısırtma/
+  tutulan/kaçan, oran %, olta-skill, envanter balığı, ısırtan balığın ADI (sunucu önceden bildirirse OnFishingNotify hook).
+- **AX) Her attığını tutma / balık dışı eşya:** Oltayla tutulan balık **sunucuda zarla** belirlenir (`DetermineFish`:
+  harita prob tablosu). İstemci balığı SEÇEMEZ; oyuncu/mob tutmak bu kod tabanında imkânsız (paket bile yok).
+  Pratik çözüm: `fishkeep <vnum>` — istemediğin balığı otomatik YERE BIRAKIR, hedefe odaklanır.
+- **AX+) RNG ile %100'e yönelik:** `fishdelay auto` (varsayılan) **ADAPTİF ÖĞRENİCİ**: balık adına göre
+  gecikme→başarı tablosu tutar (fish_learn.txt kalıcı), en iyi gecikmeye yakınsar. + anında çekiş (kova 0-1) tip2/3'te
+  zaten %80-100. Zorluk zarı istemci dışı; olta seviyesi yükseldikçe % artar (olta-skill [LIVE] içinde görünür).
+- **XX) İstediğin vnum'u oltayla tutmak:** sunucu tarafı zar — istemciden imkânsız (yukarıda). `fishkeep` filtresi en yakın çözüm.
+- **XY) Zırh değiştirerek hızlı/%100 tutma:** `fishswap 1` — her sonuçtan sonra envanterdeki başka zırhı giyer →
+  tutma/kaçırma animasyonu atlanır, yeniden atış hızlanır (bilinen m2 tekniğinin uygulanmış hâli). %100 vermez,
+  döngü hızını artırır.
+
+**HIZLI BAŞLANGIÇ:**
+```
+fishtest                olta/yem/baloncuk/zırh-adayları raporu (hazır mıyım?)
+/i 27400                olta (sunucu komutu — cmd ile)
+/i 27801 200            solucan
+use <olta-slotu>        tak (inv raporundan slot)
+fish                    BAŞLAT → [LIVE] izle
+fishstop                durdur
+```
+> Yem otomatik takılır (27800/27801/27802), ısırtmada otomatik çekilir. `fishdelay 2500` gibi sabit
+> gecikmeler tip0 balıklar için gerekir; `auto` öğrenir. `fishstat` öğrenilen tabloyu gösterir.
 
 ---
 

@@ -124,6 +124,23 @@
 //            basedir.txt ile tasinabilir (BASE_DIR\dump).
 //    FIX-35: SyncEmbeddedPylib yeni dosya adini yazar (PLUSMAXGOD_PyScript.py),
 //            eskisini PLUSMAXGOD_eski_v<surum>.py olarak yedekler.
+//  v1.9 "PLUSMAXGOD" (saha testi 9 - GOD MOD paketi v2, pylib v4.2 cifti):
+//    FIX-36: CANLI CIKTI IZLEYICISI - C:\MaxExec\live.txt'yi 700ms'de bir
+//            okuyan ayri thread; yeni satirlar [LIVE] onekiyle konsola akar.
+//            fish dongusu + chchange + autotake durumlari boyle canli akar.
+//    FIX-37: GOD MOD komut ailesi v2 - ekipman: unequip unequipall |
+//            baglanti: chchange relogin (otomatik yeniden giris akisi) |
+//            yer esyasi: ground groundtake autotake (textTail.Pick ekran
+//            taramasi - pickupstealer kaniti) | gorev: quest |
+//            hayalet: fakeitem fakeclear (itemcreator kaniti) |
+//            sahte instance: clone unclone spawn morph unmorph setarmor
+//            setweapon (introselect MakeCharacter kanit sirasi) |
+//            simya: simya ds itemscan (DS envanter + item tablosu) |
+//            BALIK: fish fishstop fishdelay fishkeep fishswap fishspot
+//            fishstat fishtest (LegendySF fishing.cpp mekanigine gore
+//            adaptif gecikme ogrenici + canli oran ekrani)
+//    FIX-38: serverlist v2 sonuc dosyasi ayrildi (last_serverlist.txt) -
+//            selserver uzeyine basmiyor; ListBar2 textDict okuma yolu.
 // ============================================================================
 
 //  xgodmod4 gereksinimleri:
@@ -462,7 +479,7 @@ static std::string BootImport(void)
          "    maxlib._MX_OLD_WARNED = True\n"
          "    try:\n"
          "        import sys\n"
-         "        sys.stderr.write('!!! PYLIB ESKI v' + str(getattr(maxlib, 'PYLIB_VERSION', '?')) + ' - DLL v1.8.1 PLUSMAXGOD v4.1 ister! "
+         "        sys.stderr.write('!!! PYLIB ESKI v' + str(getattr(maxlib, 'PYLIB_VERSION', '?')) + ' - DLL v1.9 PLUSMAXGOD v4.2 ister! "
          "C:\\\\MaxExec\\\\PLUSMAXGOD_PyScript.py dosyasini yenisiyle degistir (bundle zip / GitHub) !!!\\\\n')\n"
          "    except Exception:\n"
          "        pass\n";
@@ -758,6 +775,86 @@ static void CmdAttack(const std::string& mode)
     QRaw(BootImport() + "maxlib.attack(" + PyStr(mode) + ")\n");
 }
 
+// ---------------------------------------------------------------------------
+// FIX-37 (v1.9): GOD MOD komut ailesi v2 (pylib v4.2 karsiliklari)
+// ---------------------------------------------------------------------------
+static void CmdUnequip(const std::string& part)
+{
+    QRaw(BootImport() + "maxlib.unequip(" + PyStr(part) + ")\n");
+}
+static void CmdUnequipAll(void) { QRaw(BootImport() + "maxlib.unequipall()\n"); }
+static void CmdChChange(int ch)
+{
+    char call[64];
+    _snprintf(call, sizeof(call), "maxlib.chchange(%d)\n", ch);
+    call[sizeof(call)-1] = 0;
+    QRaw(BootImport() + call);
+}
+static void CmdRelogin(void) { QRaw(BootImport() + "maxlib.relogin()\n"); }
+static void CmdGround(void)  { QRaw(BootImport() + "maxlib.ground()\n"); }
+static void CmdGroundTake(const std::string& mode)
+{
+    QRaw(BootImport() + "maxlib.groundtake(" + PyStr(mode) + ")\n");
+}
+static void CmdAutoTake(const std::string& flag)
+{
+    QRaw(BootImport() + "maxlib.autotake(" + PyStr(flag) + ")\n");
+}
+static void CmdQuest(void)   { QRaw(BootImport() + "maxlib.quest()\n"); }
+static void CmdFakeItem(const std::string& vnum, const std::string& count)
+{
+    QRaw(BootImport() + "maxlib.fakeitem(" + PyStr(vnum) + ", " + PyStr(count) + ")\n");
+}
+static void CmdFakeClear(const std::string& mode)
+{
+    QRaw(BootImport() + "maxlib.fakeclear(" + PyStr(mode) + ")\n");
+}
+static void CmdClone(const std::string& off)
+{
+    QRaw(BootImport() + "maxlib.clone(" + PyStr(off) + ")\n");
+}
+static void CmdUnClone(const std::string& mode)
+{
+    QRaw(BootImport() + "maxlib.unclone(" + PyStr(mode) + ")\n");
+}
+static void CmdSpawn(const std::string& race, const std::string& name)
+{
+    QRaw(BootImport() + "maxlib.spawn(" + PyStr(race) + ", " + PyStr(name) + ")\n");
+}
+static void CmdMorph(const std::string& race)
+{
+    QRaw(BootImport() + "maxlib.morph(" + PyStr(race) + ")\n");
+}
+static void CmdUnMorph(void) { QRaw(BootImport() + "maxlib.unmorph()\n"); }
+static void CmdSetArmor(const std::string& vnum)
+{
+    QRaw(BootImport() + "maxlib.setarmor(" + PyStr(vnum) + ")\n");
+}
+static void CmdSetWeapon(const std::string& vnum)
+{
+    QRaw(BootImport() + "maxlib.setweapon(" + PyStr(vnum) + ")\n");
+}
+static void CmdSimya(void)   { QRaw(BootImport() + "maxlib.simya()\n"); }
+static void CmdItemScan(const std::string& mn, const std::string& mx)
+{
+    QRaw(BootImport() + "maxlib.itemscan(" + PyStr(mn) + ", " + PyStr(mx) + ")\n");
+}
+static void CmdFish(void)        { QRaw(BootImport() + "maxlib.fish()\n"); }
+static void CmdFishStop(void)    { QRaw(BootImport() + "maxlib.fishstop()\n"); }
+static void CmdFishDelay(const std::string& v) { QRaw(BootImport() + "maxlib.fishdelay(" + PyStr(v) + ")\n"); }
+static void CmdFishKeep(const std::string& v)  { QRaw(BootImport() + "maxlib.fishkeep(" + PyStr(v) + ")\n"); }
+static void CmdFishSwap(const std::string& v)  { QRaw(BootImport() + "maxlib.fishswap(" + PyStr(v) + ")\n"); }
+static void CmdFishSpot(const std::string& x, const std::string& y)
+{
+    QRaw(BootImport() + "maxlib.fishspot(" + PyStr(x) + ", " + PyStr(y) + ")\n");
+}
+static void CmdFishStat(void)    { QRaw(BootImport() + "maxlib.fishstat()\n"); }
+static void CmdFishTest(void)    { QRaw(BootImport() + "maxlib.fishtest()\n"); }
+static void CmdCanli(const std::string& msg)
+{
+    QRaw(BootImport() + "maxlib.canli(" + PyStr(msg) + ")\n");
+}
+
 static void CmdInv(int page)
 {
     char call[64];
@@ -824,7 +921,7 @@ static bool InitConsole(void)
         LogLine("CONOUT$ (stderr) yeniden acilamadi");
     setvbuf(stdout, NULL, _IONBF, 0);   // buffer'siz: crash olsa bile yazar
     setvbuf(stderr, NULL, _IONBF, 0);
-    SetConsoleTitleA("MaxExecutor v1.8.1 PLUSMAXGOD");
+    SetConsoleTitleA("MaxExecutor v1.9 PLUSMAXGOD");
     HWND cw = GetConsoleWindow();
     if (cw)
     {
@@ -853,6 +950,65 @@ static DWORD WINAPI AutoDrainThread(LPVOID)
         if ((++ticks % 15) == 0)
             LogLine("ozet30s: timer=%ld msg=%ld drain=%ld exec=%ld",
                     (long)g_nTimer, (long)g_nMsg, (long)g_nDrain, (long)g_nExec);
+    }
+    return 0;
+}
+
+// ---------------------------------------------------------------------------
+// FIX-36 (v1.9): CANLI CIKTI IZLEYICISI - pylib v4.2 durum akislari (fish/
+// chchange/autotake) C:\MaxExec\live.txt'ye yazar; bu thread yeni satirlari
+// [LIVE] onekiyle konsola basar. Dosya kuculurse (truncate) bastan okur.
+// ---------------------------------------------------------------------------
+static DWORD g_liveOffset = 0;
+static DWORD WINAPI LiveMonitorThread(LPVOID)
+{
+    std::string path = std::string(BASE_DIR) + "\\live.txt";
+    Sleep(3000);
+    while (true)
+    {
+        HANDLE h = CreateFileA(path.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE,
+                               NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+        if (h != INVALID_HANDLE_VALUE)
+        {
+            DWORD size = GetFileSize(h, NULL);
+            if (size == INVALID_FILE_SIZE) size = 0;
+            if (size < g_liveOffset)
+                g_liveOffset = 0;                    // truncate: bastan oku
+            if (size > g_liveOffset)
+            {
+                DWORD want = size - g_liveOffset;
+                if (want > 16384) { g_liveOffset = size - 16384; want = 16384; }
+                static char buf[16386];
+                DWORD got = 0;
+                LONG hi = 0;
+                SetFilePointer(h, (LONG)g_liveOffset, &hi, FILE_BEGIN);
+                if (ReadFile(h, buf, want, &got, NULL) && got > 0)
+                {
+                    buf[got] = 0;
+                    DWORD consumed = 0;
+                    char* p = buf;
+                    while (true)
+                    {
+                        char* nl = strchr(p, '\n');
+                        if (!nl) break;
+                        *nl = 0;
+                        if (nl > p && nl[-1] == '\r') nl[-1] = 0;
+                        printf("[LIVE] %s\n", p);
+                        // \r satir icinde 0'landi ama byte olarak tuketildi
+                        consumed += (DWORD)(nl - p) + 1;
+                        p = nl + 1;
+                        if (p >= buf + got) break;
+                    }
+                    g_liveOffset += consumed;
+                }
+            }
+            CloseHandle(h);
+        }
+        else
+        {
+            g_liveOffset = 0;
+        }
+        Sleep(700);
     }
     return 0;
 }
@@ -907,6 +1063,34 @@ static void PrintHelp(void)
     printf("  tp <x> <y>                  : konuma ISINLAN (anlik)\n");
     printf("  key <DIK> <0/1>             : tus simule (UP LEFT SPACE F5 ...)\n");
     printf("  attack <0/1>                : saldiri basili/birak\n");
+    printf("  -- GOD MOD v2: EKIPMAN + BAGLANTI --\n");
+    printf("  unequip <parca|slot>        : ekipman CIKAR (body/head/shoes/wrist/weapon/neck/ear/unique/arrow/costume | 90-109)\n");
+    printf("  unequipall                  : tum ekipmani cikar (envanterde yer lazim)\n");
+    printf("  chchange <ch>               : CH DEGISITIR (oyundan cikmadan; otomatik relogin akisi)\n");
+    printf("  relogin                     : ayni CH ile otomatik yeniden giris\n");
+    printf("  -- GOD MOD v2: YER ESYASI + GOREV --\n");
+    printf("  ground                      : yerdeki esyalari tara (vid + dunya konumu)\n");
+    printf("  groundtake [all|vid]        : yerdeki esyalari al\n");
+    printf("  autotake <0/1>              : surekli otomatik toplama\n");
+    printf("  quest                       : aktif gorev raporu (ad/sayac/kalan sure/idx)\n");
+    printf("  -- GOD MOD v2: HAYALET + SAHTE INSTANCE (istemci tarafi!) --\n");
+    printf("  fakeitem <vnum> [adet]      : HAYALET esya yarat (envanterde gorunur, sunucuda YOK)\n");
+    printf("  fakeclear [slot|all]        : hayaletleri temizle (relogin de temizler)\n");
+    printf("  clone                       : kendimin klonunu yanina spawn et\n");
+    printf("  unclone [all|vid]           : sahte instance sil\n");
+    printf("  spawn <race> [ad]           : sahte NPC spawn (demirci=20016; race ogren: near)\n");
+    printf("  morph <race>                : gorunumunu baska race yap (demirci: morph 20016)\n");
+    printf("  unmorph | setarmor <vnum> | setweapon <vnum> : gorunum islemleri\n");
+    printf("  -- GOD MOD v2: SIMYA (Dragon Soul) --\n");
+    printf("  simya | ds                  : simya (DS) envanter raporu + /i olusturma kodlari\n");
+    printf("  itemscan <min> <max>        : item tablosu tara (simya/balik vnum kesfi)\n");
+    printf("  -- GOD MOD v2: BALIK (otomatik + canli oran ekrani) --\n");
+    printf("  fish                        : otomatik balik dongusu (olta+yem+atis+cekis)\n");
+    printf("  fishdelay <ms|auto>         : cekis gecikmesi (auto=ogrenici; aninda tepki her balikta en iyi DEGIL!)\n");
+    printf("  fishkeep <vnum|0>           : sadece hedef baligi tut, digerlerini birak\n");
+    printf("  fishswap <0/1>              : zirh degistirerek animasyon atlama (hizli recast)\n");
+    printf("  fishspot <x> <y>|0          : su-noktasi modu (at, isinlan, uzaktan balik tut!)\n");
+    printf("  fishstat | fishtest | fishstop | canli <mesaj> : rapor/test/dur\n");
     printf("  -- KESIF (oyunun py dosyalari) --\n");
     printf("  pyfiles                     : 5 yontemle py dosyalarini bul\n");
     printf("  pydump <ad>                 : tek py dosyasini dump klasorune dok\n");
@@ -926,6 +1110,10 @@ static void PrintHelp(void)
     printf("  selchar 0 -> enter 0 -> waitfor GameWindow 60 -> stat -> pos -> inv\n");
     printf("YENI KARAKTER: newchar -> (bayrak: empirelist -> empireui 1) ->\n");
     printf("  joblist -> mkchar Isim 3 -> waitfor SelectCharacterWindow 15 -> charlist\n");
+    printf("BALIK AKISI: fishtest -> /i 27400 (olta) + /i 27801 200 (solucan) -> fish ->\n");
+    printf("  [LIVE] satirlarini izle | istedigini tut: fishkeep <vnum> | su uzaktan:\n");
+    printf("  goto <su kenari> -> fishspot <x> <y> -> fish (atis aninda suya, sonra isinlan)\n");
+    printf("CH DEGISME: login <id> <pwd> ile bir kez gir (kimlik kaydolur) -> chchange <ch>\n");
     printf("KESIF AKISI: pyfiles -> pydumpall (dump klasoru) -> plusquest ->\n");
     printf("  C:\\MaxExec\\dump klasorunu AI'ya gonder (PLUSQuest.md guncellenir)\n");
     printf("Saglik: %s | oyun hatalari: results\\last_error.txt\n", ALIVE_FILE);
@@ -1021,9 +1209,9 @@ static DWORD WINAPI WorkerThread(LPVOID)
     const bool con = InitConsole();
 
     printf("\n=============================================\n");
-    printf("  MaxExecutor v1.8.1 PLUSMAXGOD - ana-thread executor\n");
-    printf("  oyun-ici komutlar + py kesif (pylib v4.1 cifti)\n");
-    printf("  hook yok | SHM yok | arka-plan PyRun yok\n");
+    printf("  MaxExecutor v1.9 PLUSMAXGOD - ana-thread executor\n");
+    printf("  oyun-ici + kesif + GOD MOD v2 (pylib v4.2 cifti)\n");
+    printf("  canli cikti: C:\\MaxExec\\live.txt izlenir -> [LIVE] akar\n");
     printf("=============================================\n");
     if (!con)
         printf("[!] KONSOL ACILAMADI (headless). Komutlari %s\\queue klasorune\n"
@@ -1084,7 +1272,7 @@ static DWORD WINAPI WorkerThread(LPVOID)
                 char rp[MAX_PATH];
                 _snprintf(rp, MAX_PATH, "%s\\last_warning.txt", RESULT_DIR); rp[MAX_PATH-1]=0;
                 WriteFileAll(rp, std::string("! PYLIB ESI SURUM: v") + vShow +
-                    "  (DLL v1.8.1 PLUSMAXGOD v4.1 ister)\n"
+                    "  (DLL v1.9 PLUSMAXGOD v4.2 ister)\n"
                     "Yeni PLUSMAXGOD_PyScript.py'yi " + std::string(BASE_DIR) + " icine kopyala (bundle zip / GitHub).\n"
                     "ESKI pylib ILE: stat/pos/inv/equip/skill/near/chat/goto/tp/pyfiles/pydumpall/plusquest CALISMAZ.\n");
                 LogLine("UYARI: pylib ESI v%s - PLUSMAXGOD v4.1 gerekli! (%s)", vShow, pylibPath);
@@ -1115,6 +1303,7 @@ static DWORD WINAPI WorkerThread(LPVOID)
     printf("kuyruk: %s | sonuc: %s\n", QUEUE_DIR, RESULT_DIR);
     InstallTimer();                               // FIX-8: WndProc'tan bagimsiz ana yol
     CreateThread(NULL, 0, AutoDrainThread, NULL, 0, NULL);
+    CreateThread(NULL, 0, LiveMonitorThread, NULL, 0, NULL);   // FIX-36
     PrintHelp();
 
     char line[4096];
@@ -1270,6 +1459,100 @@ static DWORD WINAPI WorkerThread(LPVOID)
             if (a.size() >= 2) CmdPyScan(a[1]);
             else printf("kullanim: pyscan <modul>   (orn. pyscan player | pyscan net)\n");
         }
+        // --- FIX-37 (v1.9): GOD MOD komutlari ---
+        else if (cmd == "unequip")
+        {
+            if (a.size() >= 2) CmdUnequip(a[1]);
+            else printf("kullanim: unequip <parca|slot>   (body/head/shoes/wrist/weapon/neck/ear/unique/arrow/costume | 90-109)\n");
+        }
+        else if (cmd == "unequipall") CmdUnequipAll();
+        else if (cmd == "chchange")
+        {
+            if (a.size() >= 2) CmdChChange(atoi(a[1].c_str()));
+            else printf("kullanim: chchange <ch>   (orn. chchange 2; kimlik login.dat'tan okunur - login ile giris yaptiysan hazir)\n");
+        }
+        else if (cmd == "relogin") CmdRelogin();
+        else if (cmd == "ground") CmdGround();
+        else if (cmd == "groundtake")
+        {
+            CmdGroundTake(a.size() >= 2 ? a[1] : "all");
+        }
+        else if (cmd == "autotake")
+        {
+            CmdAutoTake(a.size() >= 2 ? a[1] : "1");
+        }
+        else if (cmd == "quest") CmdQuest();
+        else if (cmd == "fakeitem")
+        {
+            if (a.size() >= 2) CmdFakeItem(a[1], a.size() >= 3 ? a[2] : "1");
+            else printf("kullanim: fakeitem <vnum> [adet]   (HAYALET esya - istemci gorunumu)\n");
+        }
+        else if (cmd == "fakeclear")
+        {
+            CmdFakeClear(a.size() >= 2 ? a[1] : "all");
+        }
+        else if (cmd == "clone")
+        {
+            CmdClone(a.size() >= 2 ? a[1] : "80");
+        }
+        else if (cmd == "unclone")
+        {
+            CmdUnClone(a.size() >= 2 ? a[1] : "all");
+        }
+        else if (cmd == "spawn")
+        {
+            if (a.size() >= 2) CmdSpawn(a[1], a.size() >= 3 ? a[2] : "NPC");
+            else printf("kullanim: spawn <race> [ad]   (demirci=20016, satici=20010, simyaci=20001; race ogrenme: near)\n");
+        }
+        else if (cmd == "morph")
+        {
+            if (a.size() >= 2) CmdMorph(a[1]);
+            else printf("kullanim: morph <race>   (demirci gorunumu: morph 20016; geri: unmorph)\n");
+        }
+        else if (cmd == "unmorph") CmdUnMorph();
+        else if (cmd == "setarmor")
+        {
+            if (a.size() >= 2) CmdSetArmor(a[1]);
+            else printf("kullanim: setarmor <vnum>   (gorunum zirhi - istemci tarafi)\n");
+        }
+        else if (cmd == "setweapon")
+        {
+            if (a.size() >= 2) CmdSetWeapon(a[1]);
+            else printf("kullanim: setweapon <vnum>   (gorunum silahi - istemci tarafi)\n");
+        }
+        else if (cmd == "simya" || cmd == "ds") CmdSimya();
+        else if (cmd == "itemscan")
+        {
+            if (a.size() >= 3) CmdItemScan(a[1], a[2]);
+            else printf("kullanim: itemscan <min> <max>   (orn. itemscan 55000 55999 - simya vnum kesfi)\n");
+        }
+        else if (cmd == "fish") CmdFish();
+        else if (cmd == "fishstop") CmdFishStop();
+        else if (cmd == "fishdelay")
+        {
+            CmdFishDelay(a.size() >= 2 ? a[1] : "auto");
+        }
+        else if (cmd == "fishkeep")
+        {
+            CmdFishKeep(a.size() >= 2 ? a[1] : "0");
+        }
+        else if (cmd == "fishswap")
+        {
+            CmdFishSwap(a.size() >= 2 ? a[1] : "1");
+        }
+        else if (cmd == "fishspot")
+        {
+            if (a.size() >= 3) CmdFishSpot(a[1], a[2]);
+            else CmdFishSpot("0", "0");
+        }
+        else if (cmd == "fishstat") CmdFishStat();
+        else if (cmd == "fishtest") CmdFishTest();
+        else if (cmd == "canli")
+        {
+            std::string m;
+            for (size_t i = 1; i < a.size(); ++i) { if (i > 1) m += " "; m += a[i]; }
+            CmdCanli(m);
+        }
         else if (cmd == "serverlist") CmdServerList();
         else if (cmd == "lasterr") CmdLastErr();
         else if (cmd == "load")
@@ -1330,7 +1613,7 @@ BOOL APIENTRY DllMain(HMODULE hMod, DWORD reason, LPVOID)
         DisableThreadLibraryCalls(hMod);
         EnsureDirs();
         CreateThread(NULL, 0, WorkerThread, NULL, 0, NULL);
-        LogLine("MaxExecutor v1.8.1 PLUSMAXGOD yuklendi (pid=%lu) — worker baslatiliyor",
+        LogLine("MaxExecutor v1.9 PLUSMAXGOD yuklendi (pid=%lu) — worker baslatiliyor",
                 GetCurrentProcessId());
     }
     return TRUE;

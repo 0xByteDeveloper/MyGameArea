@@ -1,5 +1,5 @@
 # PLUSQuest — Metin2 İstemci Python Fonksiyon Kataloğu
-### (PLUSMAXGOD Edition · v4.1 · Oturum 14 — SAHA TESTİ 8 hükümleri işlendi)
+### (PLUSMAXGOD Edition · v4.2 · Oturum 15 — SAHA TESTİ 9 + GOD MOD v2 + balık mekanigi işlendi)
 
 > **Bu dosya nedir?** MaxExecutor'un oyunun Python'undan erişebildiği **tüm bilinen modül ve
 > fonksiyonların** kataloğudur: ne işe yararlar, hangileri bu istemcide **kanıtlı** (saha
@@ -45,6 +45,16 @@
 | `pyfiles` | `app.GetFileList` [K-disk] + `sys.modules` + `pkgutil` + `os.listdir` + import-probe + **pack API keşfi (v4.1)** | karışık |
 | `pydump` / `pydumpall` | **v4.1 zinciri:** `pack.Exist`+`pack.Get` → `pack_open` → `app.OpenTextFile` → disk | [K] FileExtractor:407, New_Levelbot:363, edithack:888, itemcreator:418 |
 | `pyscan` / `plusquest` | `sys.modules` + `dir()` + `func_code.co_varnames` | [S] py2 çekirdeği |
+| `unequip` / `unequipall` | takılı slota `net.SendItemUsePacket(slot)` (tak=use, çıkar=aynı paket) | [K] kullanıcı saha testi 9 |
+| `chchange` / `relogin` | `net.Disconnect` + UI akış otomasyonu (`_pw_by_type` + `selserver/login/enter`) — farmbot deseni | [K] UI yolları saha-9 |
+| `ground` / `groundtake` / `autotake` | **`textTail.Pick(x, y)`** ekran taraması + `net.SendItemPickUpPacket(vid)` | [K] pickupstealer.py + Itemstealer.py |
+| `quest` | **`quest.GetQuestCount` + `quest.GetQuestData`(4'lü) + `quest.GetQuestLastTime`(2'li) + `quest.GetQuestIndex`** | [K] uicharacter.py:812-876 |
+| `fakeitem` / `fakeclear` | **`player.SetItemData(slot, vnum, adet)`** + `SetItemAttribute` + `SetItemMetinSocket` (hayalet) | [K] itemcreator.py CreateItem |
+| `clone` / `spawn` / `morph` | **`chr.CreateInstance(vid)` → `SelectInstance` → `SetVirtualID` → `SetNameString` → `SetRace` → `SetArmor` → `SetHair` → `SetMotionMode` → `SetLoopMotion` → `SetRotation` → `Show`** (1-arg setterlar SEÇİLİ instance'a gider!) | [K] introselect.py MakeCharacter |
+| `simya` / `ds` | `player.GetItemIndex(player.DRAGON_SOUL_INVENTORY, slot)` (2-arg form) + `item.ITEM_TYPE_DS` | [K] PythonPlayerModule.cpp:788 + canlı katalog |
+| `itemscan` | `item.SelectItem(vnum)` + `GetItemName/GetItemType` taraması | [K] itemcreator/EQChanger |
+| `fish` ailesi | `player.SetAttackKeyState` (at/çek) + `chrmgr.IsPossibleEmoticon(-1)` (ısırtma/baloncuk) + `game.GameWindow.OnFishingNotify/Success/Failure` hook + `player.GetItemMetinSocket(eb+4, 2)` (olta-skill) | [K] fishbot1.0.py + client kaynak |
+| `canli` | `C:\MaxExec\live.txt` yaz → DLL [LIVE] akışı (FIX-36) | [K] v1.9 |
 
 ---
 
@@ -242,6 +252,52 @@ av döngüsü; `SetPixelPosition` + `background.GetCurrentMapName` → harita-ba
 | `grp.GenerateColor` / `snd.PlaySound` / `dbg.LogBox` | Renk/ses/hata kutusu (bilgi çıkışı; `dbg.LogBox` eski sohbet'te serverinfo gösterimi için kullanılmıştı — çalışıyor). | [K] |
 
 ---
+
+### 2.8 v4.2 — BALIKÇILIK MEKANİĞİ + SAHTE INSTANCE KAYNAK HÜKÜMLERİ (LegendySF-V2 kaynak okuması)
+
+**Sunucu balık akışı** (`fishing.cpp` — klasik mainline, NightTown aynı aile):
+| Aşama | Sunucu kodu | İstemci etkisi |
+|---|---|---|
+| Atış (`CG_FISHING`) | `CHARACTER::fishing()`: yalnız **ATTR_BLOCK** kontrol (SU KONTROLÜ YOK!) + olta takılı mı + yem (`soket2>0`) | İstemcide `GetFishingRot` 400 birim içinde su ister — 10'ar derece tarar; su yoksa paket bile gönderilmez |
+| Bekleme | `CreateFishingEvent`: `number(10, 40)` **saniye** | — |
+| Isırtma | `FishingReact` → `GC_REACT` → `SetFishEmoticon` (baloncuk) + `hang_time` kaydı | `chrmgr.IsPossibleEmoticon(-1)==0` = baloncuk aktif |
+| Çekiş | `Compute(fish, ms, level)`: `ms>6000→FAIL`; `kova=(ms+99)/200`; `number(1,100) <= aFishingTime[tip][kova]`; sonra `number(1, zorluk) <= olta-skill` | tepki ms'si = başarının tekill belirleyicisi (istemci tarafı) |
+| Kaçırma | 6 sn asımı: `rod->SetSocket(2, 0)` — **olta-skilli SIFIR** | — |
+| Balık seçimi | `DetermineFish`: harita→prob_idx (1/21/41=0, 3/23/43=1); **Fish Mind → prob_idx 2** (daha iyi tablo) | istemci SEÇEMEZ |
+| Sonuç | `GC_SUCCESS/FAIL` + `GC_FISH(vnum)` → `OnFishingSuccess(isFish, fishName)` / `OnFishingFailure()` | `game.GameWindow` metotları hook'lanabilir (v4.2 fish yapar) |
+
+**aFishingTime tablosu** (%; kova=(ms+99)/200; MAX_FISHING_TIME_COUNT=31):
+tip0: `0,0,0,0,0,2,4,8,12,16,20,22,25,30,50,80,50,30,25,...` — **anında tepki %0**, 2.6-3.2sn'de %30-80
+tip1: `0 ×16, sonra 4,8,12,16,20,22,25,30,50,80,50,...` — 3.2-6 sn arası
+tip2: `20,22,25,30,50,80,50,30,...` — anında en iyi (%80, kova 5)
+tip3: **hepsi %100**
+tip4: `20,20,20,20,20,22,24,28,32,36,40,42,45,50,70,100,70,...` — 3sn'de %100
+
+**Sahte instance kanıt sırası** (`introselect.py MakeCharacter` — bu motor ailesinin kendi kodu):
+```python
+chr.CreateInstance(slot)          # RegisterInstance (boş instance)
+chr.SelectInstance(slot)         # SEÇİM ŞART — 1-arg setterlar seçiliye gider
+chr.SetVirtualID(slot)
+chr.SetNameString(name)
+chr.SetRace(race)                # CInstanceBase::SetRace aktörü yeniden kurar (InstanceBase.cpp:996)
+chr.SetArmor(form)               # + RegisterBoundingSphere
+chr.SetHair(hair)
+chr.SetMotionMode(chr.MOTION_MODE_GENERAL)
+chr.SetLoopMotion(chr.MOTION_INTRO_WAIT)
+chr.SetRotation(0.0)
+chr.Hide() / chr.Show()
+```
+> Kritik hüküm (PythonCharacterModule.cpp): **TÜM 1-arg setter'lar `GetSelectedInstancePtr()`'a gider** —
+> `chr.SetPixelPosition(x, y)`'nin tp olarak çalışmasının nedeni bu. Morph/klon sonrası `SelectInstance(ben)`
+> ile seçimi geri al (v4.2 otomatik yapar). Demirci = race **20016** (npclist.txt: `20016 blacksmith`).
+
+**Hayalet eşya** (itemcreator.py `CreateItem`): `player.SetItemData(slot, vnum, adet)` — boş slot bulma + 2-tall
+üst kontrolü dahil; bonuslar `SetItemAttribute(slot, i, tip, deger)`, metinler `SetItemMetinSocket(slot, i, vnum)`.
+İstemci göstergesidir; sunucu `SetItemData`'yı görmez.
+
+**Yer eşyası tarama** (pickupstealer.py/Itemstealer.py): `textTail.Pick(x, y)` ekran-koordinat seçici — grid
+tarama (X 300-825, Y 125-600) → VID listesi → `net.SendItemPickUpPacket(vid)`. Yer eşyaları chr instance
+DEĞİLDİR (INSTANCE_TYPE'da ITEM yok) — bu yüzden ad/vnum okunamaz, yalnız VID.
 
 ## 3. BİRLİKTE KULLANIM — KOMBİNASYON TARİFLERİ (cookbook)
 
