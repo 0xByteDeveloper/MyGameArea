@@ -1,9 +1,40 @@
 # -*- coding: utf-8 -*-
 """
 ===========================================================================
- PLUSMAXGOD_PyScript.py - MaxExecutor Ana-Thread Komut Kutuphanesi (v4.2)
- "PLUSMAXGOD" SURUMU - pylib v4.1'in tamami + GOD MOD paketi v2
+ PLUSMAXGOD_PyScript.py - MaxExecutor Ana-Thread Komut Kutuphanesi (v4.3)
+ "PLUSMAXGOD" SURUMU - v4.2'nin tamami + BALIK-FIX paketi + OTP + KLON-MOD
 ===========================================================================
+ v4.3 DEGISIKLIKLER (saha testi 10 + LegendySF/Client tam kaynak analizi):
+
+   SAHA TEZHISI (live.txt: 32 atis, 0 isirtma, 14 kacan - KOK NEDEN BULUNDU):
+     * ISIRTMA (GC_REACT) Python'a HIC BIR CALLBACK GONDERMIYOR! Client
+       kaynak (PythonNetworkStreamPhaseGame.cpp: FISHING_SUBHEADER_GC_REACT):
+       sadece C++ SetFishEmoticon()+ReactFishing() cagirir. OnFishingNotify
+       SADECE PredictFish() TRUE ise gelir = balik-zihni hapi (27610) varsa
+       (fishing.cpp:374 AFFECT_FISH_MIND_PILL)! -> dongu isirtmayi HIC
+       goremedi; her kacis olta-yemini SIFIRLADI (rod->SetSocket(2,0)) ->
+       sonraki atis YEMSZIZ gitti -> 45sn bosa bekledi (alterne desen).
+     * FIX-1: HAPI: fish baslarken envanterde 27610 varsa OTOMATIK kullan.
+       Hapi ile HER isirtmada OnFishingNotify(isfish, balik-adi) gelir ->
+       100% isirtma algisi + canli balik adi + ogrenme tablosu dogru calisir.
+     * FIX-2: Kacis/yer-hata hook'unda dongu BEKLEMEZ - hemen pre'ye doner
+       (yem tak -> at). 45sn kayip bitti.
+     * FIX-3: yem takildiktan sonra (soket2>0) atis yapilir (baitwait).
+     * Isirtma penceresi 6sn (event PASSES_PER_SEC(6)); isirtma 10-40sn.
+     * fishswap <vnum> filtresi (fishswap 11499) + fishswapnow (aninda test).
+     * fishtp: TEK ATIS (isinla->at->geri isinla->cek->durdur).
+     * 400 birim su: compiled C++ (c_fFishingDistance, GetFishingRot 10'ar
+       derece tarama) - PYTHON DEGISKENI YOK. Gerek de yok: sunucu su
+       istemez (char.cpp CHARACTER::fishing -> sadece ATTR_BLOCK).
+   OPTIMIZETP (otp): sunucu FUNC_MOVE paketinde mesafe>25m ise geri atar
+     (input_main.cpp ENABLE_TP_SPEED_CHECK; kullanicinin saha raporu).
+     otp = adim adim senkron isinlama (240px=24m adim + MoveToDestPosition).
+   KLON: sac kopyala (probe) + clonemod (swap/takip).
+   spawnscan: nonplayer.GetMonsterName(vnum) ile mob_proto taramasi -
+     spawn 20016 gorunmez cunku race istemci mob_proto'sunda yok (kanit).
+   itemscan: TAM liste C:\MaxExec\itemscan_full.txt (python dogrudan yazar,
+     DLL sonuc-dosyasi limiti YOK) + itemscanall (1-99999 tam tarama).
+
  v4.2 DEGISIKLIKLER (saha testi 9 - "hepsi basarili, sadece serverlist hatali"
  + kullanici GOD MOD istek listesi sonrasi):
 
@@ -48,6 +79,9 @@
    autotake quest fakeitem fakeclear clone unclone spawn morph unmorph
    setarmor setweapon simya ds itemscan fish fishstop fishdelay fishkeep
    fishswap fishspot fishstat fishtest canli
+
+   v4.3 KOMUTLAR (10): fishtp fishswapnow otp optimizetp otpstop otpstep
+   otpdelay clonemod spawnscan itemscanall
 
  v4.1 DEGISIKLIKLER (saha testi 8 - pydumpall 2 bayt sorunu sonrasi):
    Saha bulgusu: v4.0 pydumpall 144 hedefin 73'unu doktu (diskteki botlar)
@@ -192,7 +226,7 @@ DUMP_DIR   = r'C:\MaxExec\dump'   # v4.0: py dump + PLUSQuest_live buraya
 # SURUM ISARETI - DLL v1.8 bunu okur (FIX-19). PLUSMAXGOD_PyScript.py
 # degistirmeden bu satiri silme/degistirme! Eski pylib (v3.x) major 3
 # oldugu icin DLL v1.8 acilista KOSKOCA uyar basar.
-PYLIB_VERSION = '4.2'
+PYLIB_VERSION = '4.3'
 
 RACE_TABLE = {
     0: ('Warrior', 'E'), 1: ('Ninja', 'K'), 2: ('Sura', 'E'), 3: ('Shaman', 'K'),
@@ -3247,7 +3281,7 @@ def _find_free_vid():
     return v
 
 def _appear_of_me():
-    """kendimin gorunusunu oku (klon icin)"""
+    """kendimin gorunusunu oku (klon icin): race+zirh+silah+sac"""
     import chr, player
     me = _my_vid()
     race = 4
@@ -3256,7 +3290,7 @@ def _appear_of_me():
     except:
         pass
     eb = _eq_base()
-    armor = 0; weapon = 0
+    armor = 0; weapon = 0; hair = 0
     try:
         armor = int(player.GetItemIndex(eb))
     except:
@@ -3265,7 +3299,16 @@ def _appear_of_me():
         weapon = int(player.GetItemIndex(eb + 4))
     except:
         weapon = 0
-    return race, armor, weapon
+    # v4.3 SAC: client'ta python getter YOK (sadece SetHair/ChangeHair var -
+    # PythonCharacterModule.cpp:347/362). Olasi getterlari dene:
+    try:
+        hair = int(chr.GetHair(me))
+    except:
+        try:
+            hair = int(player.GetHair())
+        except:
+            hair = 0
+    return race, armor, weapon, hair
 
 def clone(offset=80):
     """kendimin klonunu yanina spawn et (görünüm: aynı ırk+zırh+silah)"""
@@ -3281,14 +3324,20 @@ def clone(offset=80):
             z = int(p[2])
         except:
             z = 0
-        race, armor, weapon = _appear_of_me()
+        race, armor, weapon, ahair = _appear_of_me()
+        try:
+            hair = int(hair)
+        except:
+            hair = -1
+        if hair < 0:
+            hair = ahair
         vid = _find_free_vid()
         steps = _mk_fake(vid, race, x, y, z, name=str(chr.GetName(me)) + '2',
-                         armor=armor, weapon=weapon, npc=False)
+                         armor=armor, hair=hair, weapon=weapon, npc=False)
         if steps is None:
             return
         _CLONE['vids'].append(vid)
-        _write('clone', 'OK: klon spawn vid=%d race=%d zirh=%d silah=%d\nadimlar: %s\nsilinek: unclone all | unclone %d' % (vid, race, armor, weapon, ', '.join(steps), vid))
+        _write('clone', 'OK: klon spawn vid=%d race=%d zirh=%d silah=%d sac=%d\nadimlar: %s\nsilinek: unclone all | unclone %d\nsac farkliyse: clone %d <sac-degeri> | mod: clonemod swap/1/0' % (vid, race, armor, weapon, hair, ', '.join(steps), vid, int(offset)))
     except Exception, e:
         _write('clone', 'HATA ' + _fmt_error(e) + '\n')
 
@@ -3309,12 +3358,22 @@ def spawn(race, name='NPC', x=0, y=0):
                 z = 0
         else:
             z = 0
+        # v4.3: race istemci mob_proto'da var mi? (gorunmezlik kontrolu)
+        mname = ''
+        try:
+            import nonplayer
+            mname = str(nonplayer.GetMonsterName(r))
+        except:
+            mname = ''
         vid = _find_free_vid()
         steps = _mk_fake(vid, r, int(x), int(y), z, name=str(name), npc=True)
         if steps is None:
             return
         _CLONE['vids'].append(vid)
-        _write('spawn', 'OK: sahte NPC vid=%d race=%d ad=%s konum=(%d,%d)\nadimlar: %s\npopuler race: demirci=20016, genel satici=20010, simyaci=20001\nsilinek: unclone all | unclone %d' % (vid, r, str(name), int(x), int(y), ', '.join(steps), vid))
+        if mname:
+            _write('spawn', 'OK: sahte NPC vid=%d race=%d (%s) ad=%s konum=(%d,%d)\nadimlar: %s\nsilinek: unclone all | unclone %d' % (vid, r, mname, str(name), int(x), int(y), ', '.join(steps), vid))
+        else:
+            _write('spawn', 'UYARI: race %d istemci mob_proto\'sunda YOK -> GORUNMEZ olur (data yaratildi ama model yok)\nGECERLI race listesi: spawnscan 1 30000 yaz (C:\\MaxExec\\spawnscan_full.txt)\nvid=%d yaratildi (gorunmez olabilir), silmek: unclone %d' % (r, vid, vid))
     except Exception, e:
         _write('spawn', 'HATA ' + _fmt_error(e) + '\n')
 
@@ -3455,6 +3514,16 @@ def morph(race):
                 orig = 4
             _CLONE['morph'] = orig
         r = int(race)
+        # v4.3: mob_proto kontrolu - yoksa gorunmez olursun (saha: morph 20016)
+        mname = ''
+        try:
+            import nonplayer
+            mname = str(nonplayer.GetMonsterName(r))
+        except:
+            mname = ''
+        if not mname:
+            _write('morph', 'HATA: race %d istemci mob_proto\'sunda YOK -> gorunmez olurdun (saha testi: morph 20016 gorunmez oldu)\nGECERLI race listesi: spawnscan 1 30000 (C:\\MaxExec\\spawnscan_full.txt)\nistemci-tarafi gorunum race listesi icin ayrica: setarmor/setweapon serbest' % r)
+            return
         try:
             chr.SelectInstance(me)
             chr.SetRace(r)
@@ -3638,18 +3707,31 @@ def itemscan(mn, mx):
                 t = -1
             tcount[t] = tcount.get(t, 0) + 1
             found.append((v, nm, t))
-            if len(found) >= 400:
-                break
+        # v4.3: TAM LISTE python ile dogrudan dosyaya (DLL sonuc limiti YOK)
+        path = r'C:\MaxExec\itemscan_full.txt'
+        try:
+            f = open(path, 'w')
+            f.write('itemscan %d-%d: %d esya\n' % (a, b, len(found)))
+            f.write('tip dagilimi: %s\n' % ', '.join(['%s=%d' % (k, tcount[k]) for k in sorted(tcount)]))
+            for v, nm, t in found:
+                f.write('vnum=%-7d tip=%-2d %s | /i %d\n' % (v, t, nm, v))
+            f.close()
+        except Exception, e2:
+            path = 'YAZILAMADI: ' + _fmt_error(e2)
         L = ['itemscan %d-%d: %d esya bulundu' % (a, b, len(found))]
-        for v, nm, t in found[:200]:
-            L.append('  vnum=%-7d tip=%-2d %s | /i %d' % (v, t, nm, v))
-        if len(found) > 200:
-            L.append('  ... +%d daha' % (len(found) - 200))
         L.append('tip dagilimi: %s' % ', '.join(['%s=%d' % (k, tcount[k]) for k in sorted(tcount)]))
+        for v, nm, t in found[:120]:
+            L.append('  vnum=%-7d tip=%-2d %s | /i %d' % (v, t, nm, v))
+        if len(found) > 120:
+            L.append('  ... +%d daha -> TAM LISTE: %s' % (len(found) - 120, path))
         L.append('NOT: ITEM_TYPE_DS=%s ITEM_TYPE_FISH=%s (simya/balik bu tiplerde)' % (str(getattr(item, 'ITEM_TYPE_DS', '?')), str(getattr(item, 'ITEM_TYPE_FISH', '?'))))
         _write('itemscan', '\n'.join(L) + '\n')
     except Exception, e:
         _write('itemscan', 'HATA ' + _fmt_error(e) + '\n')
+
+def itemscanall():
+    """v4.3: TUM vnum uzayi (1-99999) -> tam liste itemscan_full.txt"""
+    return itemscan(1, 99999)
 
 # ---------------------------------------------------------------------------
 # BALIK SISTEMI - tam mekanik (LegendySF fishing.cpp, klasik mainline):
@@ -3684,12 +3766,44 @@ FISH_LEARN_PATH = r'C:\MaxExec\fish_learn.txt'
 _FISH = {
     'win': None, 'state': 'stop', 't0': 0.0,
     'delay': 'auto', 'cur_delay': 0,
-    'keep': 0, 'swap': 0, 'spot': None, 'home': None,
+    'keep': 0, 'swap': 0, 'swapvnum': 0, 'spot': None, 'home': None,
     'bite_t': 0.0, 'bite_fish': '', 'bite_isfish': 0,
-    'last_result': '', 'cast_t': 0.0,
+    'last_result': '', 'cast_t': 0.0, 'bait_t': 0.0, 'oneshot': 0, 'pill': 0,
     'stats': {'atis': 0, 'isirtma': 0, 'ok': 0, 'hata': 0, 'birak': 0, 'yerhata': 0, 'asim': 0},
     'inv0': 0, 'hooks': [], 'auto_i': 0, 'learn': {}, 'lastswap': -1,
 }
+
+# v4.3 KANIT: LegendySF fishing.h:12 FISH_MIND_PILL_VNUM = 27610
+#   char_item.cpp:3053: kullanilinca AddAffect(AFFECT_FISH_MIND_PILL, 20dk)
+#   fishing.cpp:374 PredictFish: hapi/presitz/varsa TRUE ->
+#   event 420: FISH paketi yollar -> client OnFishingNotify(isfish, adi)
+#   (client PythonNetworkStreamPhaseGame.cpp GC_FISH subheader)
+#   HAPISIZ: REACT'ta python callback YOK -> dongu isirtmayi goremzdi.
+FISH_MIND_PILL = 27610
+
+def _fish_try_pill():
+    """boot'ta 1 kez: balik-zihni hapi varsa kullan"""
+    if _FISH['pill']:
+        return
+    import player, net
+    try:
+        total = int(player.INVENTORY_SLOT_COUNT)
+    except:
+        total = 90
+    for s in range(total):
+        try:
+            v = int(player.GetItemIndex(s))
+        except:
+            continue
+        if v == FISH_MIND_PILL:
+            try:
+                net.SendItemUsePacket(s)
+                _FISH['pill'] = 1
+                _live('FISH: balik-zihni hapi kullanildi (slot %d) - isirtmada balik adi akacak' % s)
+            except:
+                pass
+            return
+    _live('FISH: HAPI YOK -> /i 27610 yaz, envantere alip fish yeniden baslat (isirtmada balik adi + %100 guvenli algila icin ONEMLI)')
 
 def _fish_learn_load():
     try:
@@ -3790,11 +3904,17 @@ def _fish_event(tag, args):
     elif tag == 'FAIL':
         _FISH['last_result'] = 'FAIL'
         _FISH['stats']['hata'] += 1
-        _live('FISH: kacti (olcu=%s)' % _FISH['last_result'])
+        _live('FISH: kacti - hemen yeniden hazirlaniyor (yem kontrol)')
+        if _FISH['state'] == 'wait':
+            _FISH['state'] = 'pre'
+            _FISH['t0'] = _fish_time_ms()
     elif tag == 'WRONGPLACE':
         _FISH['stats']['yerhata'] += 1
         _FISH['last_result'] = 'WRONGPLACE'
-        _live('FISH: yanlis yer! su kenarina git veya fishspot <x> <y> ayarla')
+        _live('FISH: yanlis yer! fishspot <x> <y> ile su-kenari koordinatini isaretle')
+        if _FISH['state'] == 'wait':
+            _FISH['state'] = 'pre'
+            _FISH['t0'] = _fish_time_ms()
     elif tag == 'UNKNOWN':
         _FISH['bite_t'] = _fish_time_ms()
         _FISH['bite_fish'] = '?'
@@ -3878,6 +3998,8 @@ def _fish_armors():
             continue
         if v <= 0:
             continue
+        if _FISH['swapvnum'] > 0 and v != _FISH['swapvnum']:
+            continue
         try:
             item.SelectItem(v)
             if int(item.GetItemType()) == int(item.ITEM_TYPE_ARMOR):
@@ -3935,8 +4057,9 @@ class _FishLoopWnd(ui_WindowBase):
                 r = _fish_install_hooks()
                 _fish_learn_load()
                 st['inv0'] = _fish_count()
+                _fish_try_pill()
                 st['state'] = 'pre'; st['t0'] = now
-                _live('FISH basladi | hook=%s | balik-env=%d | %s' % (r, st['inv0'], _fish_status_line()))
+                _live('FISH basladi | hook=%s | hapi=%s | balik-env=%d | %s' % (r, st['pill'], st['inv0'], _fish_status_line()))
                 return
             # ortak guvenlik: secim bende olsun
             if sn in ('cast', 'take'):
@@ -3955,7 +4078,7 @@ class _FishLoopWnd(ui_WindowBase):
                         net.SendItemUsePacket(rs)
                         st['t0'] = now
                     return
-                # yem var mi? (soket2 = yem sayaci; sunucu: 0 ise 'yem tak')
+                # yem var mi? (soket2 = yem seviyesi; KACIRMA 0'a duser!)
                 if _fish_rod_skill() == 0:
                     bs = _fish_find_bait()
                     if bs < 0:
@@ -3963,9 +4086,20 @@ class _FishLoopWnd(ui_WindowBase):
                         return
                     if now - st['t0'] > 700:
                         net.SendItemUsePacket(bs)
+                        st['state'] = 'baitwait'
                         st['t0'] = now
                     return
                 st['state'] = 'cast'; st['t0'] = now
+                return
+            if sn == 'baitwait':
+                # v4.3: yemin oltaya takilmasini BEKLE (soket2>0) - yemsiz
+                # atis sunucuda reddedilir (char.cpp: 'yem tak' + return)
+                if _fish_rod_skill() > 0:
+                    st['state'] = 'cast'; st['t0'] = now
+                    _live('FISH: yem takildi (seviye=%d) - atis hazir' % _fish_rod_skill())
+                    return
+                if now - st['t0'] > 4000:
+                    st['state'] = 'pre'; st['t0'] = now
                 return
             if sn == 'cast':
                 if now - st['t0'] < 300:
@@ -4002,18 +4136,29 @@ class _FishLoopWnd(ui_WindowBase):
                 if st['bite_t'] > 0 and st['bite_fish'] != '':
                     bite = True
                 else:
+                    # v4.3: baloncuk hem secili hem ANA instance'ta bakilir
+                    # (chrmgr.IsPossibleEmoticon -> GetSelectedInstancePtr /
+                    #  GetInstancePtr; InstanceBaseEffect.cpp:1007)
                     try:
                         if not chrmgr.IsPossibleEmoticon(-1):
                             bite = True
-                            st['bite_t'] = now
-                            if not st['bite_fish']:
-                                st['bite_fish'] = 'baloncuk'
                     except:
                         pass
+                    if not bite:
+                        try:
+                            mv = int(net.GetMainActorVID())
+                            if mv > 0 and not chrmgr.IsPossibleEmoticon(mv):
+                                bite = True
+                        except:
+                            pass
+                    if bite:
+                        st['bite_t'] = now
+                        if not st['bite_fish']:
+                            st['bite_fish'] = 'baloncuk'
                 if bite:
                     st['state'] = 'bite'
                     return
-                if now - st['t0'] > 45000:
+                if now - st['t0'] > 50000:
                     st['stats']['asim'] += 1
                     _live('FISH: 45sn isirtma yok - tekrar atiliyor')
                     st['state'] = 'pre'; st['t0'] = now
@@ -4055,6 +4200,9 @@ class _FishLoopWnd(ui_WindowBase):
                         v[0] = v[0] + 1
                         _fish_learn_save()
                 st['bite_fish'] = ''
+                if st['oneshot']:
+                    _fish_finish_oneshot()
+                    return
                 st['state'] = 'pre'; st['t0'] = now
                 _live(_fish_status_line())
                 return
@@ -4084,7 +4232,7 @@ def _fish_drop_unwanted(keep):
 
 def _fish_swap_armor():
     try:
-        import net
+        import net, player
         slots = _fish_armors()
         if len(slots) >= 1:
             pick = slots[0]
@@ -4094,7 +4242,14 @@ def _fish_swap_armor():
                     break
             net.SendItemUsePacket(pick)
             _FISH['lastswap'] = pick
-            _live('FISH: zirh degisti (slot %d) - animasyon atlandi' % pick)
+            vn = 0
+            try:
+                vn = int(player.GetItemIndex(pick))
+            except:
+                pass
+            _live('FISH: zirh degisti (slot %d vnum %d) - animasyon atlandi' % (pick, vn))
+        else:
+            _live('FISH: zirh YOK (fishswap acik; filtre=%s; fishswapnow ile test)' % (_FISH['swapvnum'] or 'hepsi'))
     except:
         pass
 
@@ -4103,19 +4258,84 @@ def _fish_stop_err(msg):
     _write('fish', 'DURDU: ' + msg + '\n' + _fish_status_line())
     fishstop()
 
-def fish():
+def _start_fish(res):
     try:
         if not _ingame():
-            _write('fish', 'HATA: oyunda degilsin (balik icin oyunda ol)\n')
+            _write(res, 'HATA: oyunda degilsin (balik icin oyunda ol)\n')
             return
         if _FISH['win'] is None:
             _FISH['win'] = _FishLoopWnd()
         _FISH['state'] = 'boot'
         _FISH['t0'] = _fish_time_ms()
-        _write('fish', 'OK: balik dongusu BASLADI\nmod: gecikme=%s | fishkeep=%s | fishswap=%s | fishspot=%s\nAKIS: olta+yem otomatik kontrol, atis otomatik, isirtmada otomatik cekis\nCANLI IZLEME: cmd penceresinde [LIVE] satirlari akar\nayarlar: fishdelay <ms|auto> | fishkeep <vnum|0> | fishswap 0/1 | fishspot <x> <y>|fishspot 0\ndurdur: fishstop | rapor: fishstat' % (
-            str(_FISH['delay']), str(_FISH['keep'] or 'kapali'), str(_FISH['swap']), str(_FISH['spot'] or 'kapali')))
+        _write(res, 'OK: balik dongusu BASLADI (tek-atis=%d)\nmod: gecikme=%s | fishkeep=%s | fishswap=%s | fishspot=%s | hapi=%s\nAKIS: olta+yem otomatik kontrol, atis otomatik, isirtmada otomatik cekis\nCANLI IZLEME: cmd penceresinde [LIVE] satirlari akar\nHAPI: /i 27610 -> her isirtmada balik adi gelir (100% algila)\nayarlar: fishdelay <ms|auto> | fishkeep <vnum|0> | fishswap 0/1/<vnum> | fishspot <x> <y> | fishspot 0\ndurdur: fishstop | rapor: fishstat | tek atis: fishtp | zirh testi: fishswapnow' % (
+            _FISH['oneshot'], str(_FISH['delay']), str(_FISH['keep'] or 'kapali'), str(_FISH['swap']), str(_FISH['spot'] or 'kapali'), str(_FISH['pill'])))
     except Exception, e:
-        _write('fish', 'HATA ' + _fmt_error(e) + '\n')
+        _write(res, 'HATA ' + _fmt_error(e) + '\n')
+
+def fish():
+    _FISH['oneshot'] = 0
+    _start_fish('fish')
+
+def fishtp():
+    """v4.3 TEK ATIS: fishspot varsa su kenarina isinla -> at -> geri
+    isinla -> isirtmayi bekle -> cek -> DUR. fishspot yoksa bulundugun
+    yerde atar."""
+    try:
+        if not _ingame():
+            _write('fishtp', 'HATA: oyunda degilsin\n')
+            return
+        import chr
+        if _FISH['spot'] is None:
+            p = chr.GetPixelPosition(_my_vid())
+            _FISH['spot'] = (int(p[0]), int(p[1]))
+            _FISH['home'] = (int(p[0]), int(p[1]))
+            _write('fishtp', 'BILGI: fishspot ayarli degildi - bulundugun yer su-noktasi alindi (%d,%d)' % (int(p[0]), int(p[1])))
+        _FISH['oneshot'] = 1
+        _start_fish('fishtp')
+    except Exception, e:
+        _write('fishtp', 'HATA ' + _fmt_error(e) + '\n')
+
+def _fish_finish_oneshot():
+    _FISH['oneshot'] = 0
+    _FISH['state'] = 'stop'
+    _fish_remove_hooks()
+    try:
+        import player
+        player.SetAttackKeyState(0)
+    except:
+        pass
+    try:
+        if _FISH['win'] is not None:
+            _FISH['win'].Hide()
+            _FISH['win'].Destroy()
+    except:
+        pass
+    _FISH['win'] = None
+    _write('fishtp', 'BITTI: tek atis tamam\n' + _fish_status_line() + '\nsonuc: ' + (_FISH['last_result'] or '?'))
+    _live('FISH: tek atis bitti | ' + _fish_status_line())
+
+def fishswapnow():
+    """v4.3: fishswap testi - balik tutmadan ZIRH DEGISIMINI dene"""
+    try:
+        if not _ingame():
+            _write('fishswapnow', 'HATA: oyunda degilsin\n')
+            return
+        import player
+        slots = _fish_armors()
+        det = []
+        for s in slots[:6]:
+            try:
+                v = int(player.GetItemIndex(s))
+                det.append('slot %d=vnum %d %s' % (s, v, _item_name(v)))
+            except:
+                pass
+        if not slots:
+            _write('fishswapnow', 'YOK: uygun zirh bulunamadi (filtre=%s)\nNOT: zirhlarin vnumu 11499 ise: fishswap 11499 yaz (filtre) veya fishswap 1 (hepsi)' % (_FISH['swapvnum'] or 'hepsi'))
+            return
+        _fish_swap_armor()
+        _write('fishswapnow', 'OK: degisim denendi (slot %s)\nadaylar: %s\nNOT: AYNI vnum zirhlarda gorunum DEGISMEZ ama takma animasyonu\n dongude calisir (atis hizi kazanir). Farkli gorunum icin baska vnum zirh at.' % (slots[0], ' | '.join(det)))
+    except Exception, e:
+        _write('fishswapnow', 'HATA ' + _fmt_error(e) + '\n')
 
 def fishstop():
     try:
@@ -4173,10 +4393,24 @@ def fishkeep(vnum):
         _write('fishkeep', 'HATA ' + _fmt_error(e) + '\n')
 
 def fishswap(flag):
+    """v4.3: 0=kapali 1=acik(her zirh) <vnum>=sadece o vnum (orn. fishswap 11499)"""
     try:
-        f = 1 if str(flag) in ('1', 'on', 'acik') else 0
-        _FISH['swap'] = f
-        _write('fishswap', 'OK: zirh-degistirme modu %s\nYEDEK: her tuttan sonra envanterdeki baska zirh giyilir - tutma/ kacirma animasyonu atlanir, atis hizlanir\nNOT: 2+ zirh envanterde olmali (birisi ustunde de olur)' % ('ACIK' if f else 'KAPALI'))
+        s = str(flag).strip()
+        if s in ('0', 'off', 'kapali'):
+            _FISH['swap'] = 0; _FISH['swapvnum'] = 0
+            _write('fishswap', 'OK: zirh-degistirme KAPALI')
+            return
+        if s not in ('1', 'on', 'acik'):
+            try:
+                v = int(s)
+            except:
+                v = 0
+            if v > 0:
+                _FISH['swap'] = 1; _FISH['swapvnum'] = v
+                _write('fishswap', 'OK: ACIK - sadece vnum %d zirhlar (fishswapnow ile aninda test)' % v)
+                return
+        _FISH['swap'] = 1; _FISH['swapvnum'] = 0
+        _write('fishswap', 'OK: zirh-degistirme ACIK (tum zirhlar)\nYEDEK: her TUTTAN sonra envanterdeki baska zirh giyilir - animasyon atlanir, atis hizlanir\nNOT1: sadece tutunca calisir; hemen test: fishswapnow\nNOT2: ayni vnum zirhlarda gorunum degismez (animasyon yine atlanir)\nNOT3: vnum filtresi: fishswap 11499')
     except Exception, e:
         _write('fishswap', 'HATA ' + _fmt_error(e) + '\n')
 
@@ -4241,6 +4475,257 @@ def fishtest():
         _write('fishtest', 'HATA ' + _fmt_error(e) + '\n')
 
 
+# ---------------------------------------------------------------------------
+# v4.3 OPTIMIZETP (otp) - sunucuyla SENKRON adimli isinlama
+# KANIT: input_main.cpp CG_MOVE: FUNC_MOVE -> ch->Goto(x,y) (sunucu YURUR);
+#   ENABLE_TP_SPEED_CHECK: yuruyus paketinde mesafe > 25m (binmede 60m)
+#   -> ch->Show(eski konum) = GERI ATMA (kullanicinin saha raporu: birebir).
+#   -> otp: her adim SetPixelPosition(adim) + MoveToDestPosition(adim) +
+#      bekle. Adim <= otpstep px (240px = 24m < 25m). Istemci aninda ilerler,
+#      sunucu adim adim takip eder -> hareket serbest, geri atlama yok.
+# ---------------------------------------------------------------------------
+_OTP = {'win': None, 'on': 0, 'tx': 0, 'ty': 0, 'step': 240, 'delay': 1300,
+        't0': 0.0, 'n': 0}
+
+class _OtpWnd(ui_WindowBase):
+    def __init__(self):
+        ui_WindowBase.__init__(self)
+        self.Show()
+
+    def OnUpdate(self):
+        try:
+            import chr, player
+            st = _OTP
+            if not st['on']:
+                return
+            now = _fish_time_ms()
+            if now - st['t0'] < st['delay']:
+                return
+            st['t0'] = now
+            vid = 0
+            try:
+                vid = int(player.GetMainCharacterIndex())
+            except:
+                vid = 0
+            try:
+                chr.SelectInstance(vid)
+            except:
+                pass
+            p = chr.GetPixelPosition(vid)
+            cx = int(p[0]); cy = int(p[1])
+            dx = st['tx'] - cx; dy = st['ty'] - cy
+            dist = (dx * dx + dy * dy) ** 0.5
+            if dist <= st['step'] * 1.2:
+                st['on'] = 0
+                try:
+                    st['win'].Hide(); st['win'].Destroy()
+                except:
+                    pass
+                st['win'] = None
+                _live('OTP: varildi (%d adim) konum=(%d,%d)' % (st['n'], cx, cy))
+                _write('otp', 'OK: varildi. adim=%d konum=(%d,%d)\nNOT: sunucu senkronlu - yurumek serbest, geri atlama yok' % (st['n'], cx, cy))
+                return
+            k = st['step'] / dist
+            nx = int(cx + dx * k); ny = int(cy + dy * k)
+            try:
+                chr.SetPixelPosition(nx, ny)
+            except:
+                pass
+            try:
+                chr.MoveToDestPosition(vid, nx, ny)
+            except:
+                pass
+            st['n'] += 1
+            if st['n'] % 10 == 0:
+                _live('OTP: %d adim, kalan ~%dpx' % (st['n'], int(dist)))
+        except Exception, e:
+            _live('OTP hatasi: ' + _fmt_error(e))
+            _OTP['on'] = 0
+
+def otp(x, y):
+    """OPTIMIZETP: sunucuyla senkron adim adim hizli isinlama (tp sonrasi
+    geri-atma sorununu bitirir). Dur: otpstop | ayar: otpstep otpdelay"""
+    try:
+        if not _ingame():
+            _write('otp', 'HATA: oyunda degilsin\n')
+            return
+        import chr
+        _OTP['tx'] = int(x); _OTP['ty'] = int(y)
+        _OTP['on'] = 1; _OTP['n'] = 0
+        _OTP['t0'] = _fish_time_ms() - 99999
+        if _OTP['win'] is None:
+            _OTP['win'] = _OtpWnd()
+        p = chr.GetPixelPosition(_my_vid())
+        _write('otp', 'OK: (%d,%d) -> (%d,%d) | adim=%dpx bekle=%dms\nDur: otpstop | ince ayar: otpstep <px> (240 oneri: TP-limit 25m), otpdelay <ms> (1300 oneri)' % (int(p[0]), int(p[1]), _OTP['tx'], _OTP['ty'], _OTP['step'], _OTP['delay']))
+    except Exception, e:
+        _write('otp', 'HATA ' + _fmt_error(e) + '\n')
+
+optimizetp = otp
+
+def otpstop():
+    try:
+        _OTP['on'] = 0
+        try:
+            if _OTP['win'] is not None:
+                _OTP['win'].Hide(); _OTP['win'].Destroy()
+        except:
+            pass
+        _OTP['win'] = None
+        _write('otpstop', 'OK: otp durduruldu (%d adim)' % _OTP['n'])
+    except Exception, e:
+        _write('otpstop', 'HATA ' + _fmt_error(e) + '\n')
+
+def otpstep(v):
+    try:
+        n = int(v)
+        if n < 50: n = 50
+        if n > 600: n = 600
+        _OTP['step'] = n
+        _write('otpstep', 'OK: adim=%dpx (240=24m: TP-kontrol 25m alti GUENLI; ustu geri atma riski)' % n)
+    except Exception, e:
+        _write('otpstep', 'HATA ' + _fmt_error(e) + '\n')
+
+def otpdelay(v):
+    try:
+        n = int(v)
+        if n < 100: n = 100
+        if n > 10000: n = 10000
+        _OTP['delay'] = n
+        _write('otpdelay', 'OK: bekleme=%dms (dusuk=hizli ama sunucu gecikir; 1300 oneri)' % n)
+    except Exception, e:
+        _write('otpdelay', 'HATA ' + _fmt_error(e) + '\n')
+
+# ---------------------------------------------------------------------------
+# v4.3 CLONEMOD - klon ile yer degis / klon takip (ayna)
+# GERCEK KONTROL IMKANSIZ (sunucu hareket paketlerini gercek karakterden
+# alir; baska instance'a input yolu YOK) -> sunun en yakin hali:
+#   swap = yer degis-tokus | 1 = klon seni aynalar | 0 = kapat
+# ---------------------------------------------------------------------------
+_CLONEMOD = {'win': None, 'follow': 0, 'offset': 70}
+
+class _CloneFollowWnd(ui_WindowBase):
+    def __init__(self):
+        ui_WindowBase.__init__(self)
+        self.Show()
+
+    def OnUpdate(self):
+        try:
+            if not _CLONEMOD['follow'] or not _CLONE['vids']:
+                return
+            import chr
+            vid = _CLONE['vids'][-1]
+            me = _my_vid()
+            p = chr.GetPixelPosition(me)
+            x = int(p[0]) + _CLONEMOD['offset']; y = int(p[1]) - _CLONEMOD['offset']
+            try:
+                chr.SelectInstance(vid)
+                try:
+                    chr.SetPixelPosition(x, y, int(p[2]))
+                except:
+                    chr.SetPixelPosition(x, y)
+            except:
+                pass
+            try:
+                chr.SelectInstance(me)
+            except:
+                pass
+        except:
+            pass
+
+def clonemod(mode):
+    """klon modu: swap=yer degis-tokus | 1=klon takip (ayna) | 0=kapat"""
+    try:
+        if not _ingame():
+            _write('clonemod', 'HATA: oyunda degilsin\n')
+            return
+        import chr
+        s = str(mode).strip().lower()
+        if s in ('0', 'off', 'kapat'):
+            _CLONEMOD['follow'] = 0
+            try:
+                if _CLONEMOD['win'] is not None:
+                    _CLONEMOD['win'].Hide(); _CLONEMOD['win'].Destroy()
+            except:
+                pass
+            _CLONEMOD['win'] = None
+            _write('clonemod', 'OK: klon takip KAPATILDI')
+            return
+        if not _CLONE['vids']:
+            _write('clonemod', 'HATA: klon yok - once clone yaz')
+            return
+        cv = _CLONE['vids'][-1]
+        me = _my_vid()
+        if s == 'swap':
+            pp = chr.GetPixelPosition(me)
+            cp = chr.GetPixelPosition(cv)
+            chr.SelectInstance(me)
+            try:
+                chr.SetPixelPosition(int(cp[0]), int(cp[1]), int(cp[2]))
+            except:
+                chr.SetPixelPosition(int(cp[0]), int(cp[1]))
+            chr.SelectInstance(cv)
+            try:
+                chr.SetPixelPosition(int(pp[0]), int(pp[1]), int(pp[2]))
+            except:
+                chr.SetPixelPosition(int(pp[0]), int(pp[1]))
+            try:
+                chr.SelectInstance(me)
+            except:
+                pass
+            _write('clonemod', 'OK: YER DEGIS-TOKUS yapildi (sen <-> klon vid=%d)\nNOT: istemci-tarafi; sunucu seni eski konumda gorur -\n yurumek/uzaklasmak icin otp kullan' % cv)
+            return
+        _CLONEMOD['follow'] = 1
+        if _CLONEMOD['win'] is None:
+            _CLONEMOD['win'] = _CloneFollowWnd()
+        _write('clonemod', 'OK: klon TAKIP modu (vid=%d her adimda yaninda aynalanir)\nKAPAT: clonemod 0 | YER DEGIS: clonemod swap\nNOT: gercek kontrol sunucuda kalir - input hep gercek karaktere gider; klon gorunum/ayna yoldasidir' % cv)
+    except Exception, e:
+        _write('clonemod', 'HATA ' + _fmt_error(e) + '\n')
+
+# ---------------------------------------------------------------------------
+# v4.3 SPAWNSCAN - istemci mob_proto taramasi (spawn/morph icin gecerli race)
+# KANIT: PythonNonPlayerModule.cpp:70 GetMonsterName(vnum) -> mob_proto ad.
+# Instance YARATMAZ - data okur: guvenli + hizli. TAM liste:
+#   C:\MaxExec\spawnscan_full.txt
+# ---------------------------------------------------------------------------
+def spawnscan(mn=1, mx=30000):
+    try:
+        if not _ingame():
+            _write('spawnscan', 'HATA: oyunda degilsin\n')
+            return
+        import nonplayer
+        a = int(mn); b = int(mx)
+        if b < a:
+            a, b = b, a
+        if b - a > 100000:
+            b = a + 100000
+        found = []
+        for v in xrange(a, b + 1):
+            nm = ''
+            try:
+                nm = str(nonplayer.GetMonsterName(v))
+            except:
+                continue
+            if nm:
+                found.append((v, nm))
+        path = r'C:\MaxExec\spawnscan_full.txt'
+        try:
+            f = open(path, 'w')
+            f.write('spawnscan %d-%d: %d gecerli race\n' % (a, b, len(found)))
+            for v, nm in found:
+                f.write('race=%-7d %s | spawn %d | morph %d\n' % (v, nm, v, v))
+            f.close()
+        except Exception, e2:
+            path = 'YAZILAMADI: ' + _fmt_error(e2)
+        L = ['spawnscan %d-%d: %d gecerli race (istemci mob_proto)' % (a, b, len(found))]
+        for v, nm in found[:80]:
+            L.append('  race=%-7d %s' % (v, nm))
+        if len(found) > 80:
+            L.append('  ... +%d daha -> TAM LISTE: %s' % (len(found) - 80, path))
+        L.append('kullanim: spawn <race> | morph <race>')
+        _write('spawnscan', '\n'.join(L) + '\n')
+    except Exception, e:
+        _write('spawnscan', 'HATA ' + _fmt_error(e) + '\n')
+
 # modul kaydi - DLL snippet'leri `import maxlib; maxlib.xxx()` der
 # ---------------------------------------------------------------------------
 import types as _types
@@ -4262,7 +4747,8 @@ _write('pylib_load',
        'PLUSMAXGOD_PyScript v%s yuklendi (ANA THREAD)' % PYLIB_VERSION + chr(10) +
        'oyun-ici: stat pos inv equip skill near chat whisper ride revive logout back zoom use pickup drop goto tp key attack | kesif: pyfiles pydump pydumpall pyscan plusquest' + chr(10) +
        'v4.2 GOD MOD: unequip unequipall chchange relogin ground groundtake autotake quest fakeitem fakeclear clone unclone spawn morph unmorph setarmor setweapon simya ds itemscan' + chr(10) +
-       'v4.2 BALIK: fish fishstop fishdelay fishkeep fishswap fishspot fishstat fishtest | canli <mesaj>' + chr(10) +
+       'v4.3 EK: fishtp fishswapnow otp optimizetp otpstop otpstep otpdelay clonemod spawnscan itemscanall' + chr(10) +
+       'v4.3 BALIK: fish fishstop fishdelay fishkeep fishswap fishspot fishstat fishtest | canli <mesaj> | HAPI: /i 27610' + chr(10) +
        'hata izleme hooklari: %s' % (', '.join(_HOOKS_OK) if _HOOKS_OK else 'henuz kurulamadi (status ile tekrar denenir)') + chr(10)
        + status_text())
 try:

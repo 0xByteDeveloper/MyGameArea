@@ -854,6 +854,22 @@ static void CmdCanli(const std::string& msg)
 {
     QRaw(BootImport() + "maxlib.canli(" + PyStr(msg) + ")\n");
 }
+// ---- v1.9 (pylib v4.3): fishtp + fishswapnow + OTP + clonemod + spawnscan + itemscanall ----
+static void CmdFishTP(void)      { QRaw(BootImport() + "maxlib.fishtp()\n"); }
+static void CmdFishSwapNow(void) { QRaw(BootImport() + "maxlib.fishswapnow()\n"); }
+static void CmdOTP(const std::string& x, const std::string& y)
+{
+    QRaw(BootImport() + "maxlib.otp(" + PyStr(x) + ", " + PyStr(y) + ")\n");
+}
+static void CmdOTPStop(void)     { QRaw(BootImport() + "maxlib.otpstop()\n"); }
+static void CmdOTPStep(const std::string& v)  { QRaw(BootImport() + "maxlib.otpstep(" + PyStr(v) + ")\n"); }
+static void CmdOTPDelay(const std::string& v) { QRaw(BootImport() + "maxlib.otpdelay(" + PyStr(v) + ")\n"); }
+static void CmdCloneMod(const std::string& mode) { QRaw(BootImport() + "maxlib.clonemod(" + PyStr(mode) + ")\n"); }
+static void CmdSpawnScan(const std::string& a, const std::string& b)
+{
+    QRaw(BootImport() + "maxlib.spawnscan(" + PyStr(a) + ", " + PyStr(b) + ")\n");
+}
+static void CmdItemScanAll(void) { QRaw(BootImport() + "maxlib.itemscanall()\n"); }
 
 static void CmdInv(int page)
 {
@@ -1033,7 +1049,7 @@ static std::vector<std::string> SplitArgs(const std::string& line)
 
 static void PrintHelp(void)
 {
-    printf("\n=== MaxExecutor v1.8.1 PLUSMAXGOD (oyun-ici + py kesif komutlari) ===\n");
+    printf("\n=== MaxExecutor v1.9 PLUSMAXGOD (oyun-ici + py kesif + balik-fix) ===\n");
     printf("  help                        : bu yardim\n");
     printf("  status                      : anlik sahne/baglanti snapshot\n");
     printf("  -- giris akisi (menu) --\n");
@@ -1090,6 +1106,16 @@ static void PrintHelp(void)
     printf("  fishkeep <vnum|0>           : sadece hedef baligi tut, digerlerini birak\n");
     printf("  fishswap <0/1>              : zirh degistirerek animasyon atlama (hizli recast)\n");
     printf("  fishspot <x> <y>|0          : su-noktasi modu (at, isinlan, uzaktan balik tut!)\n");
+    printf("  fishtp                      : TEK ATIS (isinla->at->geri isinla->cek->dur)\n");
+    printf("  fishswap <0/1/<vnum>>       : zirh degis animasyon atlama (fishswap 11499 = vnum filtre)\n");
+    printf("  fishswapnow                 : zirh degisimini HEMEN dene (test)\n");
+    printf("  HAPI NOTU: /i 27610 (balik-zihni) kullan -> isirtmada balik adi canli gelir\n");
+    printf("  -- v4.3: OPTIMIZETP + KLON-MOD + TARAMA --\n");
+    printf("  otp <x> <y>                 : sunucu-senkron adimli isinlama (geri-atma YOK)\n");
+    printf("  otpstop | otpstep <px> | otpdelay <ms> : otp ayarlari (240px/1300ms oneri)\n");
+    printf("  clonemod <swap|1|0>         : klon yer-degis / takip / kapat\n");
+    printf("  spawnscan [min] [max]       : mob_proto race taramasi (spawn/morph gecerli race)\n");
+    printf("  itemscanall                 : TUM item taramasi -> itemscan_full.txt\n");
     printf("  fishstat | fishtest | fishstop | canli <mesaj> : rapor/test/dur\n");
     printf("  -- KESIF (oyunun py dosyalari) --\n");
     printf("  pyfiles                     : 5 yontemle py dosyalarini bul\n");
@@ -1547,6 +1573,23 @@ static DWORD WINAPI WorkerThread(LPVOID)
         }
         else if (cmd == "fishstat") CmdFishStat();
         else if (cmd == "fishtest") CmdFishTest();
+        else if (cmd == "fishtp") CmdFishTP();
+        else if (cmd == "fishswapnow") CmdFishSwapNow();
+        else if (cmd == "otp" || cmd == "optimizetp")
+        {
+            if (a.size() >= 3) CmdOTP(a[1], a[2]);
+            else printf("kullanim: otp <x> <y>   (sunucu-senkron adimli isinlama; ayar: otpstep/otpdelay, dur: otpstop)\n");
+        }
+        else if (cmd == "otpstop")  CmdOTPStop();
+        else if (cmd == "otpstep")  { if (a.size() >= 2) CmdOTPStep(a[1]); else printf("kullanim: otpstep <px> (240 oneri)\n"); }
+        else if (cmd == "otpdelay") { if (a.size() >= 2) CmdOTPDelay(a[1]); else printf("kullanim: otpdelay <ms> (1300 oneri)\n"); }
+        else if (cmd == "clonemod") { if (a.size() >= 2) CmdCloneMod(a[1]); else printf("kullanim: clonemod <swap|1|0>\n"); }
+        else if (cmd == "spawnscan")
+        {
+            if (a.size() >= 3) CmdSpawnScan(a[1], a[2]);
+            else CmdSpawnScan("1", "30000");
+        }
+        else if (cmd == "itemscanall") CmdItemScanAll();
         else if (cmd == "canli")
         {
             std::string m;

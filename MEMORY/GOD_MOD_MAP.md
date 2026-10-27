@@ -2,7 +2,7 @@
 
 > **BU DOSYA KALICI HAFIZADIR.** Sandbox sıfırlansa, memory kaybolsa, önce BU DOSYA ve MEMORY/WORKLOG.md okunur.
 > Repo: https://github.com/0xByteDeveloper/MyGameArea
-> Son güncelleme: Oturum 3 (2026-10-25)
+> Son güncelleme: Oturum 16 (2026-10-27) — v1.9/pylib v4.3 BALIK-FIX (hapi 27610, REACT callback yok kanıtı) + OTP + klon-mod + spawnscan/itemscanall
 
 ---
 

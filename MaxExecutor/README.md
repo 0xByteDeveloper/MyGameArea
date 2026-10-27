@@ -2,7 +2,7 @@
 
 > **Yöntem:** WndProc subclass + dosya kuyruk + ana-thread `PyRun_SimpleString`
 > **Hook:** YOK · **Shared memory:** YOK · **Arka plan Python thread:** YOK
-> **Sürüm:** v1.9 PLUSMAXGOD / pylib v4.2 — GOD MOD paketi v2: ekipman çıkarma,
+> **Sürüm:** v1.9 PLUSMAXGOD / pylib v4.3 — GOD MOD paketi v2: ekipman çıkarma,
 > otomatik CH değişimi, yer eşyası tarama, görev raporu, hayalet eşya, sahte
 > instance/klon/kılık, simya (DS) raporu + **otomatik balık sistemi (adaptif
 > gecikme öğrenici + canlı [LIVE] çıktı ekrani)**. 28 yeni komut — detay KULLANIM.md 3e.

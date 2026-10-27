@@ -580,3 +580,29 @@ sahne adi notu dokumante edildi. Kod degisikligi YOK, rebuild YOK.
 - KULLANIM.md: v4.1 ozeti (bastaki blok) + 3d kesif bolumu v4.1 akisi + SAHA TESTI 8 HUKMU
   notu; paket tablosu + banner metinleri + test listesi v4.1'e cekildi.
 - README.md: v1.8.1/pylib v4.1.
+
+
+---
+
+## Oturum 16 — v1.9 / pylib v4.3 "BALIK-FIX + OTP" (2026-10-27)
+
+### Giris
+- Kullanici saha raporu (MaxExec_sonuc_x.rar): fishspot uzaktan tutma MANTIGI dogrulandi (isinla+space = tutuyor) AMA dongu 32 atis / 0 isirtma / 14 kacan. Istekler: 400-birim su degistirebilme, fishtp tek-atis, oltayla mob/player tutma, clone sac, clonemod, spawn 20016 gorunmez, morph 20016 gorunmez, itemscan tam kayit + otomatik bulma, fishswap calismiyor gibi, OptimizeTP (tp sonrasi yuruyus geri atmasi).
+
+### Kaynak kanit zamani (LegendySF-V2 sparse klon: DrLegendy/LegendySF-V2, Legendy.Source)
+- **Isirtma gorunmezligi KOK NEDENI:** GameSource fishing.cpp event: bite 10-40sn (number(10,40)), REACT paketi; Take penceresi step==1 (6sn, PASSES_PER_SEC(6)); kacista rod->SetSocket(2,0) (YEM SIFIRLANIR). Client (ClientSource PythonNetworkStreamPhaseGame.cpp GC_FISHING): REACT dalinda python callback YOK (sadece C++ SetFishEmoticon+ReactFishing); OnFishingNotify SADECE FISH paketi ile ve PredictFish TRUE ise. PredictFish (fishing.cpp:374) = AFFECT_FISH_MIND_PILL || PREMIUM_FISH_MIND || UNIQUE_GROUP_FISH_MIND. Hapi vnumu: fishing.h FISH_MIND_PILL_VNUM=27610 (char_item.cpp:3053 20dk affect). -> v4.2 dongusunun 0 isirtma + alterne yemsiz atis deseni TAM aciklandi.
+- **Sunucu su kontrolu YOK** (char.cpp CHARACTER::fishing -> sadece ATTR_BLOCK + rod + socket2). Client 400 birim = compiled c_fFishingDistance (GetFishingRot 10'ar derece su taramasi) -> PYTHON DEGISKENI YOK (binary patch gerekir, gereksiz: fishspot bypass).
+- **Geri atma mekanizmasi:** input_main.cpp CG_MOVE: FUNC_MOVE -> Goto (yurur); ENABLE_TP_SPEED_CHECK aktifken mesafe>25m (binmede 60m) -> ch->Show(eski konum) = kullanicinin raporu birebir. FUNC_ATTACK/SKILL -> Move (aninda). Cozum: otp = 240px adim + MoveToDestPosition + 1300ms.
+- **Mob-fishing IMKANSIZ:** fishing.cpp'de GetVictim/GetTarget YOK; fish secimi DetermineFish(map-prob). Baska sunucularin custom ozelligi - kaynakla kanitli red.
+- **spawnscan probu:** client PythonNonPlayerModule.cpp:70 nonplayer.GetMonsterName(vnum) -> mob_proto aramasi (instance yaratmadan gecerli race taramasi).
+
+### Kod (v1.9 DLL + pylib v4.3)
+- scripts/make_v43.py: 20 anchor'li patcher (saha-deployed v4.2 uzerine) -> PLUSMAXGOD_PyScript.py v4.3 (4758 satir, lib2to3 py2 parse OK).
+- Fish: hapi otomatik-kullanim (boot), fail/WRONGPLACE -> aninda pre, baitwait (soket2>0), baloncuk 2-vid (-1 + GetMainActorVID), timeout 50s, oneshot (fishtp), fishswap vnum filtre + fishswapnow.
+- Yeni: fishtp, otp/optimizetp/otpstop/otpstep/otpdelay (_OtpWnd), clonemod swap/takip (_CloneFollowWnd), spawnscan (spawnscan_full.txt), itemscan tam-dosya (itemscan_full.txt) + itemscanall; clone sac probe; spawn/morph mob_proto on-kontrol.
+- DLL v1.9: 9 Cmd uretici + dispatch + help; zig derleme PE32 i386 749KB (kaynak 0 uyari); pylib_embedded.h v4.3 (1.01MB) embed_pylib.py ile.
+
+### Teslimat + durum
+- download: MaxExecutor_bundle_v1.9.zip (DLL+EXE+py v4.3+KULLANIM+README+PLUSQuest), PLUSMAXGOD_PyScript_v4.3.py
+- KULLANIM.md: v4.3 ozet bolumu (kok-neden + komut tablosu); README v1.9/v4.3.
+- Beklenen saha dogrulama: /i 27610 sonrasi fish -> [LIVE] ISIRTMA + balik adi; fishtp tek dongu; otp yuruyus serbestligi; spawnscan listesi; fishswapnow.
