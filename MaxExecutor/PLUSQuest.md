@@ -1,5 +1,5 @@
 # PLUSQuest — Metin2 İstemci Python Fonksiyon Kataloğu
-### (PLUSMAXGOD Edition · v4.2 · Oturum 15 — SAHA TESTİ 9 + GOD MOD v2 + balık mekanigi işlendi)
+### (PLUSMAXGOD Edition · v4.8 · Oturum 19 — SAHA TESTİ 14: autopot sürekli izleme + otp2 W-basılı yürüyüş + satma/atma 1-arg paket düzeltmesi + stop komutları; envanter yönetimi kanıtları: m2k Inventorymanager shop.IsOpen/SendShopSellPacket(1-arg)/SendItemDropPacket(1-arg) + uiShop.py SendShopSellPacketNew + game.py MoveUp DIK_UP + GetDegree dönüş konvansiyonu S=0 B=90 K=180 D=270)
 
 > **Bu dosya nedir?** MaxExecutor'un oyunun Python'undan erişebildiği **tüm bilinen modül ve
 > fonksiyonların** kataloğudur: ne işe yararlar, hangileri bu istemcide **kanıtlı** (saha

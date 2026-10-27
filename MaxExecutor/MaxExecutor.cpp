@@ -124,7 +124,7 @@
 //            basedir.txt ile tasinabilir (BASE_DIR\dump).
 //    FIX-35: SyncEmbeddedPylib yeni dosya adini yazar (PLUSMAXGOD_PyScript.py),
 //            eskisini PLUSMAXGOD_eski_v<surum>.py olarak yedekler.
-//  v2.3 "PLUSMAXGOD" (saha testi 13 dev raporu, pylib v4.7 cifti):
+//  v2.4 "PLUSMAXGOD" (saha testi 14 dev raporu, pylib v4.8 cifti):
 //     (1) LIVE tailer acilista eski live.txt'yi konsola geri oynatiyordu
 //         -> ilk okuma artik dosya sonundan baslar (sadece yeni satirlar).
 //     (2) KALDIRILDI: speed/aspeed (sunucu tanimiyor) + chchange/relogin
@@ -419,7 +419,7 @@ static void DrainQueue(void)
                 _snprintf(fp, MAX_PATH, "%s\\last_pyfail.txt", RESULT_DIR); fp[MAX_PATH-1]=0;
                 WriteFileAll(fp, std::string("PYTHON HATASI: ") + fd.cFileName +
                     "\nDetay: pyerr komutunu yaz (pyerr.log son satirlari).\n"
-                    "En sik neden: ESKI pylib - PLUSMAXGOD v4.7 ile degistir (bundle zip / GitHub)!\n");
+                    "En sik neden: ESKI pylib - PLUSMAXGOD v4.8 ile degistir (bundle zip / GitHub)!\n");
                 OutP("[MAXEXEC] !! PYTHON HATASI (%s) - detay icin: pyerr\n", fd.cFileName);
                 fflush(stdout);
             }
@@ -537,7 +537,7 @@ static std::string BootImport(void)
          "        try:\n"
          "            import traceback\n"
          "            _f = open(r'" + std::string(RESULT_DIR) + "\\\\last_pylib_fail.txt', 'w')\n"
-         "            _f.write('PLUSMAXGOD_PyScript.py YUKLENEMEDI (DLL v2.3 / pylib v4.7) - TRACEBACK:\\n' + traceback.format_exc())\n"
+         "            _f.write('PLUSMAXGOD_PyScript.py YUKLENEMEDI (DLL v2.4 / pylib v4.8) - TRACEBACK:\\n' + traceback.format_exc())\n"
          "            _f.close()\n"
          "        except Exception:\n"
          "            pass\n"
@@ -554,7 +554,7 @@ static std::string BootImport(void)
          "    maxlib._MX_OLD_WARNED = True\n"
          "    try:\n"
          "        import sys\n"
-         "        sys.stderr.write('!!! PYLIB ESKI v' + str(getattr(maxlib, 'PYLIB_VERSION', '?')) + ' - DLL v2.3 PLUSMAXGOD v4.7 ister! "
+         "        sys.stderr.write('!!! PYLIB ESKI v' + str(getattr(maxlib, 'PYLIB_VERSION', '?')) + ' - DLL v2.4 PLUSMAXGOD v4.8 ister! "
          "C:\\\\MaxExec\\\\PLUSMAXGOD_PyScript.py dosyasini yenisiyle degistir (bundle zip / GitHub) !!!\\\\n')\n"
          "    except Exception:\n"
          "        pass\n";
@@ -858,7 +858,7 @@ static void CmdUnequip(const std::string& part)
     QRaw(BootImport() + "maxlib.unequip(" + PyStr(part) + ")\n");
 }
 static void CmdUnequipAll(void) { QRaw(BootImport() + "maxlib.unequipall()\n"); }
-// (v2.3) chchange/relogin KALDIRILDI - kullanici istegi (karakteri
+// (v2.4) chchange/relogin KALDIRILDI - kullanici istegi (karakteri
 // degistirmisti; sonra detaylica yeniden yapilacak)
 static void CmdGround(void)  { QRaw(BootImport() + "maxlib.ground()\n"); }
 static void CmdGroundTake(const std::string& mode)
@@ -921,7 +921,7 @@ static void CmdFishTest(void)    { QRaw(BootImport() + "maxlib.fishtest()\n"); }
 static void CmdMorphTarget(void)   { QRaw(BootImport() + "maxlib.morphtarget()\n"); }
 static void CmdClonePlayer(void)   { QRaw(BootImport() + "maxlib.cloneplayer()\n"); }
 static void CmdFakeMount(const std::string& m) { QRaw(BootImport() + "maxlib.fakemount(" + PyStr(m) + ")\n"); }
-// (v2.3) speed/aspeed KALDIRILDI - sunucu chr.SetMoveSpeed/
+// (v2.4) speed/aspeed KALDIRILDI - sunucu chr.SetMoveSpeed/
 // SetAttackSpeed tanimiyordu (kullanici istegiyle silindi)
 static void CmdStatUp(const std::string& p, const std::string& n)  { QRaw(BootImport() + "maxlib.statup(" + PyStr(p) + ", " + PyStr(n) + ")\n"); }
 static void CmdSkillUp(const std::string& i, const std::string& n) { QRaw(BootImport() + "maxlib.skillup(" + PyStr(i) + ", " + PyStr(n) + ")\n"); }
@@ -931,11 +931,11 @@ static void CmdAntiFlyEffect(const std::string& m) { QRaw(BootImport() + "maxlib
 static void CmdWarp(const std::string& x, const std::string& y) { QRaw(BootImport() + "maxlib.warp(" + PyStr(x) + ", " + PyStr(y) + ")\n"); }
 static void CmdAntiStun(const std::string& m)   { QRaw(BootImport() + "maxlib.antistun(" + PyStr(m) + ")\n"); }
 static void CmdAntiSlow(const std::string& m)   { QRaw(BootImport() + "maxlib.antislow(" + PyStr(m) + ")\n"); }
-// --- v2.3 (pylib v4.7): saha testi 13 komutlari ---
+// --- v2.4 (pylib v4.8): saha testi 13+14 komutlari ---
 static void CmdSlots(void)                       { QRaw(BootImport() + "maxlib.slots()\n"); }
 static void CmdSellJunk(const std::string& sub)  { QRaw(BootImport() + "maxlib.selljunk(" + PyStr(sub) + ")\n"); }
 static void CmdSellAll(const std::string& f)     { QRaw(BootImport() + "maxlib.sellall(" + PyStr(f) + ")\n"); }
-static void CmdDropAll(void)                     { QRaw(BootImport() + "maxlib.dropall()\n"); }
+static void CmdDropAll(const std::string& sub)   { QRaw(BootImport() + "maxlib.dropall(" + PyStr(sub) + ")\n"); }
 static void CmdAutoPot(const std::string& arg, const std::string& pct)
                                                 { QRaw(BootImport() + "maxlib.autopot(" + PyStr(arg) + ", " + PyStr(pct) + ")\n"); }
 static void CmdAutoPotItem(const std::string& k) { QRaw(BootImport() + "maxlib.autopot_item(" + PyStr(k) + ")\n"); }
@@ -1040,7 +1040,7 @@ static bool InitConsole(void)
         LogLine("CONOUT$ (stderr) yeniden acilamadi");
     setvbuf(stdout, NULL, _IONBF, 0);   // buffer'siz: crash olsa bile yazar
     setvbuf(stderr, NULL, _IONBF, 0);
-    SetConsoleTitleA("MaxExecutor v2.3 PLUSMAXGOD");
+    SetConsoleTitleA("MaxExecutor v2.4 PLUSMAXGOD");
     HWND cw = GetConsoleWindow();
     if (cw)
     {
@@ -1158,7 +1158,7 @@ static std::vector<std::string> SplitArgs(const std::string& line)
 
 static void PrintHelp(void)
 {
-    OutP("\n=== MaxExecutor v2.3 PLUSMAXGOD (oyun-ici + GOD MOD pylib v4.7) ===\n");
+    OutP("\n=== MaxExecutor v2.4 PLUSMAXGOD (oyun-ici + GOD MOD pylib v4.8) ===\n");
     OutP("  help                        : bu yardim\n");
     OutP("  status                      : anlik sahne/baglanti snapshot\n");
     OutP("  -- giris akisi (menu) --\n");
@@ -1178,19 +1178,21 @@ static void PrintHelp(void)
     OutP("  ride | revive | logout | back | pickup : hizli eylemler\n");
     OutP("  zoom <mesafe> | use <slot> | drop <slot> <adet> | goto <x> <y> | tp <x> <y>\n");
     OutP("  key <DIK> <0/1> | attack <0/1>\n");
-    OutP("  -- v4.7: ENVANTER + WARP + OTPOT --\n");
-    OutP("  slots                       : v4.7 - envanter ozeti (sekme/slot/dolu %/bos kalan)\n");
-    OutP("  selljunk                    : v4.7 - COP esyalari NPC'ye sat (efsunlu ASLA satilmaz)\n");
-    OutP("       selljunk add <vnum> | del <vnum> | list | name <isim>\n");
-    OutP("  sellall [force]             : v4.7 - TUM envanteri sat (force: efsunlu dahil!)\n");
-    OutP("  dropall                     : v4.7 - tum envanteri YERE AT (tek tek - guvenli)\n");
+    OutP("  -- v4.8: ENVANTER + WARP + OTPOT --\n");
+    OutP("  slots                       : v4.8 - envanter ozeti + SLOT HARITASI (#=esya .=bos E=efsunlu)\n");
+    OutP("  selljunk                    : v4.8 - COP esyalari NPC'ye sat (efsunlu ASLA satilmaz)\n");
+    OutP("       dukkan acilir acilmaz otomatik satar (acilmazsa NPCye kendin tikla)\n");
+    OutP("       selljunk 0 = DURDUR | selljunk add <vnum> | del <vnum> | list | name <isim>\n");
+    OutP("  sellall [force]             : v4.8 - TUM envanteri sat (force: efsunlu dahil!) | DUR: sellall 0\n");
+    OutP("  dropall                     : v4.8 - tum envanteri YERE AT (1-arg kanitli paket) | DUR: dropall 0\n");
     OutP("  warp <x> <y>                : v4.7 - LEGENDY warp (sahne YENIDEN yuklenir!)\n");
     OutP("                                x,y = pos/100 (orn 38421 39017 -> warp 384 390)\n");
     OutP("  autopot hp 80 | autopot mp 80 | autopot (durum) | autopot 0\n");
-    OutP("       can<80% -> NORMAL kirmizi pot | mana<80% -> mavi pot (surekli)\n");
+    OutP("       SUREKLI izleme: esik altindayken 0.4sn'de bir pot, esige dek (30sn kalp atisi)\n");
     OutP("  autopot_item hp | autopot_item mp | autopot_item 0\n");
     OutP("       oto-pot ESYASI (72723-6/72727-30): pasifse basar, bitince yeniler\n");
-    OutP("  otp1 <x> <y> | otp2 <x> <y> : v4.7 - otp1=saldiri tusu (kanitli), otp2=W tusu\n");
+    OutP("  otp1 <x> <y> | otp2 <x> <y> : v4.8 - otp1=saldiri tusu (kanitli adim-adim)\n");
+    OutP("                                otp2=W+UP tusu SUREKLI BASILI yuruyus (varince birakir)\n");
     OutP("  -- v4.4: PUAN + HIZ + BINIS + ANTIFLY --\n");
     OutP("  statup <ht|iq|st|dx> [adet] : stat puani ver (orn: statup st 10)\n");
     OutP("  skillup <skill-idx> [adet]  : skill puani ver (idx: skill raporundan)\n");
@@ -1232,7 +1234,9 @@ static void PrintHelp(void)
          "   v4.5 not: pylib yukleme sira hatasi duzeltildi;\n"
          "   v4.6 not: near artik METIN taslarini bulur | antifly saldirisiz;\n"
          "   v4.7 not: speed/aspeed/chchange/relogin KALDIRILDI | warp Legendy\n"
-         "            yolu | dump: C modul API stub + pack.Get sysmodules)\n");
+         "            yolu | dump: C modul API stub + pack.Get sysmodules;\n"
+         "   v4.8 not: autopot surekli | otp2 W-basili | slots sayim fix |\n"
+         "            selljunk/sellall/dropall 1-arg paket + stop (selljunk 0)\n");
     OutP("  -- KESIF --\n");
     OutP("  pyfiles | pydump <ad> | pydumpall | pyscan <modul> | plusquest\n");
     OutP("  -- hata takibi --\n");
@@ -1337,8 +1341,8 @@ static DWORD WINAPI WorkerThread(LPVOID)
     const bool con = InitConsole();
 
     OutP("\n=============================================\n");
-    OutP("  MaxExecutor v2.3 PLUSMAXGOD - ana-thread executor\n");
-    OutP("  oyun-ici + kesif + GOD MOD v2 (pylib v4.7 cifti)\n");
+    OutP("  MaxExecutor v2.4 PLUSMAXGOD - ana-thread executor\n");
+    OutP("  oyun-ici + kesif + GOD MOD v2 (pylib v4.8 cifti)\n");
     OutP("  canli cikti: C:\\MaxExec\\live.txt izlenir -> [LIVE] akar\n");
     OutP("=============================================\n");
     if (!con)
@@ -1400,12 +1404,12 @@ static DWORD WINAPI WorkerThread(LPVOID)
                 char rp[MAX_PATH];
                 _snprintf(rp, MAX_PATH, "%s\\last_warning.txt", RESULT_DIR); rp[MAX_PATH-1]=0;
                 WriteFileAll(rp, std::string("! PYLIB ESI SURUM: v") + vShow +
-                    "  (DLL v2.3 PLUSMAXGOD v4.7 ister)\n"
+                    "  (DLL v2.4 PLUSMAXGOD v4.8 ister)\n"
                     "Yeni PLUSMAXGOD_PyScript.py'yi " + std::string(BASE_DIR) + " icine kopyala (bundle zip / GitHub).\n"
                     "ESKI pylib ILE: stat/pos/inv/equip/skill/near/chat/goto/tp/pyfiles/pydumpall/plusquest CALISMAZ.\n");
-                LogLine("UYARI: pylib ESI v%s - PLUSMAXGOD v4.7 gerekli! (%s)", vShow, pylibPath);
+                LogLine("UYARI: pylib ESI v%s - PLUSMAXGOD v4.8 gerekli! (%s)", vShow, pylibPath);
                 OutP("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-                OutP("!! PYLIB ESI: diskteki PLUSMAXGOD_PyScript.py = v%s  (gereken: v4.7)\n", vShow);
+                OutP("!! PYLIB ESI: diskteki PLUSMAXGOD_PyScript.py = v%s  (gereken: v4.8)\n", vShow);
                 OutP("!! Yeni PLUSMAXGOD_PyScript.py'yi %s icine kopyala (bundle zip)\n", BASE_DIR);
                 OutP("!! Eski pylib ile v4.0 komutlari CALISMAZ (stat/inv/tp/pyfiles..)\n");
                 OutP("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
@@ -1712,7 +1716,11 @@ static DWORD WINAPI WorkerThread(LPVOID)
         {
             CmdSellAll(a.size() >= 2 ? a[1] : "");
         }
-        else if (cmd == "dropall") CmdDropAll();
+        else if (cmd == "dropall")
+        {
+            std::string sub = JoinArgs(a, 1);
+            CmdDropAll(sub);
+        }
         else if (cmd == "combo") CmdCombo(a.size() >= 2 ? a[1] : "0");
         else if (cmd == "statdown")
         {
@@ -1849,7 +1857,7 @@ BOOL APIENTRY DllMain(HMODULE hMod, DWORD reason, LPVOID)
         DisableThreadLibraryCalls(hMod);
         EnsureDirs();
         CreateThread(NULL, 0, WorkerThread, NULL, 0, NULL);
-        LogLine("MaxExecutor v2.3 PLUSMAXGOD yuklendi (pid=%lu) — worker baslatiliyor",
+        LogLine("MaxExecutor v2.4 PLUSMAXGOD yuklendi (pid=%lu) — worker baslatiliyor",
                 GetCurrentProcessId());
     }
     return TRUE;

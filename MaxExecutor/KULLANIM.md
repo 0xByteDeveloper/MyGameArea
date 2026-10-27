@@ -2,9 +2,16 @@
 
 > Paket içeriği, kurulum, komutlar, giriş akışı, sorun giderme — hepsi bu dosyada.
 > Mimari gerekçe için: `reports/DEV_REAL_BINARY_TEST.md` (RC18/RC19) + `reports/DEV_GIL_ANALYSIS.md` (RC1-RC17).
-> Son güncelleme: **Oturum 18 — MaxExecutor v2.3 PLUSMAXGOD / pylib v4.7 (saha testi 13 dev raporu — envanter yönetimi + Legendy warp + oto-pot)**
+> Son güncelleme: **Oturum 19 — MaxExecutor v2.4 PLUSMAXGOD / pylib v4.8 (saha testi 14 dev raporu — sürekli oto-pot + W-basılı yürüyüş + satma/atma paket düzeltmesi + durdurma komutları)**
 >
-> **v2.3/v4.7 ÖZET — saha testi 13 (tümü kanıtlı):**
+> **v2.4/v4.8 ÖZET — saha testi 14 (tümü kanıtlı):**
+> **`autopot` SÜREKLİ İZLEME:** saha raporu '1 kere bastı bir daha basmadı ve karakter öldü' — kök neden: döngü tek büyük `except`'in içindeydi, ilk exception'dan sonra SESSİZCE ölüyordu. Artık her blok ayrı try/except'te + **ilk 3 hata [LIVE]'a yazılır** + **30 saniyede bir kalp atısı** (`[LIVE] AUTOPOT: izleme AKTIF (basilan kirmizi=N mavi=M)`). Eşik altındayken **0.4sn'de bir** pot basar, eşik ÜSTÜNE çıkınca işaretir. Karakter ölüyken pot basmaz (uyarı yazar), pot yoksa 5sn'de bir hatırlatır.
+> **`otp2` SÜREKLİ BASILI:** saha raporu 'bas çek değil, konuma gidilene kadar sürekli basılı tutsun' — v4.7'deki adım-sıçramalar (SetPixelPosition) KALDIRILDI. Artık karakter her 100ms'de **hedefe döndürülür** (`chr.SetRotation` — darealfreakbot/pasha37-levelbot GetDegree kanıtı: S=0, B=90, K=180, D=270) ve **W+UP tuşu BASILI KALIR** (`SetSingleDIKKeyState` her tik yenilenir — game.py MoveUp DIK_UP kanıtı), varınca/`otpstop`'ta tuşlar MUTLAKA bırakılır. Uzaklık artarsa 'engel var olabilir' uyarısı verir. `otp1` aynen korundu (kanıtlanmış adım-adım).
+> **`slots` SAYIM DÜZELTMESI:** saha raporu '45 45 toplam 90 slot var' ama kod 168 diyordu — TOPLAM artık **sekme x sekme-boyu** (2x45=90); `INVENTORY_SLOT_COUNT` farklıysa bilgi satırı. Her sekme için **9 kolonlu slot HARİTASI** (`#`=esya, `.`=boş, `E`=efsunlu, `?`=okuma-hatasi) + okuma-hata sayacı + `GetElk`/`GetGold` yang yedeği — hangi slot boş görünüyor direkt görünür.
+> **`selljunk`/`sellall` YENİ AKIŞ:** saha raporu 'satmıyo' + 'kapatamıyom sürekli npc açıyo'. (1) **PAKET ÖNCELİĞİ DÜZELTİLDİ:** artık ÖNCE kanıtlı 1-arg `net.SendShopSellPacket(slot)` (m2k Inventorymanager + Taubuyer — NightTown'da ÇALIŞMIŞ bot kodu; v4.7 yanlışlıkla önce yeni 2-arg `SendShopSellPacketNew(slot,adet)` paketini yolluyordu ve bu sunucu onu işletmiyordu); (2) **SPAM YOK:** NPC'ye 1 tik + 8sn SESSIZ bekleme (eski 'NPC dukkani aciliyor' fırtınası bitti); dükkan açılmazsa en fazla 1 tekrar, sonra durur — sen NPC'ye KENDİN tıkla, **dükkan açılır açılmaz satma otomatik başlar** (bekleme sırasında `shop.IsOpen()` izlenir); (3) **DURDUR:** `selljunk 0` / `sellall 0` (veya `stop`).
+> **`dropall` DÜZELTMESI:** saha raporu 'drop all da atmıyo' — v4.7 2-arg `SendItemDropPacketNew` ile başlıyordu (bu sunucuda işlevsiz). Artık ÖNCE kanıtlı 1-arg `net.SendItemDropPacket(slot)` (m2k DropAllItems kanıtı). 0.45sn arayla tek tek + 2 doğrulama turu + **DURDUR: `dropall 0`** + hiçbir şey atılamazsa 'sunucu atmayı engelliyor olabilir' teşhisi.
+> **[LIVE] SPAM BİTTİ:** sell/drop döngüleri artık her 3 saniyede bir özet satırı yazar (slot+yöntem bilgisiyle) — saniyede 2 satır fırtınası yok.
+>> **v2.3/v4.7 ÖZET — saha testi 13 (tümü kanıtlı):**
 > **KALDIRILDI (kullanıcı isteği):** `speed`/`aspeed` (sunucu `chr.SetMoveSpeed/SetAttackSpeed` tanımıyordu) + `chchange`/`relogin` (karakteri değiştiriyordu — CH değil; sonra detaylı yeniden yapılacak).
 > **`warp` TAMAMEN YENİ — LEGENDY YOLU:** `warp <x> <y>` artık **sahneyi YENİDEN yükler** (kullanıcının anlattığı net.directenter tarzı). Kanıt: LegendySF-V2 `consolemodule.py` warp konsol komutu = `background.Destroy()` + `background.Initialize()` + **`background.WarpTest(x,y)`** (+ çevre/gölge kurulumu) — bu istemcinin background modülünde WarpTest VAR (canlı katalog). Koordinat = **pos/100** (örn pos 38421 39017 → `warp 384 390`; büyük yazarsan otomatik /100). Harita sınırı YOK — atlas koordinatıyla başka haritaya da geçer. Sonrasında karakter hedefe yerleştirilir + konum paketi gönderilir.
 > **`otp1`/`otp2` (OTP yöntem ayrımı):** mevcut kanıtlı yöntem = **`otp1`** (saldiri tuşu basılı). **`otp2` YENİ:** atak YERİNE **W TUŞU** basılı gider (`player.SetSingleDIKKeyState(app.DIK_W, 1)` — game.py DIK_W + Crap_Levelbot kanıtları; kullanıcının 'dik_key_w' tarifi). `otp` = `otp1` eş anlamlı.
@@ -352,36 +359,45 @@ plusquest               TÜM yüklü modülleri tara → C:\MaxExec\dump\PLUSQue
 
 ---
 
-## 3e. v2.3 / pylib v4.7 — ENVANTER + WARP + OTOPOT (saha testi 13)
+## 3e. v2.4 / pylib v4.8 — ENVANTER + WARP + OTOPOT (saha testi 14 günceli)
 
 ```
-slots                        envanter ozeti: kac sekme/slot, dolu %, bos kalan, yang
+slots                        envanter ozeti + SLOT HARITASI (#=esya .=bos E=efsunlu ?=hata)
+                             TOPLAM = sekme x sekme-boyu (2x45=90)
 selljunk                     cop esyalari yakindaki NPC'ye sat (efsunlu ASLA satilmaz)
+                             NPCye 1 tik; dukkan ACILIR ACILMAZ satis baslar
+  selljunk 0 | stop          DURDUR ('kapatamiyom' fix - spam yok)
   selljunk add 27803         cop listesine vnum ekle (kalici: junklist.txt)
   selljunk name fier         isminde 'fier' gecen esyalari cop say
   selljunk list              listeyi goster | selljunk del <vnum> cikar
 sellall [force]              tum envanteri sat (force: efsunlu dahil - DIKKAT)
-dropall                      tum envanteri YERE AT (tek tek - bazi sv'ler toplu atmayi reddeder)
+  sellall 0 | stop           DURDUR
+dropall                      tum envanteri YERE AT (1-arg kanitli paket, tek tek)
+  dropall 0 | stop           DURDUR
 
 warp 384 390                 LEGENDY warp: SAHNE YENIDEN YUKLENIR (net.directenter tarzi)
                              koordinat = pos/100 (buyuk yazarsan otomatik /100)
-otp1 <x> <y>                 OTP yontem 1: saldiri tusu basili (kanitli eski yontem)
-otp2 <x> <y>                 OTP yontem 2: W TUSU basili (ataksiz - kullanici tarifi)
+otp1 <x> <y>                 OTP yontem 1: saldiri tusu + adim-adim (kanitli eski yontem)
+otp2 <x> <y>                 OTP yontem 2 (v4.8): W+UP BASILI KALIR, karakter hedefe
+                             donderilir; sicrama yok; varince tuslari otomatik birakir
 
-autopot hp 80                can %80 altinda NORMAL kirmizi pot (27001-3) surekli
-autopot mp 80                mana %80 altinda NORMAL mavi pot (27004-6) surekli
-autopot                      durum raporu
+autopot hp 80                can %80 ALTINDAYKEN kirmizi pot 0.4sn'de bir SUREKLI
+                             (esige dek basar; 30sn'de bir kalp atisi yazar)
+autopot mp 80                mana %80 altinda NORMAL mavi pot (ayni surekli mantik)
+autopot                      durum raporu (hata sayaci dahil)
 autopot 0                    hepsini kapat
 autopot_item hp              oto-pot ESYASI (72723-6..): pasifse bas, bitince yenile
 autopot_item mp              mana oto-pot esyasi (72727-30..)
 autopot_item 0               esya izlemesini kapat
 ```
 
-**Kaldırılanlar (kullanıcı isteği):** `speed`/`aspeed` (sunucu tanımıyordu), `chchange`/`relogin` (karakteri değiştiriyordu — CH değil; detaylı versiyon sonra yapılacak).
+**Kaldırılanlar (kullanıcı isteği, v2.3):** `speed`/`aspeed` (sunucu tanımıyordu), `chchange`/`relogin` (karakteri değiştiriyordu — CH değil; detaylı versiyon sonra yapılacak).
 
 **warp koordinat hesabı:** `pos` raporu pixel verir (örn 38421 39017) → warp değeri = **/100** (384 390). Her harita 256x256 birim; atlas koordinatı verilirse **harita sınırı yok** (GlobalPositionToMapInfo o haritayı yükler). warp sonrası `pos` ile kontrol et — sunucu senkronu için konum paketi otomatik gider.
 
-**selljunk akışı:** (1) `shop.IsOpen()` kontrolü — dükkan kapalıysa 3500px içindeki en yakın NPC'ye `SendOnClickPacket` ile tıklar, 6sn dükkan açılmasını bekler; açılmazsa 'NPC'ye yaklaş' uyarısı. (2) Dükkan açıksa çöp listesindeki eşyaları **tek tek** (0.4sn arayla) `SendShopSellPacketNew(slot, count)` ile satar — sunucu reddederse 3 tur boyunca tekrar dener. (3) Efsunlu eşyalar (bonus'lu) **asla satılmaz** — `sellall force` dışında.
+**selljunk/sellall akışı (v4.8):** (1) komut anında yakın NPC'ye **1 tık** (`SendOnClickPacket`, 3500px içinde en yakın) — tekrarlı tıklama YOK ('sürekli npc açıyo' bitti). (2) `shop.IsOpen()` SESSİZ izlenir: dükkan açılınca satış otomatik başlar; 8 sn içinde açılmazsa EN FAZLA 1 tık daha, o da olmazsa durur ve 'NPCye KENDIN tikla' der — **sen elle tıklayınca da satış kendiliğinden başlar**. (3) Satış: çöp eşyalar **tek tek** (0.4sn arayla) ÖNCE `net.SendShopSellPacket(slot)` (m2k/Taubuyer NightTown kanıtı — 1-arg), yoksa `SendShopSellPacketNew(slot, adet)` (uiShop.py kanıtı). (4) Tam tur bitince **doğrulama turları**: kalan satılabilirler için en fazla 2 tekrar; bitince özet (satılan/atlanan) + 'dukkan açık kalır, ESC ile kapat'. (5) Efsunlular **asla satılmaz** (`sellall force` hariç). Durdurma her an: `selljunk 0` / `sellall 0`.
+
+**dropall akışı (v4.8):** 0.45 sn'de bir **1-arg `net.SendItemDropPacket(slot)`** (m2k DropAllItems NightTown kanıtı; v4.7'nin 2-arg New paketi bu sunucuda işlevsizdi). 2 doğrulama turu; hiçbir şey atılamazsa 'sunucu yere atmayı engelliyor olabilir' teşhisi yazar. Durdurma: `dropall 0`.
 
 ## 4. NEDEN BU MİMARİ GÜVENLİ? (kısa hatırlatma)
 

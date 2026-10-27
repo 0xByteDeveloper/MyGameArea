@@ -1,6 +1,10 @@
 # MaxExecutor — Ana-Thread Güvenli Python Executor (xgodmod4)
 
-> **v2.2 / pylib v4.7** — saha testi 12: 9 yeni komut (warp/antistun/antislow/autopot/combo/statdown/skillupui/statupui/efsun) + near metin-taşı fixi + speed döngüsü + antifly saldırısız + chchange SetLoginPhase yolu. Detay: KULLANIM.md üst bölümü.
+> **v2.4 / pylib v4.8** — saha testi 14: `autopot` SÜREKLİ izleme (0.4sn döngü + kalp atısı + görünen hatalar; '1 kere basip susma' bitti) · `otp2` W+UP tuşu SÜREKLİ BASILI gerçek yürüyüş (SetRotation hedefe, sıçrama yok, varınca otomatik bırakır) · `slots` sayım düzeltmesi (TOPLAM = sekme×boyu = 90 + slot haritası `#=esya .=bos E=efsunlu`) · `selljunk`/`sellall` 1-arg kanıtlı satış paketi + sessiz dükkan bekleme + DURDUR (`selljunk 0`) · `dropall` 1-arg kanıtlı atma paketi + DURDUR (`dropall 0`) · [LIVE] spam bitti. Detay: KULLANIM.md üst bölümü.
+
+> **v2.3 / pylib v4.7** — saha testi 13: speed/aspeed + chchange/relogin KALDIRILDI · warp LEGENDY yolu (sahne yeniden yüklenir) · otp1/otp2 ayrımı · autopot yeni şema · slots/selljunk/sellall/dropall · dump C-modül API-stub + pack.Get sysmodules yolu. Detay: KULLANIM.md üst bölümü.
+
+> **v2.2 / pylib v4.6** — saha testi 12: 9 yeni komut (warp/antistun/antislow/autopot/combo/statdown/skillupui/statupui/efsun) + near metin-taşı fixi + speed döngüsü + antifly saldırısız + chchange SetLoginPhase yolu. Detay: KULLANIM.md üst bölümü.
 
 > **v2.1 / pylib v4.5** — saha testi 11 kök-neden onarımı: v4.4'ün `ui_WindowBase` sıra hatası yüzünden HİÇ yüklenemeyip eski v3.2'ye sessizce düştüğü (`PYTHON HATASI` ailesi) düzeltildi; BootImport oturum-başına-1-kez + başarısızlık traceback'i `results\last_pylib_fail.txt`'ye yazıyor. Detay: KULLANIM.md üst bölümü.
 
