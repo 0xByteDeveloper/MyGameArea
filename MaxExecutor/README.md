@@ -1,6 +1,6 @@
 # MaxExecutor — Ana-Thread Güvenli Python Executor (xgodmod4)
 
-> **v2.2 / pylib v4.6** — saha testi 12: 9 yeni komut (warp/antistun/antislow/autopot/combo/statdown/skillupui/statupui/efsun) + near metin-taşı fixi + speed döngüsü + antifly saldırısız + chchange SetLoginPhase yolu. Detay: KULLANIM.md üst bölümü.
+> **v2.2 / pylib v4.7** — saha testi 12: 9 yeni komut (warp/antistun/antislow/autopot/combo/statdown/skillupui/statupui/efsun) + near metin-taşı fixi + speed döngüsü + antifly saldırısız + chchange SetLoginPhase yolu. Detay: KULLANIM.md üst bölümü.
 
 > **v2.1 / pylib v4.5** — saha testi 11 kök-neden onarımı: v4.4'ün `ui_WindowBase` sıra hatası yüzünden HİÇ yüklenemeyip eski v3.2'ye sessizce düştüğü (`PYTHON HATASI` ailesi) düzeltildi; BootImport oturum-başına-1-kez + başarısızlık traceback'i `results\last_pylib_fail.txt`'ye yazıyor. Detay: KULLANIM.md üst bölümü.
 

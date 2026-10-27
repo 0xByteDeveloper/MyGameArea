@@ -2,7 +2,18 @@
 
 > Paket içeriği, kurulum, komutlar, giriş akışı, sorun giderme — hepsi bu dosyada.
 > Mimari gerekçe için: `reports/DEV_REAL_BINARY_TEST.md` (RC18/RC19) + `reports/DEV_GIL_ANALYSIS.md` (RC1-RC17).
-> Son güncelleme: **Oturum 17 — MaxExecutor v2.2 PLUSMAXGOD / pylib v4.6 (saha testi 12 dev raporu — 9 yeni komut + 5 kök-düzeltme)**
+> Son güncelleme: **Oturum 18 — MaxExecutor v2.3 PLUSMAXGOD / pylib v4.7 (saha testi 13 dev raporu — envanter yönetimi + Legendy warp + oto-pot)**
+>
+> **v2.3/v4.7 ÖZET — saha testi 13 (tümü kanıtlı):**
+> **KALDIRILDI (kullanıcı isteği):** `speed`/`aspeed` (sunucu `chr.SetMoveSpeed/SetAttackSpeed` tanımıyordu) + `chchange`/`relogin` (karakteri değiştiriyordu — CH değil; sonra detaylı yeniden yapılacak).
+> **`warp` TAMAMEN YENİ — LEGENDY YOLU:** `warp <x> <y>` artık **sahneyi YENİDEN yükler** (kullanıcının anlattığı net.directenter tarzı). Kanıt: LegendySF-V2 `consolemodule.py` warp konsol komutu = `background.Destroy()` + `background.Initialize()` + **`background.WarpTest(x,y)`** (+ çevre/gölge kurulumu) — bu istemcinin background modülünde WarpTest VAR (canlı katalog). Koordinat = **pos/100** (örn pos 38421 39017 → `warp 384 390`; büyük yazarsan otomatik /100). Harita sınırı YOK — atlas koordinatıyla başka haritaya da geçer. Sonrasında karakter hedefe yerleştirilir + konum paketi gönderilir.
+> **`otp1`/`otp2` (OTP yöntem ayrımı):** mevcut kanıtlı yöntem = **`otp1`** (saldiri tuşu basılı). **`otp2` YENİ:** atak YERİNE **W TUŞU** basılı gider (`player.SetSingleDIKKeyState(app.DIK_W, 1)` — game.py DIK_W + Crap_Levelbot kanıtları; kullanıcının 'dik_key_w' tarifi). `otp` = `otp1` eş anlamlı.
+> **`autopot` YENİ DÜZEN (kullanıcı isteği):** `autopot hp 80` = can **%80 altına düşünce NORMAL kırmızı pot** (27001-3, oto-pot eşyası HARİÇ, sürekli basar) · `autopot mp 80` = mana %80 altında NORMAL mavi pot (27004-6) · `autopot` = durum raporu · `autopot 0` = hepsi kapalı.
+> **`autopot_item` YENİ:** `autopot_item hp` = **otomatik pot basan eşya** (72723-72726 + 76021-2 + 79012; kullanıcı örneği **72724**) **pasifse basar, aktifse dokunmaz** (gerek yok — metinSocket[0] aktiflik kontrolü, uiInventory.py kanıtı); eşya bitince yenisini 3sn içinde otomatik basar. `autopot_item mp` = mana tarafı (72727-30 + 76004-5 + 79013). `autopot_item 0` = izleme kapalı.
+> **ENVANTER YÖNETİMİ YENİ:** `slots` (kaç sekme/slot, dolu mu, kaç slot kaldı, **% kaç dolu**, yang) · `selljunk` (çöp eşyaları **yakındaki NPC'ye sat** — dükkan otomatik açılmaya çalışılır: yakın NPC'ye `net.SendOnClickPacket`; **efsunlu olanlar ASLA satılmaz**; çöp listesi = balıklar + `selljunk add <vnum>` / `selljunk name <isim>` ile genişletilir — junklist.txt'ye kalıcı kaydedilir) · `sellall [force]` (tüm envanteri sat; efsunlular korunur — `force` ile dahil, DİKKAT!) · `dropall` (tüm envanteri **tek tek yere at** — bazı sunucular toplu atmayı reddediyor; 3 tur doğrulama ile reddedilenler tekrar denenir). Kanıtlar: m2k Inventorymanager (shop.IsOpen + SendShopSellPacket) + uiShop.py:231 (SendShopSellPacketNew) + ItemUse.py (SendOnClickPacket).
+> **attackkeystate BUG DÜZELTİLDİ:** `otpstop` artık saldırı VE W tuşlarını **mutlaka bırakır** — saha raporu: 'fonksiyon kullanmasan bile attackkeystate aktif' — nedeni otp'nin yol ortasında durdurulunca tuşu BASILI bırakmasıydı. Tüm durdurma/hata yollarında tuş bırakma eklendi.
+> **KONSOL [LIVE] TEMİZLİĞİ:** DLL her açılışında konsol ESKİ oturumun [LIVE] balık satırlarını geri oynatıyordu (live.txt append modunda birikiyordu). Düzeltme: C++ izleyici açılışta dosyanın SONUNA atlar (sadece yeni satırlar akar) + pylib oturum başında live.txt'yi temizler.
+> **DUMP DÜZELTİLMELERİ:** (1) `_pack_read` artık `sys.modules['pack']` üzerinden **DİREKT** erişir (import zinciri hiç işlemez — gömülü pylib'de serverinfo.py dumplanmama sorunu için) + `__main__` globals'ten `pack_open` yedeği. (2) **C modülleri (player.py/chr.py/net.py...) artık API-STUB olarak dump edilir** — kaynak .py yok ama gerçek `dir()` içeriği (sabitler + fonksiyon listesi) yazılır; `pydump player` da aynı şekilde çalışır.
 >
 > **v2.2/v4.6 ÖZET — saha testi 12 (tümü NightTown dump kanıtlı):**
 > **DÜZELTMELER:** (1) **`near` artık METİN TAŞLARINI bulur** — tip filtresi kaldırıldı; kagb-multihack kanıtı: **0=MOB, 2=METİN, 6=OYUNCU** (v4.5 filtresi tip-2'yi atıyordu!). (2) **`speed`/`aspeed` artık 0.5sn DÖNGÜ** — Crap_Levelbot kanıtı: sunucu hızı sürekli gerçek değere sıfırlar, tek atış etkisizdi; her döngü gerçek→hack hızı dansı. (3) **`antifly` saldırı tuşu artık varsayılan DEĞİL** — 1=animasyon kilidi, 2=+Güçlü Beden (AFFECT_CHEONGEON — zihinsel savaşçı devrilmeme efezgi), 3=orijinal (saldırılı). (4) **`chchange`/`relogin` karakter ekranında takılma bitti** — select ekranından oyunun KENDİ `stream.SetLoginPhase()` yolu (networkModule.py: Disconnect + faz takası). (5) **`attr` etiketleri** — efsun 1-5 + **6./7. BONUS** (rare) ayrımı (efsunbotu.py index kanıtı: 0-4 normal, 5-6 rare).
@@ -340,6 +351,37 @@ plusquest               TÜM yüklü modülleri tara → C:\MaxExec\dump\PLUSQue
 > `pydump`/`pydumpall` tam bu zincirle çalışır.
 
 ---
+
+## 3e. v2.3 / pylib v4.7 — ENVANTER + WARP + OTOPOT (saha testi 13)
+
+```
+slots                        envanter ozeti: kac sekme/slot, dolu %, bos kalan, yang
+selljunk                     cop esyalari yakindaki NPC'ye sat (efsunlu ASLA satilmaz)
+  selljunk add 27803         cop listesine vnum ekle (kalici: junklist.txt)
+  selljunk name fier         isminde 'fier' gecen esyalari cop say
+  selljunk list              listeyi goster | selljunk del <vnum> cikar
+sellall [force]              tum envanteri sat (force: efsunlu dahil - DIKKAT)
+dropall                      tum envanteri YERE AT (tek tek - bazi sv'ler toplu atmayi reddeder)
+
+warp 384 390                 LEGENDY warp: SAHNE YENIDEN YUKLENIR (net.directenter tarzi)
+                             koordinat = pos/100 (buyuk yazarsan otomatik /100)
+otp1 <x> <y>                 OTP yontem 1: saldiri tusu basili (kanitli eski yontem)
+otp2 <x> <y>                 OTP yontem 2: W TUSU basili (ataksiz - kullanici tarifi)
+
+autopot hp 80                can %80 altinda NORMAL kirmizi pot (27001-3) surekli
+autopot mp 80                mana %80 altinda NORMAL mavi pot (27004-6) surekli
+autopot                      durum raporu
+autopot 0                    hepsini kapat
+autopot_item hp              oto-pot ESYASI (72723-6..): pasifse bas, bitince yenile
+autopot_item mp              mana oto-pot esyasi (72727-30..)
+autopot_item 0               esya izlemesini kapat
+```
+
+**Kaldırılanlar (kullanıcı isteği):** `speed`/`aspeed` (sunucu tanımıyordu), `chchange`/`relogin` (karakteri değiştiriyordu — CH değil; detaylı versiyon sonra yapılacak).
+
+**warp koordinat hesabı:** `pos` raporu pixel verir (örn 38421 39017) → warp değeri = **/100** (384 390). Her harita 256x256 birim; atlas koordinatı verilirse **harita sınırı yok** (GlobalPositionToMapInfo o haritayı yükler). warp sonrası `pos` ile kontrol et — sunucu senkronu için konum paketi otomatik gider.
+
+**selljunk akışı:** (1) `shop.IsOpen()` kontrolü — dükkan kapalıysa 3500px içindeki en yakın NPC'ye `SendOnClickPacket` ile tıklar, 6sn dükkan açılmasını bekler; açılmazsa 'NPC'ye yaklaş' uyarısı. (2) Dükkan açıksa çöp listesindeki eşyaları **tek tek** (0.4sn arayla) `SendShopSellPacketNew(slot, count)` ile satar — sunucu reddederse 3 tur boyunca tekrar dener. (3) Efsunlu eşyalar (bonus'lu) **asla satılmaz** — `sellall force` dışında.
 
 ## 4. NEDEN BU MİMARİ GÜVENLİ? (kısa hatırlatma)
 

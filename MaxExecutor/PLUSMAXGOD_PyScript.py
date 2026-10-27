@@ -1,7 +1,29 @@
 # -*- coding: utf-8 -*-
 """
 ===========================================================================
- PLUSMAXGOD_PyScript.py - MaxExecutor Ana-Thread Komut Kutuphanesi (v4.6)
+ PLUSMAXGOD_PyScript.py - MaxExecutor Ana-Thread Komut Kutuphanesi (v4.7)
+ v4.7 DEGISIKLIKLER (saha testi 13 dev raporu - tumu kanitli):
+   * KALDIRILDI: speed/aspeed (sunucu tanimiyordu) + chchange/relogin
+     (karakteri degistirmisti - kullanici istegi; sonra detayli yapilacak)
+   * warp: LEGENDY YOLU - background.Destroy + Initialize + WarpTest
+     (sahne YENIDEN yuklenir; LegendySF-V2 consolemodule 'warp' komutu
+     birebir; bu istemcide background.WarpTest VAR - canli katalog)
+   * otp -> otp1 (eski kanitli yontem) + otp2 YENI (atak yerine W tusu
+     basili: player.SetSingleDIKKeyState(app.DIK_W, 1))
+   * otpstop FIX: saldiri tusu artik MUTLAKA birakilir (yol ortasinda
+     durdurunca BASILI kaliyordu - attackkeystate bug raporu)
+   * autopot YENI SEMA: 'autopot hp 80' / 'autopot mp 80' ayri ayri,
+     NORMAL pot basar (oto-pot esyasi haric); autopot_item hp/mp:
+     72723-6/72727-30 oto-pot esyasi aktif degilse basar (kanit:
+     constInfo.IS_AUTO_POTION + uiInventory metinSocket[0])
+   * YENI: slots (envanter doluluk %) | selljunk/sellall (NPC'ye sat;
+     efsunlu ASLA satilmaz; m2k Inventorymanager + uiShop kaniti) |
+     dropall (tek tek atma - bazi sunucular toplu atmayi reddeder)
+   * _pack_read: sys.modules['pack'] DIREKT + __main__ pack_open
+     (serverinfo.py dumplama dustu raporu); pydumpall: C modulleri
+     API-STUB olarak yazilir (player.py/chr.py gercek API icerigi)
+   * live.txt oturum basinda temizlenir (DLL acilisinda konsol eski
+     [LIVE] balik satirlarini geri oynamiordu - kullanici raporu)
  v4.6 DEGISIKLIKLER (saha testi 12 dev raporu - tumu NightTown dump kanitli):
    * near: tip FILTRESI kalkti - metin tasi (tip=2) artik bulunur!
      (kagb-multihack kaniti: 0=MOB 2=METIN 6=OYUNCU)
@@ -278,7 +300,7 @@ DUMP_DIR   = r'C:\MaxExec\dump'   # v4.0: py dump + PLUSQuest_live buraya
 # SURUM ISARETI - DLL v1.8 bunu okur (FIX-19). PLUSMAXGOD_PyScript.py
 # degistirmeden bu satiri silme/degistirme! Eski pylib (v3.x) major 3
 # oldugu icin DLL v1.8 acilista KOSKOCA uyar basar.
-PYLIB_VERSION = '4.6'
+PYLIB_VERSION = '4.7'
 
 RACE_TABLE = {
     0: ('Warrior', 'E'), 1: ('Ninja', 'K'), 2: ('Sura', 'E'), 3: ('Shaman', 'K'),
@@ -2282,9 +2304,37 @@ def _pack_read(name):
     Donus: (yontem-adi, icerik-str) | (None, hata-aciklamasi)
     icerik her zaman str; binary ise repr degil ham bytes-decode denenir."""
     nm = str(name)
+    # --- 0) v4.7: pack modulunu ONCE sys.modules'dan DIREKT al (import
+    #     zinciri hic ismesin - saha raporu: gomulu pylib'de serverinfo.py
+    #     dumplanmadi; disk dosyalari dustu. sys.modules her zaman gercek
+    #     C modulunu verir - oyun kendi importcusuna (system.py
+    #     __pack_import) hicbir sorgu yollamaz) ---
+    _pm = None
+    try:
+        import sys as _sysp
+        _pm = _sysp.modules.get('pack', None)
+        if _pm is not None:
+            _PACK_API['sysmod'] = True
+    except:
+        _pm = None
+    if _pm is None:
+        try:
+            import pack as _pm
+        except Exception:
+            _pm = None
+    if _pm is None:
+        try:
+            import sys as _sysp2
+            _mn = _sysp2.modules.get('__main__', None)
+            if _mn is not None:
+                _pm = getattr(_mn, 'pack', None)
+        except:
+            _pm = None
     # --- 1) pack.Get (EN GUCLU - root pack kaynak okuma kaniti) ---
     try:
-        import pack as _packmod
+        if _pm is None:
+            raise ImportError('pack modulu bulunamadi (sys.modules/import/__main__)')
+        _packmod = _pm
         try:
             if _packmod.Exist(nm):
                 try:
@@ -2307,9 +2357,24 @@ def _pack_read(name):
             po = pack_open  # global builtin (istemci injected)
             _PACK_API['pack_open'] = True
         except NameError:
-            po = getattr(_packmod, 'pack_open', None)
-            if po is not None:
-                _PACK_API['pack_open'] = True
+            po = None
+        if po is None:
+            try:
+                po = getattr(_packmod, 'pack_open', None)
+                if po is not None:
+                    _PACK_API['pack_open'] = True
+            except:
+                po = None
+        if po is None:
+            try:
+                import sys as _sysp3
+                _mn = _sysp3.modules.get('__main__', None)
+                if _mn is not None:
+                    po = getattr(_mn, 'pack_open', None)
+                    if po is not None:
+                        _PACK_API['pack_open'] = True
+            except:
+                po = None
         if po is not None:
             for mode in ('r', 'rb'):
                 try:
@@ -2634,6 +2699,17 @@ def pydump(name=None):
                 text = ''
                 break
         if text is None:
+            # v4.7: C modulu ise (player/chr/net/...) API stub yaz
+            if base in _KNOWN_CLIENT_MODULES:
+                try:
+                    stub = _cmod_stub(base)
+                    f = open(_dump_name(safe + '.py'), 'w')
+                    f.write(stub)
+                    f.close()
+                    _write('pydump', 'OK: %s C modulu -> API-STUB yazildi (%d satir; kaynak .py yok - dump\\%s.py)\norn: pyscan %s canli katalog' % (base, stub.count(chr(10)), safe, base))
+                    return
+                except:
+                    pass
             _write('pydump', 'HATA: hicbir yontemle acilamadi: %s\nDenenen adaylar (%d): %s\nNot: pyfiles raporundaki isimleri kullan; oyun modulleri pack icindedir (pack.Get yolu)\n' % (nm, len(cands), ', '.join(cands[:12])))
             return
         safe = ''.join([ch if (ch.isalnum() or ch in '._-') else '_' for ch in base]) or 'adsiz'
@@ -2660,6 +2736,47 @@ def pydump(name=None):
 #   disk/GetFileList + UI script yollari. Okuma: pack.Get -> pack_open ->
 #   app.OpenTextFile -> disk. 0 byte'lar 'BOS' isaretlenir (sahte OK yok).
 # ---------------------------------------------------------------------------
+def _cmod_stub(modname):
+    """C modulu icin API stub kaynagi uret (v4.7 - dump klasorunde
+    player.py/chr.py/net.py gercek dir() icerigiyle olusur)."""
+    import sys as _sysc
+    m = _sysc.modules.get(modname, None)
+    if m is None:
+        try:
+            m = __import__(modname)
+        except:
+            m = None
+    L = ['# -*- coding: utf-8 -*-',
+         '# %s - DAHILI C MODULU (kaynak .py YOK - Plusmaxgod v4.7 API STUB)' % modname,
+         '# dir(%s) introspection: sabitler + fonksiyon listesi (gercek degerler)' % modname,
+         '']
+    if m is None:
+        L.append('# (modul su an import edilemedi)')
+        return chr(10).join(L) + chr(10)
+    try:
+        names = dir(m)
+    except:
+        names = []
+    for nm in sorted(names):
+        if nm.startswith('__'):
+            continue
+        try:
+            v = getattr(m, nm)
+        except:
+            continue
+        tv = type(v).__name__
+        if tv in ('builtin_function_or_method', 'function'):
+            L.append('def %s(*args): pass   # C fonksiyonu (imza bilinmiyor)' % nm)
+        elif tv == 'int':
+            L.append('%s = %d' % (nm, int(v)))
+        elif tv == 'str':
+            L.append('%s = %r' % (nm, str(v)))
+        elif tv == 'module':
+            L.append('# (alt modul: %s)' % nm)
+        else:
+            L.append('%s = None   # tip: %s' % (nm, tv))
+    return chr(10).join(L) + chr(10)
+
 def pydumpall():
     try:
         disc = _discover_pyfiles()
@@ -2746,7 +2863,18 @@ def pydumpall():
                     errs.append(gname)
                     idx.append('OKUNAMADI   %-28s (%s)' % (gname, src))
                 else:
-                    idx.append('KAYNAKSIZ(C) %-28s (dahili C modulu - .py kaynagi yok)' % gname)
+                    # v4.7: C modulleri (player/chr/net/item...) artik
+                    # KAYNAKSIZ birakilmiyor - API-STUB dosyasi yazilir
+                    # (dir() introspection: sabitler + fonksiyon listesi).
+                    # Kullanici istegi: 'player.py leri dumplayamiyordu'.
+                    try:
+                        stub = _cmod_stub(gname)
+                        f = open(_dump_name(gname + '.py'), 'w')
+                        f.write(stub)
+                        f.close()
+                        idx.append('API-STUB    %-28s (C modulu; %d satir API listesi - kaynak .py yok)' % (gname + '.py', stub.count(chr(10))))
+                    except:
+                        idx.append('KAYNAKSIZ(C) %-28s (dahili C modulu - .py kaynagi yok)' % gname)
                 continue
             safe = ''.join([ch if (ch.isalnum() or ch in '._-') else '_' for ch in (gname if '/' not in gname else gname.split('/')[-1][:-3])]) or 'adsiz'
             if '/' in gname:
@@ -3063,207 +3191,6 @@ def unequipall():
         _write('unequipall', '\n'.join(out) + '\n')
     except Exception, e:
         _write('unequipall', 'HATA ' + _fmt_error(e) + '\n')
-
-# ---------------------------------------------------------------------------
-# CHCHANGE / RELOGIN - oyundan CIKMA dan ch degistirme (farmbot yolu:
-# baglantiyi kes -> login ekranindan ayni islemi otomatik tekrarla)
-# gercek protokolde CH = TCP baglantisi; baglanti degistirmeden CH
-# degismez. Bu komut sureci 8-20 sn'de otomatik tamamlar (oyun acik kalir).
-# ---------------------------------------------------------------------------
-_CH_STEPS = []   # adim listesi
-
-def chchange(ch):
-    """v4.4 YENI YOL (saha testi 10 kok-nedeni: net.Disconnect yalnizca
-    soketi koparir, python faz penceresi GameWindow'da kaliyor -> 'sahne
-    degismiyo, npc/karakter kayip'). KANITLI YOL: uiSystem.py'daki 'Karakter
-    Degistir' butonu = net.ExitGame() -> SUNUCU faz paketi yollar -> istemci
-    DUEZGUN sekilde SelectCharacter fazina gecer (her sey temizlenir).
-    Akis: ExitGame -> select ekran -> Disconnect(select'te guvenli; select
-    penceresinin kendi disconnect akisi login'e tasir) -> server/ch sec ->
-    login -> karakter -> oyun."""
-    try:
-        if not _ingame():
-            _write('chchange', 'HATA: oyunda degilsin (chchange oyundayken calisir)\n')
-            return
-        if not _SAVE['id']:
-            _load_login_file()
-        if not _SAVE['id']:
-            _write('chchange', 'HATA: kimlik yok! once manuel: login <id> <sifre>\n(veya C:\\MaxExec\\login.dat olustur: login komutu bunu yazar)')
-            return
-        c = int(ch)
-        _ch_loop_start(c, fast=0)
-        _write('chchange', 'OK: CH %d degisim basladi (v4.4 ExitGame yolu)\nadimlar: oyundan guvenli cikis -> karakter ekran -> login ekran -> server/CH sec -> giris\nIlerleme: cmd penceresinde [LIVE] satirlarini izle' % c)
-    except Exception, e:
-        _write('chchange', 'HATA ' + _fmt_error(e) + '\n')
-
-def relogin():
-    """v4.4 HIZLI YOL: ExitGame -> karakter ekranina DUZGUN donus (sunucu
-    faz paketi; npcler/karakter temizlenir) -> ayni slotla tekrar giris.
-    Oturum acik kaldigi icin tekrar login GEREKMEZ (daha hizli + daha
-    guvenli). Sifirlanmazsa otomatik tam akisa duser (chchange yolu)."""
-    try:
-        if not _ingame():
-            _write('relogin', 'HATA: oyunda degilsin\n')
-            return
-        _load_login_file()
-        c = _SAVE['ch'] if _SAVE['ch'] else 0
-        _ch_loop_start(c, fast=1)
-        _write('relogin', 'OK: ayni CH(%s) hizli yeniden giris basladi (ExitGame yolu)\n[I-LIVE] adimlari izle; oturum acik -> login gerekmez' % str(c))
-    except Exception, e:
-        _write('relogin', 'HATA ' + _fmt_error(e) + '\n')
-
-# --- chchange durum makinesi (ui.OnUpdate - ana thread guvenli) -----------
-# v4.4: kok-neden fix. ESKI yol net.Disconnect() ile basliyordu; soket kopsa
-# da python faz penceresi GameWindow'da kaliyor -> npc/karakterler kayboluyor
-# ama sahne degismiyor (saha testi 10 raporu). YENI yol SUNUCU-DRIVEN:
-#   net.ExitGame()   (uiSystem.py 'Karakter Degistir' butonunun yaptigi sey)
-#   net.LogOutGame() (yedek: 'Oturum Kapat' butonu)
-# Bu ikisi sunucudan faz paketi getirir -> istemci butun duezgun temizlikle
-# select/login fazina gecer. Disconnect yalnizca SELECT ekranindayken kullanilir
-# (introSelect'in kendi baglanti-kopma akisi login'e tasir) - orada guvenli.
-_CHLOOP = {'win': None, 'step': '', 'target_ch': 0, 't0': 0.0, 'tryn': 0, 'fast': 0}
-
-class _ChLoopWnd(ui_WindowBase):
-    def __init__(self):
-        ui_WindowBase.__init__(self)
-        self.Show()
-
-    def OnUpdate(self):
-        try:
-            import net
-            st = _CHLOOP
-            now = time.time()
-            sn = st['step']
-            sc = _scene_name()
-            if sn == 'disc':
-                _live('CH: oyundan guvenli cikis (net.ExitGame - hedef CH %d)' % st['target_ch'])
-                try:
-                    net.ExitGame()
-                except Exception, e1:
-                    _live('CH: ExitGame hata %s' % _fmt_error(e1))
-                st['step'] = 'waitscene'
-                st['t0'] = now
-            elif sn == 'waitscene':
-                if 'SelectCharacter' in sc:
-                    if st['fast']:
-                        _live('CH: karakter ekranina donuldu - HIZLI giris (login gerekmez)')
-                        st['step'] = 'enter'
-                    else:
-                        _live('CH: karakter ekranina donuldu - login ekranina geciliyor')
-                        st['step'] = 'disc2'
-                    st['t0'] = now
-                elif 'LoginWindow' in sc:
-                    _live('CH: login ekranina donuldu (LogOutGame yolu)')
-                    st['step'] = 'selserver'
-                    st['t0'] = now
-                elif now - st['t0'] > 8:
-                    _live('CH: ExitGame sahneyi degistirmedi -> LogOutGame deneniyor (SCENE=%s)' % sc)
-                    try:
-                        net.LogOutGame()
-                    except:
-                        pass
-                    st['t0'] = now
-                    st['step'] = 'waitscene2'
-                elif now - st['t0'] > 25:
-                    _ch_fail('sahne degismedi (SCENE=%s) - ExitGame/LogOutGame etkisiz' % sc)
-            elif sn == 'waitscene2':
-                if 'SelectCharacter' in sc:
-                    st['step'] = ('enter' if st['fast'] else 'disc2')
-                    st['t0'] = now
-                elif 'LoginWindow' in sc:
-                    st['step'] = 'selserver'
-                    st['t0'] = now
-                elif now - st['t0'] > 20:
-                    _ch_fail('sahne hala degismedi (SCENE=%s)' % sc)
-            elif sn == 'disc2':
-                # v4.6 KOK DUZELTME: oyunun KENDI yolu - networkModule.py
-                # SetLoginPhase() = net.Disconnect + LoginWindow faz takasi
-                # (ham net.Disconnect'ta oldugu gibi sahne DONMUYORDU ->
-                # 'karakter ekraninda takilip kaliyordu'). introSelect
-                # ExitSelect cizimi de ayni yolu cagiriyor.
-                _live('CH: login fazina geciliyor (stream.SetLoginPhase - oyunun kendi yolu)')
-                done = 0
-                ms = _get_ms()
-                if ms is not None:
-                    try:
-                        ms.SetLoginPhase()
-                        done = 1
-                    except Exception, e1:
-                        _live('CH: SetLoginPhase hata %s' % _fmt_error(e1))
-                if not done:
-                    try:
-                        net.LogOutGame()
-                        done = 1
-                    except:
-                        pass
-                if not done:
-                    try:
-                        net.Disconnect()
-                    except:
-                        pass
-                st['step'] = 'waitlogin'
-                st['t0'] = now
-            elif sn == 'waitlogin':
-                if 'LoginWindow' in sc:
-                    st['step'] = 'selserver'
-                    st['t0'] = now
-                elif now - st['t0'] > 20:
-                    _ch_fail('login ekranina donulmedi (SCENE=%s)' % sc)
-            elif sn == 'selserver':
-                _live('CH: server+CH seciliyor (srv=%d ch=%d)' % (_SAVE['srv'], st['target_ch']))
-                selserver(_SAVE['srv'], st['target_ch'])
-                st['step'] = 'login'
-                st['t0'] = now
-            elif sn == 'login':
-                if now - st['t0'] > 2.0:
-                    _live('CH: login gonderiliyor (%s)' % _SAVE['id'])
-                    login(_SAVE['id'], _SAVE['pwd'])
-                    st['step'] = 'waitselect'
-                    st['t0'] = now
-            elif sn == 'waitselect':
-                if 'SelectCharacter' in sc:
-                    st['step'] = 'enter'
-                    st['t0'] = now
-                elif now - st['t0'] > 40:
-                    _ch_fail('karakter ekrani gelmedi (SCENE=%s) - lasterr yaz' % sc)
-            elif sn == 'enter':
-                if now - st['t0'] > 1.5:
-                    _live('CH: karakter girisi (slot %d)' % _SAVE['slot'])
-                    selchar(_SAVE['slot'])
-                    enter(_SAVE['slot'])
-                    st['step'] = 'waitgame'
-                    st['t0'] = now
-            elif sn == 'waitgame':
-                if sc == 'GameWindow':
-                    _live('CH: TAMAM - CH %de oyundasin' % st['target_ch'])
-                    _write('chchange', 'OK: islem tamamlandi (hedef CH %d)\nkontrol: stat + pos yaz' % st['target_ch'])
-                    _ch_loop_stop()
-                elif now - st['t0'] > 60:
-                    _ch_fail('oyuna giris zaman asimi (SCENE=%s)' % sc)
-        except Exception, e:
-            _ch_fail('istisna: ' + _fmt_error(e))
-
-def _ch_fail(msg):
-    _live('CH HATA: ' + msg)
-    _write('chchange', 'HATA: akis durdu: %s\nmanuel devam: status -> selserver -> login -> selchar -> enter' % msg)
-    _ch_loop_stop()
-
-def _ch_loop_start(target_ch, fast=0):
-    _CHLOOP.update({'step': 'disc', 'target_ch': int(target_ch), 't0': time.time(),
-                    'fast': 1 if fast else 0})
-    _load_login_file()
-    if _CHLOOP['win'] is None:
-        _CHLOOP['win'] = _ChLoopWnd()
-
-def _ch_loop_stop():
-    try:
-        if _CHLOOP['win'] is not None:
-            _CHLOOP['win'].Hide()
-            _CHLOOP['win'].Destroy()
-    except:
-        pass
-    _CHLOOP['win'] = None
-    _CHLOOP['step'] = ''
 
 # ---------------------------------------------------------------------------
 # GROUND - yerdeki esyalari tara (KANIT: kullanici pickupstealer.py +
@@ -4846,8 +4773,24 @@ def fishtest():
 #      bekle. Adim <= otpstep px (240px = 24m < 25m). Istemci aninda ilerler,
 #      sunucu adim adim takip eder -> hareket serbest, geri atlama yok.
 # ---------------------------------------------------------------------------
-_OTP = {'win': None, 'on': 0, 'tx': 0, 'ty': 0, 'step': 240, 'delay': 50,
-        't0': 0.0, 'n': 0}
+_OTP = {'win': None, 'on': 0, 'mode': 1, 'tx': 0, 'ty': 0, 'step': 240,
+        'delay': 50, 't0': 0.0, 'n': 0}
+
+def _otp_keys_release():
+    """v4.7 GUVENLIK: otp hangi modda olursa olsun tuslari MUTLAKA birak.
+    SAHA RAPORU (attackkeystate bug): otp yol ortasinda durdurulunca
+    saldiri tusu BASILI kaliyordu - 'fonksiyon kullanmasan bile
+    attackkeystate aktif' sikayetinin kok nedeni buydu."""
+    try:
+        import player
+        player.SetAttackKeyState(0)
+    except:
+        pass
+    try:
+        import player, app
+        player.SetSingleDIKKeyState(app.DIK_W, 0)
+    except:
+        pass
 
 class _OtpWnd(ui_WindowBase):
     def __init__(self):
@@ -4873,22 +4816,28 @@ class _OtpWnd(ui_WindowBase):
                 chr.SelectInstance(vid)
             except:
                 pass
-            # v4.4 (kullanici sahasi): yolculuk boyunca SALDIRI TUSU BASILI -
-            # 'attackkeystate true ile gitmesi lazim, yoksa geri tepiyor'.
-            # Varista birakilir (asagida).
-            try:
-                player.SetAttackKeyState(1)
-            except:
-                pass
+            # v4.7 MOD SETI:
+            #   mod 1 = SALDIRI tusu basili (v4.4'ten beri kanitli yontem)
+            #   mod 2 = W TUSU basili (kullanici tarifi 'atak yerine key
+            #           basacak dik_key_w ile' - game.py:326 DIK_W kaniti,
+            #           Crap_Levelbot SetSingleDIKKeyState kaniti)
+            if st['mode'] == 2:
+                try:
+                    import app
+                    player.SetSingleDIKKeyState(app.DIK_W, 1)
+                except:
+                    pass
+            else:
+                try:
+                    player.SetAttackKeyState(1)
+                except:
+                    pass
             p = chr.GetPixelPosition(vid)
             cx = int(p[0]); cy = int(p[1])
             dx = st['tx'] - cx; dy = st['ty'] - cy
             dist = (dx * dx + dy * dy) ** 0.5
             if dist <= st['step'] * 1.2:
-                try:
-                    player.SetAttackKeyState(0)
-                except:
-                    pass
+                _otp_keys_release()
                 st['on'] = 0
                 try:
                     st['win'].Hide(); st['win'].Destroy()
@@ -4896,7 +4845,7 @@ class _OtpWnd(ui_WindowBase):
                     pass
                 st['win'] = None
                 _live('OTP: varildi (%d adim) konum=(%d,%d)' % (st['n'], cx, cy))
-                _write('otp', 'OK: varildi. adim=%d konum=(%d,%d) (saldiri tusu birakildi)\nNOT: sunucu senkronlu - yurumek serbest, geri atlama yok' % (st['n'], cx, cy))
+                _write('otp', 'OK: varildi. adim=%d konum=(%d,%d) (tuslar birakildi)\nNOT: sunucu senkronlu - yurumek serbest, geri atlama yok' % (st['n'], cx, cy))
                 return
             k = st['step'] / dist
             nx = int(cx + dx * k); ny = int(cy + dy * k)
@@ -4913,40 +4862,60 @@ class _OtpWnd(ui_WindowBase):
                 _live('OTP: %d adim, kalan ~%dpx' % (st['n'], int(dist)))
         except Exception, e:
             _live('OTP hatasi: ' + _fmt_error(e))
+            _otp_keys_release()
             _OTP['on'] = 0
 
-def otp(x, y):
-    """OPTIMIZETP: sunucuyla senkron adim adim hizli isinlama (tp sonrasi
-    geri-atma sorununu bitirir). Dur: otpstop | ayar: otpstep otpdelay"""
+def _otp_start(x, y, mode):
     try:
         if not _ingame():
             _write('otp', 'HATA: oyunda degilsin\n')
             return
         import chr
         _OTP['tx'] = int(x); _OTP['ty'] = int(y)
+        _OTP['mode'] = int(mode)
         _OTP['on'] = 1; _OTP['n'] = 0
         _OTP['t0'] = _fish_time_ms() - 99999
         if _OTP['win'] is None:
             _OTP['win'] = _OtpWnd()
         p = chr.GetPixelPosition(_my_vid())
-        _write('otp', 'OK: (%d,%d) -> (%d,%d) | adim=%dpx bekle=%dms\nNOT: yol boyunca saldiri tusu BASILI gider (geri-tepme engeli), varista birakir\nDur: otpstop | ince ayar: otpstep <px> (240 oneri: TP-limit 25m), otpdelay <ms> (50 varsayilan)' % (int(p[0]), int(p[1]), _OTP['tx'], _OTP['ty'], _OTP['step'], _OTP['delay']))
+        if _OTP['mode'] == 2:
+            _write('otp2', 'OK: (%d,%d) -> (%d,%d) | adim=%dpx bekle=%dms | MOD 2: W TUSU basili gider (ataksiz)\nDur: otpstop | ayar: otpstep/otpdelay | diger yontem: otp1' % (int(p[0]), int(p[1]), _OTP['tx'], _OTP['ty'], _OTP['step'], _OTP['delay']))
+        else:
+            _write('otp1', 'OK: (%d,%d) -> (%d,%d) | adim=%dpx bekle=%dms | MOD 1: SALDIRI tusu basili (v4.4 kanitli)\nDur: otpstop | ayar: otpstep/otpdelay | diger yontem: otp2 (W tusu)' % (int(p[0]), int(p[1]), _OTP['tx'], _OTP['ty'], _OTP['step'], _OTP['delay']))
     except Exception, e:
         _write('otp', 'HATA ' + _fmt_error(e) + '\n')
 
-optimizetp = otp
+def otp1(x, y):
+    """OPTIMIZETP YONTEM 1 (MEVCUT KANITLI YONTEM - v4.4'ten beri):
+    sunucuyla senkron adim adim isinlama; yol boyunca SALDIRI tusu basili
+    (geri-tepme engeli), varista birakir. Dur: otpstop"""
+    _otp_start(x, y, 1)
+
+def otp2(x, y):
+    """OPTIMIZETP YONTEM 2 (v4.7 - KULLANICI TARIFI): atak YERINE W TUSU
+    basili gider (player.SetSingleDIKKeyState(app.DIK_W, 1)). game.py:326
+    DIK_W=MoveUp + Crap_Levelbot SetSingleDIKKeyState kanitlari."""
+    _otp_start(x, y, 2)
+
+otp = otp1
+optimizetp = otp1
+
+
 
 def otpstop():
     try:
         _OTP['on'] = 0
+        _otp_keys_release()      # v4.7 FIX: durdurunca tuslar MUTLAKA birakilir
         try:
             if _OTP['win'] is not None:
                 _OTP['win'].Hide(); _OTP['win'].Destroy()
         except:
             pass
         _OTP['win'] = None
-        _write('otpstop', 'OK: otp durduruldu (%d adim)' % _OTP['n'])
+        _write('otpstop', 'OK: otp durduruldu (%d adim) - saldiri ve W tuslari birakildi' % _OTP['n'])
     except Exception, e:
         _write('otpstop', 'HATA ' + _fmt_error(e) + '\n')
+
 
 def otpstep(v):
     try:
@@ -5268,79 +5237,12 @@ def fakemount(mode=1):
 
 ridefake = fakemount   # kisaltma
 
-def speed(v):
-    """hareket hizi - v4.6 DONGULU (KANIT: Crap_Levelbot MoveSpeedHackFixLoop:
-    sunucu hizi surekli gercege sifirlar, TEK ATIS etkisizdi!). Her 0.5sn:
-    gercek hiz -> hack hizi ('reset-dansi'). 100=normal, 200=2x, MAX 1100.
-    speed 0 = dongu durur + gercek deger geri yuklenir. Yavaslama icin:
-    antislow 1 ile birlikte kullan."""
-    try:
-        if not _ingame():
-            _write('speed', 'HATA: oyunda degilsin\n')
-            return
-        import chr, player
-        n = int(v)
-        if n <= 0:
-            _SPEED['move'] = 0
-            try:
-                chr.SelectInstance(_my_vid())
-                chr.SetMoveSpeed(int(player.GetStatus(player.MOVING_SPEED)))
-            except:
-                pass
-            if _SPEED['atk'] == 0:
-                _speed_win_stop()
-            _write('speed', 'OK: hareket-hizi dongusu DURDURULDU, gercek deger geri yuklendi\nsaldiri hizi dongusu: aspeed 0')
-            return
-        if n > 1100:
-            n = 1100
-        _SPEED['move'] = n
-        _SPEED['t0'] = 0.0
-        if _SPEED['win'] is None:
-            _SPEED['win'] = _SpeedWnd()
-        try:
-            chr.SelectInstance(_my_vid())
-            chr.SetMoveSpeed(n)
-        except:
-            pass
-        _write('speed', 'OK: hareket hizi=%d - 0.5sn dongu AKTIF (Crap_Levelbot yontemi:\nher dongu gercek-hiz -> hack-hizi; sunucu sifirlamasina dayanikli)\ngeri: speed 0 | saldiri: aspeed <n> | durdur hepsi: speed 0 + aspeed 0' % n)
-    except Exception, e:
-        _write('speed', 'HATA ' + _fmt_error(e) + '\n')
+# (v4.7) speed KALDIRILDI - sunucu chr.SetMoveSpeed tanimiyor
+# (saha testi 12: "speed ve aspeed calismiyor" - kullanici istegiyle silindi)
 
-def aspeed(v):
-    """saldiri hizi - v4.6 DONGULU (her 0.5sn yeniden uygulanir; kanit:
-    Crap_Levelbot chr.SetAttackSpeed + player.GetStatus(player.ATT_SPEED)).
-    100=normal, MAX 1100. aspeed 0 = dongu durur + gercek deger geri."""
-    try:
-        if not _ingame():
-            _write('aspeed', 'HATA: oyunda degilsin\n')
-            return
-        import chr, player
-        n = int(v)
-        if n <= 0:
-            _SPEED['atk'] = 0
-            try:
-                chr.SelectInstance(_my_vid())
-                chr.SetAttackSpeed(int(player.GetStatus(player.ATT_SPEED)))
-            except:
-                pass
-            if _SPEED['move'] == 0:
-                _speed_win_stop()
-            _write('aspeed', 'OK: saldiri-hizi dongusu DURDURULDU, gercek deger geri yuklendi')
-            return
-        if n > 1100:
-            n = 1100
-        _SPEED['atk'] = n
-        _SPEED['t0'] = 0.0
-        if _SPEED['win'] is None:
-            _SPEED['win'] = _SpeedWnd()
-        try:
-            chr.SelectInstance(_my_vid())
-            chr.SetAttackSpeed(n)
-        except:
-            pass
-        _write('aspeed', 'OK: saldiri hizi=%d - 0.5sn dongu AKTIF\ngeri: aspeed 0 | hareket: speed <n>' % n)
-    except Exception, e:
-        _write('aspeed', 'HATA ' + _fmt_error(e) + '\n')
+
+# (v4.7) aspeed KALDIRILDI - ayni neden
+
 
 def statup(part, count=1):
     """stat PUANI ver (KANIT: uiCharacter.py:72-76 statusPlusCommandDict:
@@ -5397,56 +5299,6 @@ def skillup(idx, count=1):
         _write('skillup', 'OK: %d x /skillup %s gonderildi\nkontrol: skill yaz' % (ok, si))
     except Exception, e:
         _write('skillup', 'HATA ' + _fmt_error(e) + '\n')
-
-# --- v4.6 HIZ DONGUSU (Crap_Levelbot kaniti) -------------------------------
-_SPEED = {'win': None, 'move': 0, 'atk': 0, 't0': 0.0}
-
-class _SpeedWnd(ui_WindowBase):
-    def __init__(self):
-        ui_WindowBase.__init__(self)
-        self.Show()
-
-    def OnUpdate(self):
-        try:
-            import time, chr, player
-            st = _SPEED
-            if st['move'] == 0 and st['atk'] == 0:
-                return
-            now = time.time()
-            if now - st['t0'] < 0.5:
-                return
-            st['t0'] = now
-            try:
-                chr.SelectInstance(_my_vid())
-            except:
-                pass
-            if st['move'] > 0:
-                # Crap_Levelbot 'reset-dansi': once GERCEK hiz, hemen ardindan
-                # hack hizisi (MoveSpeedHackFixLoop1 -> Loop2 deseni)
-                try:
-                    chr.SetMoveSpeed(int(player.GetStatus(player.MOVING_SPEED)))
-                except:
-                    pass
-                try:
-                    chr.SetMoveSpeed(int(st['move']))
-                except:
-                    pass
-            if st['atk'] > 0:
-                try:
-                    chr.SetAttackSpeed(int(st['atk']))
-                except:
-                    pass
-        except:
-            pass
-
-def _speed_win_stop():
-    try:
-        if _SPEED['win'] is not None:
-            _SPEED['win'].Hide()
-            _SPEED['win'].Destroy()
-    except:
-        pass
-    _SPEED['win'] = None
 
 # --- ANTIFLY (sekme/ucus engeli) -------------------------------------------
 # KANIT (kullanici dump): AntiFly.py + antifly_sekmeme_.py - BlockFly:
@@ -5832,116 +5684,81 @@ def efsunsw(dst):
 # v4.6 YENI KOMUTLAR (saha testi 12 dev raporu)
 # ===========================================================================
 
-# --- WARP: konum-paketi isinlanmasi ----------------------------------------
-# KANIT: net.SendCharacterPositionPacket (NightTown net modulu - PLUSQuest
-# canli katalog) = CG_POSITION 'konuma istek' paketi (kullanicinin tarif
-# ettigi teknigin paketi). + otp adimlamasi (sunucu-senkron, geri atma yok).
-_WARP = {'win': None, 'on': 0, 'tx': 0, 'ty': 0, 't0': 0.0, 'n': 0,
-         'pos_t': 0.0, 'pos_n': 0}
-
-class _WarpWnd(ui_WindowBase):
-    def __init__(self):
-        ui_WindowBase.__init__(self)
-        self.Show()
-
-    def OnUpdate(self):
-        try:
-            import time, chr, player, net
-            st = _WARP
-            if not st['on']:
-                return
-            now = time.time()
-            # varis SONRASI: konum paketlerini 3 kez 300ms arayla gonder
-            if st['pos_n'] > 0:
-                if now - st['pos_t'] >= 0.3:
-                    st['pos_t'] = now
-                    try:
-                        net.SendCharacterPositionPacket()
-                        st['pos_n'] += 1
-                        _live('WARP: konum paketi #%d gonderildi' % st['pos_n'])
-                    except:
-                        pass
-                    if st['pos_n'] >= 4:
-                        st['on'] = 0
-                        try:
-                            player.SetAttackKeyState(0)
-                        except:
-                            pass
-                        try:
-                            st['win'].Hide(); st['win'].Destroy()
-                        except:
-                            pass
-                        st['win'] = None
-                        p = chr.GetPixelPosition(_my_vid())
-                        _live('WARP: tamam konum=(%d,%d)' % (int(p[0]), int(p[1])))
-                        _write('warp', 'OK: warp tamamlandi (%d adim + 3x konum paketi)\nson konum=(%d,%d)\nkontrol: pos yaz' % (st['n'], int(p[0]), int(p[1])))
-                return
-            # adimlama fazı (otp motoru): 240px adim + saldiri tusu basili
-            if now - st['t0'] < 0.05:
-                return
-            st['t0'] = now
-            vid = _my_vid()
-            try:
-                chr.SelectInstance(vid)
-            except:
-                pass
-            try:
-                player.SetAttackKeyState(1)
-            except:
-                pass
-            p = chr.GetPixelPosition(vid)
-            cx, cy = int(p[0]), int(p[1])
-            dx = st['tx'] - cx; dy = st['ty'] - cy
-            dist = (dx * dx + dy * dy) ** 0.5
-            if dist <= 288:
-                # varildi -> konum paketi fazina gec
-                try:
-                    player.SetAttackKeyState(0)
-                except:
-                    pass
-                try:
-                    net.SendCharacterPositionPacket()
-                except:
-                    pass
-                st['pos_n'] = 1
-                st['pos_t'] = now
-                _live('WARP: hedefe varildi (%d adim) - konum paketleri gonderiliyor' % st['n'])
-                return
-            k = 240.0 / dist
-            nx = int(cx + dx * k); ny = int(cy + dy * k)
-            try:
-                chr.SetPixelPosition(nx, ny)
-            except:
-                pass
-            try:
-                chr.MoveToDestPosition(vid, nx, ny)
-            except:
-                pass
-            st['n'] += 1
-            if st['n'] % 20 == 0:
-                _live('WARP: %d adim, kalan ~%dpx' % (st['n'], int(dist)))
-        except Exception, e:
-            _live('WARP hatasi: ' + _fmt_error(e))
-            _WARP['on'] = 0
-
+# --- WARP: LEGENDY YOLU (v4.7 - sahne YENIDEN yuklenir) --------------------
+# KANIT: LegendySF-V2 consolemodule.py:409 'warp' console komutu:
+#     background.Destroy(); background.Initialize()
+#     background.WarpTest(iWarpX, iWarpY)
+#     background.RegisterEnvironmentData(0, "d:/ymir work/environment/b3.msenv")
+#     background.SetEnvironmentData(0); background.SetShadowLevel(SHADOW_ALL)
+# C++ taraf: WarpTest(x,y) -> CPythonBackground::Warp(x*100, y*100) ->
+# GlobalPositionToMapInfo -> LoadMap(harita, yerel)  = SAHNE YUKLENIR.
+# Bu istemcinin background modulunde WarpTest VAR (canli katalog kaniti).
+# Kullanici tarifi: "net.directenter gibi calisir - sahne yuklenir oyun
+# yeniden yuklenir". x,y = GLOBAL koordinat (pixel/100; pos degeri /100).
 def warp(x, y):
-    """ISINLANMA v2 (ayni harita): otp-adimlamasi (240px adim + saldiri tusu
-    - geri atma YOK) + hedefe varinca 3x net.SendCharacterPositionPacket
-    (CG_POSITION - kullanici tarifli 'konuma istek' tekniği).
-    MAPTAN MAPA gecis SUNUCU kontrolundedir (harita kapilarindan yuru:
-    goto <kapi-x> <kapi-y>; isinlanma yuzugu sunucu paketidir, istemcide
-    terslenemez). warp <x> <y> | iptal: otpstop"""
+    """ISINLANMA v4.7 - LEGENDY YOLU (sahne yeniden yukleme):
+    warp <x> <y>   x,y = GLOBAL koordinat = pos raporunun /100'u
+                   (orn pos 38421 39017 -> warp 384 390; buyuk yazarsan
+                   otomatik /100 yapilir). Harita siniri YOK - atlas
+                   koordinatiyla diger haritaya da gecer.
+    Akis: background.Destroy + Initialize + WarpTest (SAHNE YENIDEN
+    YUKLENIR - net.directenter tarzi) -> cevre/golge kur -> karakteri
+    hedefe yerlestir (SetPixelPosition) -> konum paketi (senkron).
+    kontrol: pos"""
     try:
         if not _ingame():
             _write('warp', 'HATA: oyunda degilsin\n')
             return
-        import chr
-        _WARP.update({'tx': int(x), 'ty': int(y), 'on': 1, 'n': 0,
-                      't0': 0.0, 'pos_n': 0, 'pos_t': 0.0})
-        if _WARP['win'] is None:
-            _WARP['win'] = _WarpWnd()
-        _live('WARP: hedef=(%d,%d) - adimlama basladi' % (int(x), int(y)))
-        _write('warp', 'OK: warp hedef=(%d,%d)\nakis: 240px adimlar (saldiri tusu basili) -> varis -> 3x konum paketi\nharita ici garantili | map-arasi: goto ile harita kapisina yuru (sunucu gecisi)' % (int(x), int(y)))
+        import background, chr
+        xi = int(x); yi = int(y)
+        # buyuk deger = pixel koordinat -> global birim (pixel/100)
+        if xi > 4095 or yi > 4095:
+            xi = xi / 100; yi = yi / 100
+        _live('WARP: (%d,%d) global - sahne yeniden yukleniyor (Legendy yolu)' % (xi, yi))
+        try:
+            background.Destroy()
+            background.Initialize()
+            background.WarpTest(xi, yi)
+        except Exception, e1:
+            _write('warp', 'HATA WarpTest: ' + _fmt_error(e1) +
+                   '\n(bu istemcide background.WarpTest olmayabilir - kontrol: pyfiles)\n')
+            return
+        try:
+            background.RegisterEnvironmentData(0, 'd:/ymir work/environment/b3.msenv')
+        except:
+            pass
+        try:
+            background.SetEnvironmentData(0)
+        except:
+            pass
+        try:
+            background.SetShadowLevel(background.SHADOW_ALL)
+        except:
+            pass
+        # karakteri yeni haritada hedef noktaya yerlestir (global -> yerel)
+        lx = xi * 100; ly = yi * 100
+        try:
+            lp = background.GlobalPositionToLocalPosition(xi * 100, yi * 100)
+            lx = int(lp[0]); ly = int(lp[1])
+        except:
+            pass
+        try:
+            vid = _my_vid()
+            chr.SelectInstance(vid)
+            chr.SetPixelPosition(lx, ly)
+        except:
+            pass
+        try:
+            import net
+            net.SendCharacterPositionPacket()
+        except:
+            pass
+        mp = '?'
+        try:
+            mp = str(background.GetCurrentMapName())
+        except:
+            pass
+        _write('warp', 'OK: warp (%d,%d) global - SAHNE YENIDEN YUKLENDI (Legendy yolu)\nharita=%s  yerel konum=(%d,%d)\nNOT: background.WarpTest = LegendySF-V2 console warp komutunun birebiri\n(sahne yuklenir - net.directenter tarzi). Sunucu senkronu icin konum paketi\ngonderildi. Kontrol: pos yaz' % (xi, yi, mp, lx, ly))
     except Exception, e:
         _write('warp', 'HATA ' + _fmt_error(e) + '\n')
 
@@ -6037,13 +5854,21 @@ def antislow(mode):
     except Exception, e:
         _write('antislow', 'HATA ' + _fmt_error(e) + '\n')
 
-# --- AUTOPOT (otomatik can/mana potlari) -----------------------------------
-# KANIT: New_Levelbot.py Auto Potion (player.GetStatus(player.HP/MAX_HP) +
-# vnum 27001-3 kirmizi, 27004-6 mavi + net.SendItemUsePacket(i)).
-# Bu sunucuda isimler (itemscan_full.txt): Licoare Rosie/Albastra K/M/G.
-POT_HP_VNUMS = (27001, 27002, 27003)
-POT_SP_VNUMS = (27004, 27005, 27006)
-_AUTOPOT = {'win': None, 'on': 0, 'hp': 50, 'sp': 30, 't_hp': 0.0, 't_sp': 0.0, 'n': 0}
+# --- AUTOPOT v4.7 (kullanici istegi YENI sema) ------------------------------
+# KANIT: New_Levelbot Auto Potion (GetStatus(HP/MAX_HP) + 27001-3 kirmizi /
+# 27004-6 mavi + SendItemUsePacket). OTO-POT ESYASI kanit: constInfo.py
+# IS_AUTO_POTION_HP (72723-72726 + 76021-2 + 79012) / _SP (72727-72730 +
+# 76004-5 + 79013) + uiInventory.py metinSocket[0]=aktiflik isareti.
+# KULLANICI ISTEGI: 'autopot hp 80' = can %80 altina dusunce NORMAL hp potu
+# bas (oto-pot esyasi DEGIL); 'autopot_item hp' = oto-pot esyasi (72724
+# gibi) aktif degilse bas - aktifse basmaya gerek yok.
+POT_HP_VNUMS = (27001, 27002, 27003)          # normal kirmizi (Licoare Rosie)
+POT_SP_VNUMS = (27004, 27005, 27006)          # normal mavi (Licoare Albastra)
+AUTOPOT_HP_VNUMS = (72723, 72724, 72725, 72726, 76021, 76022, 79012)
+AUTOPOT_SP_VNUMS = (72727, 72728, 72729, 72730, 76004, 76005, 79013)
+_AUTOPOT = {'win': None, 'hp': 0, 'sp': 0, 't_hp': 0.0, 't_sp': 0.0,
+            'n_hp': 0, 'n_sp': 0, 'item_hp': 0, 'item_sp': 0, 't_it': 0.0,
+            'item_msg': 0}
 
 def _pot_find(vnums):
     import player
@@ -6060,6 +5885,41 @@ def _pot_find(vnums):
             return s, v
     return -1, 0
 
+def _autopot_item_active(slot):
+    """oto-pot esyasi AKTIF mi? (uiInventory.py kaniti: metinSocket[0]
+    != 0 -> aktif). -1 = okunamadi, 0 = pasif, 1 = aktif."""
+    try:
+        import player
+        v = int(player.GetItemMetinSocket(slot, 0))
+        return 1 if v != 0 else 0
+    except:
+        return -1
+
+def _autopot_item_check(kind):
+    """oto-pot esyasini kontrol et: envanterde VAR + PASIF ise bas.
+    kind: 'hp' | 'sp'. Aktifse hicbir sey yapma (kullanici istegi).
+    Esya yoksa bir kez uyari yaz (spam engeli)."""
+    try:
+        import player, net
+        if kind == 'hp':
+            vnums = AUTOPOT_HP_VNUMS
+        else:
+            vnums = AUTOPOT_SP_VNUMS
+        s, v = _pot_find(vnums)
+        if s < 0:
+            if _AUTOPOT['item_msg'] < 3:
+                _AUTOPOT['item_msg'] += 1
+                _live('AUTOPOT_ITEM: %s oto-pot esyasi yok (72723+ gibi) - /i 72724 ile alabilirsin' % kind.upper())
+            return
+        act = _autopot_item_active(s)
+        if act == 0:
+            net.SendItemUsePacket(s)
+            _live('AUTOPOT_ITEM: %s oto-pot esyasi AKTIFLESTIRILDI (slot=%d vnum=%d)' % (kind.upper(), s, v))
+        elif act == 1:
+            _AUTOPOT['item_msg'] = 0   # aktif - mesaj sifirla (bitti/yenile)
+    except:
+        pass
+
 class _AutoPotWnd(ui_WindowBase):
     def __init__(self):
         ui_WindowBase.__init__(self)
@@ -6069,78 +5929,146 @@ class _AutoPotWnd(ui_WindowBase):
         try:
             import time, player, net
             st = _AUTOPOT
-            if not st['on']:
-                return
             now = time.time()
-            if now - st['t_hp'] < 1.2 and now - st['t_sp'] < 1.2:
-                return
-            try:
-                hp = int(player.GetStatus(player.HP))
-                mhp = int(player.GetStatus(player.MAX_HP))
-            except:
-                return
-            if mhp > 0 and hp * 100 / mhp < st['hp'] and now - st['t_hp'] >= 1.2:
-                s, v = _pot_find(POT_HP_VNUMS)
-                if s >= 0:
-                    net.SendItemUsePacket(s)
+            # --- normal pot: can ---
+            if st['hp'] > 0 and now - st['t_hp'] >= 0.5:
+                try:
+                    hp = int(player.GetStatus(player.HP))
+                    mhp = int(player.GetStatus(player.MAX_HP))
+                except:
+                    hp = 0; mhp = 0
+                if mhp > 0 and hp * 100 / mhp < st['hp']:
+                    s, v = _pot_find(POT_HP_VNUMS)
+                    if s >= 0:
+                        net.SendItemUsePacket(s)
+                        st['t_hp'] = now
+                        st['n_hp'] += 1
+                        if st['n_hp'] % 5 == 1:
+                            _live('AUTOPOT: kirmizi pot (can %d%%, slot=%d)' % (hp * 100 / mhp, s))
+                    else:
+                        st['t_hp'] = now + 2.0
+                        _live('AUTOPOT HATA: kirmizi pot yok! /i 27001 200')
+                else:
                     st['t_hp'] = now
-                    st['n'] += 1
-                    _live('POT: kirmizi icildi (can ' + str(hp * 100 / mhp) + 'PCT, slot=' + str(s) + ', vnum=' + str(v) + ')')
+            # --- normal pot: mana ---
+            if st['sp'] > 0 and now - st['t_sp'] >= 0.5:
+                try:
+                    sp = int(player.GetStatus(player.SP))
+                    msp = int(player.GetStatus(player.MAX_SP))
+                except:
+                    sp = 0; msp = 0
+                if msp > 0 and sp * 100 / msp < st['sp']:
+                    s, v = _pot_find(POT_SP_VNUMS)
+                    if s >= 0:
+                        net.SendItemUsePacket(s)
+                        st['t_sp'] = now
+                        st['n_sp'] += 1
+                        if st['n_sp'] % 5 == 1:
+                            _live('AUTOPOT: mavi pot (mana %d%%, slot=%d)' % (sp * 100 / msp, s))
+                    else:
+                        st['t_sp'] = now + 2.0
+                        _live('AUTOPOT HATA: mavi pot yok! /i 27004 200')
                 else:
-                    st['t_hp'] = now + 3.0   # pot yok: 4.2sn sonra tekrar ara
-                    _live('POT HATA: kirmizi pot yok! /i 27001 200')
-            try:
-                sp = int(player.GetStatus(player.SP))
-                msp = int(player.GetStatus(player.MAX_SP))
-            except:
-                sp = 0; msp = 0
-            if msp > 0 and sp * 100 / msp < st['sp'] and now - st['t_sp'] >= 1.2:
-                s, v = _pot_find(POT_SP_VNUMS)
-                if s >= 0:
-                    net.SendItemUsePacket(s)
                     st['t_sp'] = now
-                else:
-                    st['t_sp'] = now + 3.0
-                    _live('POT HATA: mavi pot yok! /i 27004 200')
+            # --- oto-pot esyalari (3sn'de bir kontrol; bitince yeniler) ---
+            if (st['item_hp'] or st['item_sp']) and now - st['t_it'] >= 3.0:
+                st['t_it'] = now
+                if st['item_hp']:
+                    _autopot_item_check('hp')
+                if st['item_sp']:
+                    _autopot_item_check('sp')
         except:
             pass
 
-def autopot(mode, hp_pct=50, sp_pct=30):
-    """OTOMATIK POT (kullanici istegi): can <sinir -> kirmizi pot, mana <
-    sinir -> mavi pot otomatik icilir. VNUM KANIT (New_Levelbot + bu
-    sunucunun item listesi): kirmizi=27001/27002/27003 (Licoare Rosie K/M/G)
-    mavi=27004/27005/27006 (Licoare Albastra K/M/G).
-    autopot 1 | autopot 1 70 40 (hp% sp% sinirlari) | autopot 0"""
+def _autopot_status():
+    st = _AUTOPOT
+    def _s(v):
+        return ('%d%%' % v) if v > 0 else 'KAPALI'
+    L = ['AUTOPOT DURUMU (v4.7)',
+         '  can   (normal kirmizi pot 27001-3) : %s  basilan=%d' % (_s(st['hp']), st['n_hp']),
+         '  mana (normal mavi pot 27004-6)     : %s  basilan=%d' % (_s(st['sp']), st['n_sp']),
+         '  oto-pot esyasi HP (72723-6...)     : %s' % ('IZLEMEDE' if st['item_hp'] else 'KAPALI'),
+         '  oto-pot esyasi SP (72727-30...)    : %s' % ('IZLEMEDE' if st['item_sp'] else 'KAPALI')]
+    L.append('---')
+    L.append('kullanim: autopot hp 80 | autopot mp 80 | autopot 0')
+    L.append('oto-pot esyasi: autopot_item hp | autopot_item mp | autopot_item 0')
+    _write('autopot', chr(10).join(L) + chr(10))
+
+def autopot(arg='durum', pct=80):
+    """OTOMATIK POT v4.7 (kullanici istegi yeni sema):
+    autopot hp 80   -> can %80 ALTINA dusunce NORMAL kirmizi pot bas
+                       (27001/27002/27003 - oto-pot esyasi HARIC, surekli)
+    autopot mp 80   -> mana %80 altinda NORMAL mavi pot (27004/27005/27006)
+    autopot         -> durum raporu
+    autopot 0       -> hepsini kapat (oto-pot esyasi izlemesi dahil)
+    oto-pot ESYASI (72724 gibi) icin: autopot_item hp | autopot_item mp"""
     try:
         if not _ingame():
             _write('autopot', 'HATA: oyunda degilsin\n')
             return
-        m = int(mode)
-        if m:
+        a = str(arg).strip().lower()
+        if a in ('0', 'kapat', 'off', 'kapa'):
+            for k in ('hp', 'sp', 'item_hp', 'item_sp'):
+                _AUTOPOT[k] = 0
+            _write('autopot', 'OK: AUTOPOT TAMAMEN KAPALI (can/mana pot + oto-pot esyasi izlemesi)')
+            return
+        if a == 'hp':
             try:
-                _AUTOPOT['hp'] = max(5, min(95, int(hp_pct)))
+                p = max(5, min(95, int(pct)))
             except:
-                _AUTOPOT['hp'] = 50
-            try:
-                _AUTOPOT['sp'] = max(5, min(95, int(sp_pct)))
-            except:
-                _AUTOPOT['sp'] = 30
-            _AUTOPOT['on'] = 1
+                p = 80
+            _AUTOPOT['hp'] = p
             if _AUTOPOT['win'] is None:
                 _AUTOPOT['win'] = _AutoPotWnd()
-            _write('autopot', 'OK: AUTOPOT ACIK | can<' + str(_AUTOPOT['hp']) + 'PCT altinda kirmizi pot (27001-3) | mana<' + str(_AUTOPOT['sp']) + 'PCT altinda mavi pot (27004-6)\npot al: /i 27001 200 + /i 27004 200 | kapat: autopot 0')
-        else:
-            _AUTOPOT['on'] = 0
+            _write('autopot', 'OK: CAN pot AKTIF - %%%d altinda NORMAL kirmizi pot (27001-3) surekli basilir\nmana icin: autopot mp <pct> | kapat: autopot hp 0 (veya autopot 0 hepsi)' % p)
+        elif a in ('mp', 'sp', 'mana'):
             try:
-                if _AUTOPOT['win'] is not None:
-                    _AUTOPOT['win'].Hide()
-                    _AUTOPOT['win'].Destroy()
+                p = max(5, min(95, int(pct)))
             except:
-                pass
-            _AUTOPOT['win'] = None
-            _write('autopot', 'OK: AUTOPOT KAPALI')
+                p = 80
+            _AUTOPOT['sp'] = p
+            if _AUTOPOT['win'] is None:
+                _AUTOPOT['win'] = _AutoPotWnd()
+            _write('autopot', 'OK: MANA pot AKTIF - %%%d altinda NORMAL mavi pot (27004-6) surekli basilir\ncan icin: autopot hp <pct> | kapat: autopot mp 0 (veya autopot 0 hepsi)' % p)
+        else:
+            _autopot_status()
     except Exception, e:
         _write('autopot', 'HATA ' + _fmt_error(e) + '\n')
+
+def autopot_item(arg='?'):
+    """OTO-POT ESYASI v4.7 (kullanici istegi - ornek esya 72724):
+    autopot_item hp -> 72723-72726 (+76021-2, 79012) bulur; PASIF ise basar
+                       (AKTIF ise basmaz - gerek yok). Biri bitince 3sn
+                       icinde yenisini otomatik basar.
+    autopot_item mp -> 72727-72730 (+76004-5, 79013) ayni sekilde.
+    autopot_item 0  -> izlemeyi kapat.
+    AKTIFLIK KANIT: uiInventory.py - metinSocket[0] != 0 = esya aktif."""
+    try:
+        if not _ingame():
+            _write('autopot_item', 'HATA: oyunda degilsin\n')
+            return
+        a = str(arg).strip().lower()
+        if a in ('0', 'kapat', 'off'):
+            _AUTOPOT['item_hp'] = 0
+            _AUTOPOT['item_sp'] = 0
+            _write('autopot_item', 'OK: oto-pot esyasi izlemesi KAPALI')
+            return
+        if a == 'hp':
+            _AUTOPOT['item_hp'] = 1
+            if _AUTOPOT['win'] is None:
+                _AUTOPOT['win'] = _AutoPotWnd()
+            _autopot_item_check('hp')
+            _write('autopot_item', 'OK: HP oto-pot esyasi IZLEMEDE (72723-6 + 76021-2 + 79012)\nesya PASIFSE hemen basildi; AKTIFSE dokunulmadi (gerek yok).\nEsya bitince yenisi otomatik basilir (3sn kontrol).\nkapat: autopot_item 0')
+        elif a in ('mp', 'sp', 'mana'):
+            _AUTOPOT['item_sp'] = 1
+            if _AUTOPOT['win'] is None:
+                _AUTOPOT['win'] = _AutoPotWnd()
+            _autopot_item_check('sp')
+            _write('autopot_item', 'OK: SP oto-pot esyasi IZLEMEDE (72727-30 + 76004-5 + 79013)\nesya PASIFSE hemen basildi; AKTIFSE dokunulmadi (gerek yok).\nkapat: autopot_item 0')
+        else:
+            _autopot_status()
+    except Exception, e:
+        _write('autopot_item', 'HATA ' + _fmt_error(e) + '\n')
 
 # --- COMBO (surekli vurus - 'damage animasyonu' tekniği) --------------------
 def combo(m):
@@ -6357,6 +6285,472 @@ def efsun_all():
     except Exception, e:
         _write('efsun', 'HATA ' + _fmt_error(e) + '\n')
 
+
+# ===========================================================================
+# v4.7 ENVANTER YONETIMI (kullanici istegi - saha testi 13):
+#   slots              -> kac sekme/slot, doluluk %, kalan bos slot
+#   selljunk           -> cop esyalari yakindaki NPC dukkanina sat
+#                         (SADECE cop listesindekiler; EFSUNLU ASLA satilmaz)
+#   selljunk add/del/list/name -> cop listesini yonet (junklist.txt)
+#   sellall [force]    -> envanterin TAMAMINI sat (efsunlular yine atlanir;
+#                         'force' ile efsunlular dahil - DIKKAT!)
+#   dropall            -> envanterin tamamini YERE AT (tek tek - bazi
+#                         sunucular toplu atmayi reddeder)
+# KANITLAR: m2k Inventorymanager.py (shop.IsOpen + net.SendShopSellPacket,
+#   xrange(0,90) + net.SendItemDropPacket) + uiShop.py:231
+#   (net.SendShopSellPacketNew(slotPos, count)) + interfacemodule.py:720
+#   OpenShopDialog(vid) + ItemUse.py net.SendOnClickPacket(vid) kanitlari.
+# ===========================================================================
+JUNK_PATH = r'C:\MaxExec\junklist.txt'
+_JUNK = {'vnums': None, 'names': []}
+
+def _junk_defaults():
+    """cop varsayilani: baliklar (FISH_LIVE/FISH_DEAD kopyasi - literal,
+    siralama bagimliligi olmasin diye burada yazili)."""
+    vs = []
+    for v in range(27803, 27824):
+        vs.append(v)            # canli baliklar
+    vs.append(27987)
+    for v in range(27833, 27854):
+        vs.append(v)            # olu balik iskeletleri
+    vs.append(27802)            # kucuk balik (yemluk)
+    return vs
+
+def _junk_load():
+    if _JUNK['vnums'] is not None:
+        return _JUNK['vnums']
+    vs = _junk_defaults()
+    try:
+        f = open(JUNK_PATH, 'r')
+        for ln in f.readlines():
+            ln = ln.strip()
+            if not ln or ln.startswith('#'):
+                continue
+            if ln.lower().startswith('v '):
+                try:
+                    vs.append(int(ln[2:].strip()))
+                except:
+                    pass
+            elif ln.lower().startswith('n '):
+                _JUNK['names'].append(ln[2:].strip().lower())
+        f.close()
+    except:
+        pass
+    _JUNK['vnums'] = vs
+    return vs
+
+def _junk_save():
+    try:
+        f = open(JUNK_PATH, 'w')
+        f.write('# PLUSMAXGOD cop-esya listesi (selljunk bunlari satar)\n')
+        f.write('# v <vnum>   -> vnum ekle\n')
+        f.write('# n <isim>   -> isim icerek esya ekle (kucuk harf)\n')
+        defs = _junk_defaults()
+        for v in _junk_load():
+            if v not in defs:
+                f.write('v %d\n' % v)
+        for nm in _JUNK['names']:
+            f.write('n %s\n' % nm)
+        f.close()
+    except:
+        pass
+
+def _is_junk(vnum):
+    vnum = int(vnum)
+    if vnum in _junk_load():
+        return True
+    if _JUNK['names']:
+        nm = _item_name(vnum).lower()
+        for pat in _JUNK['names']:
+            if pat and pat in nm:
+                return True
+    return False
+
+def _has_efsun(slot):
+    """slottaki esya EFSUN (bonus) tasiyor mu? (efsunbotu.py kaniti:
+    GetItemAttribute index 0-4 normal + 5-6 BONUS). SATMA/ATMA guvenligi."""
+    import player
+    for i in range(7):
+        try:
+            a = player.GetItemAttribute(slot, i)
+            if a and int(a[0]) != 0:
+                return True
+        except:
+            return False
+    return False
+
+def slots():
+    """ENVANTER OZETI (v4.7 - kullanici istegi): kac sekme, kac slot, dolu
+    olup olmadigi, kac slot kaldi, yuzde kac dolu. Kanit:
+    player.INVENTORY_PAGE_COUNT / INVENTORY_PAGE_SIZE /
+    INVENTORY_SLOT_COUNT (canli katalog) + GetElk."""
+    try:
+        if not _ingame():
+            _write('slots', 'HATA: oyunda degilsin (once waitfor GameWindow 60)\n')
+            return
+        import player
+        try:
+            pc = int(player.INVENTORY_PAGE_COUNT)
+        except:
+            pc = 2
+        try:
+            ps = int(player.INVENTORY_PAGE_SIZE)
+        except:
+            ps = 45
+        try:
+            tot = int(player.INVENTORY_SLOT_COUNT)
+        except:
+            tot = pc * ps
+        L = ['ENVANTER DURUMU (v4.7)']
+        try:
+            L.append('yang: %d' % int(player.GetElk()))
+        except:
+            pass
+        L.append('envanter sekmeleri: %d | sekme boyu: %d slot | TOPLAM: %d slot' % (pc, ps, tot))
+        full = 0
+        efs = 0
+        for pg in range(pc):
+            base = pg * ps
+            top = min(base + ps, tot)
+            if top <= base:
+                continue
+            n = 0
+            ne = 0
+            for s in range(base, top):
+                try:
+                    v = int(player.GetItemIndex(s))
+                except:
+                    v = 0
+                if v <= 0:
+                    continue
+                n += 1
+                if _has_efsun(s):
+                    ne += 1
+            full += n
+            efs += ne
+            kalan = (top - base) - n
+            pct = (100 * n) / (top - base)
+            tag = '  <-- DOLU!' if kalan == 0 else ''
+            L.append('  sekme %d: slot %d..%d  dolu=%d  bos=%d  %%%d%s  efsunlu=%d' % (pg, base, top - 1, n, kalan, pct, tag, ne))
+        pct = (100 * full) / tot if tot > 0 else 0
+        L.append('---')
+        L.append('TOPLAM: %d / %d slot dolu  (%%%d)  BOS KALAN: %d  efsunlu: %d' % (full, tot, pct, tot - full, efs))
+        if tot - full == 0:
+            L.append('!! ENVANTER TAMAMEN DOLU - cop sat: selljunk | hepsini sat: sellall')
+        L.append('detay: inv <sekme> | efsunlar: efsun all | cop sat: selljunk | tumunu sat: sellall | yere at: dropall')
+        _write('slots', '\n'.join(L) + '\n')
+    except Exception, e:
+        _write('slots', 'HATA ' + _fmt_error(e) + '\n')
+
+def _shop_npc_near(maxdist=3500):
+    """yakindaki dukkan acilabilir NPC (instance tip=1) vid'si; yoksa 0.
+    Kanit: ItemUse.py:553 net.SendOnClickPacket(vid) + near taramasi."""
+    try:
+        import chr
+        me = _my_vid()
+        myp = chr.GetPixelPosition(me)
+        mx, my = int(myp[0]), int(myp[1])
+        best = 0
+        bd = int(maxdist) * int(maxdist)
+        for v, t, px, py in _near_scan_range(1, 30000):
+            if v == me or t != 1:
+                continue
+            dx = px - mx; dy = py - my
+            d2 = dx * dx + dy * dy
+            if d2 < bd:
+                bd = d2
+                best = v
+        return best
+    except:
+        return 0
+
+_SELL = {'win': None, 'on': 0, 'mode': 'junk', 'force': 0, 'cur': 0,
+         'pass': 0, 't0': 0.0, 'n': 0, 'skip': 0, 'waitnpc': 0, 't_npc': 0.0}
+
+def _sell_done():
+    st = _SELL
+    st['on'] = 0
+    try:
+        if st['win'] is not None:
+            st['win'].Hide(); st['win'].Destroy()
+    except:
+        pass
+    st['win'] = None
+    _live('SELL: BITTI - %d satildi, %d atlandi' % (st['n'], st['skip']))
+    _write(('sellall' if st['mode'] == 'all' else 'selljunk'), 'OK: SATMA BITTI\nsatilan=%d  atlanan=%d (efsunlu/cop-olmayan)\nkontrol: slots | yang: slots yaz' % (st['n'], st['skip']))
+
+def _sell_stop_err(msg):
+    st = _SELL
+    st['on'] = 0
+    try:
+        if st['win'] is not None:
+            st['win'].Hide(); st['win'].Destroy()
+    except:
+        pass
+    st['win'] = None
+    _live('SELL DURDU: ' + msg)
+    _write(('sellall' if st['mode'] == 'all' else 'selljunk'), 'DURDU: ' + msg + '\nmanuel: NPC yakina goto <x> <y> ile yurus, sonra tekrar dene')
+
+class _SellWnd(ui_WindowBase):
+    def __init__(self):
+        ui_WindowBase.__init__(self)
+        self.Show()
+
+    def OnUpdate(self):
+        try:
+            import time, player, net, shop
+            st = _SELL
+            if not st['on']:
+                return
+            now = time.time()
+            # faz 1: dukkan acik mi? degilse yakindaki NPC'ye tikla, bekle
+            try:
+                opened = int(shop.IsOpen())
+            except:
+                opened = 0
+            if not opened:
+                if st['waitnpc'] == 0:
+                    st['waitnpc'] = 1
+                    st['t_npc'] = now
+                    vid = _shop_npc_near()
+                    if vid > 0:
+                        _live('SELL: NPC dukkani aciliyor (vid=%d) - 6sn bekleniyor' % vid)
+                        try:
+                            net.SendOnClickPacket(vid)
+                        except:
+                            pass
+                    else:
+                        _sell_stop_err('yakinda dukkanli NPC bulunamadi (3500px) - once yanas')
+                        return
+                if now - st['t_npc'] > 6.0:
+                    _sell_stop_err('dukkan acilmadi (NPC dukkanli olmayabilir/uzak olabilir)')
+                return
+            st['waitnpc'] = 0
+            # faz 2: TEK TEK sat (0.4sn arayla - sunucu dostu)
+            if now - st['t0'] < 0.4:
+                return
+            st['t0'] = now
+            try:
+                tot = int(player.INVENTORY_SLOT_COUNT)
+            except:
+                tot = 90
+            if st['cur'] >= tot:
+                # tur bitti - 2. tur dogrulama (sunucu reddettiyse tekrar dene)
+                st['pass'] += 1
+                st['cur'] = 0
+                if st['pass'] >= 3:
+                    _sell_done()
+                return
+            s = st['cur']
+            try:
+                v = int(player.GetItemIndex(s))
+            except:
+                v = 0
+            if v <= 0:
+                st['cur'] = s + 1
+                return
+            sellable = True
+            if _has_efsun(s) and not st['force']:
+                sellable = False
+            elif st['mode'] == 'junk' and not _is_junk(v):
+                sellable = False
+            if not sellable:
+                st['skip'] += 1
+                st['cur'] = s + 1
+                return
+            try:
+                cnt = int(player.GetItemCount(s))
+            except:
+                cnt = 1
+            if cnt < 1:
+                cnt = 1
+            sent = 0
+            try:
+                net.SendShopSellPacketNew(s, cnt)
+                sent = 1
+            except:
+                try:
+                    net.SendShopSellPacket(s)
+                    sent = 1
+                except:
+                    pass
+            if sent:
+                st['n'] += 1
+                if st['n'] % 10 == 1:
+                    _live('SELL: %d esya satildi (%d atlandi)...' % (st['n'], st['skip']))
+            st['cur'] = s + 1
+        except Exception, e:
+            _live('SELL hatasi: ' + _fmt_error(e))
+
+def _sell_start(mode, force=0):
+    try:
+        if not _ingame():
+            _write('selljunk', 'HATA: oyunda degilsin\n')
+            return
+        _SELL.update({'on': 1, 'mode': mode, 'force': force, 'cur': 0,
+                      'pass': 0, 't0': 0.0, 'n': 0, 'skip': 0,
+                      'waitnpc': 0, 't_npc': 0.0})
+        if _SELL['win'] is None:
+            _SELL['win'] = _SellWnd()
+        if mode == 'junk':
+            jl = _junk_load()
+            _write('selljunk', 'OK: COP SATMA BASLADI\nakis: yakindaki NPC dukkani otomatik acilir (yoksa yurumen gerekir) ->\ncop esyalar TEK TEK satilir (0.4sn arayla)\ncop listesi: %d vnum + %d isim kalibi (baliklar varsayilan)\nEFSUNLU esyalar ASLA satilmaz!\nliste yonetimi: selljunk list | selljunk add <vnum> | selljunk name <isim>\nbitince: slots ile kontrol et' % (len(jl), len(_JUNK['names'])))
+        else:
+            extra = ' (EFsunlular DAHIL - DIKKAT!)' if force else '\nefsunlu esyalar ATLANIR (korumali mod) - gercekten hepsi: sellall force'
+            _write('sellall', 'OK: TUM ENVANTER SATISI BASLADI%s' % extra)
+    except Exception, e:
+        _write('selljunk', 'HATA ' + _fmt_error(e) + '\n')
+
+def selljunk(sub=''):
+    """COP ESYA SATISI (v4.7 - kullanici istegi): 'envanterdeki cop esyalari
+    cevredeki npcye sat (sadece belirli olanlar); efsunlu olanlari satma'.
+    Cop listesi = baliklar (varsayilan) + junklist.txt'teki vnum/isimler.
+    selljunk            -> satmaya basla (NPC dukkani otomatik acmayi dener)
+    selljunk list       -> cop listesini goster
+    selljunk add <vnum> -> vnum'u cop listesine ekle (kalici: junklist.txt)
+    selljunk del <vnum> -> cikar
+    selljunk name <isim> -> isim icerek esyalari cop say (kucuk harf)"""
+    try:
+        a = str(sub).strip()
+        p = a.split()
+        if not a:
+            _sell_start('junk')
+            return
+        k = p[0].lower()
+        if k == 'list':
+            jl = _junk_load()
+            L = ['COP LISTESI (selljunk bunlari satar)', 'vnum sayisi: %d (varsayilan: baliklar)' % len(jl)]
+            defs = _junk_defaults()
+            extra = [v for v in jl if v not in defs]
+            if extra:
+                L.append('eklenen vnumlar: %s' % ' '.join([str(v) for v in extra]))
+            if _JUNK['names']:
+                L.append('isim kaliplari: %s' % ' | '.join(_JUNK['names']))
+            L.append('dosya: %s' % JUNK_PATH)
+            L.append('ekle: selljunk add <vnum> | isimle: selljunk name <kelime>')
+            _write('selljunk', '\n'.join(L) + '\n')
+        elif k == 'add':
+            v = int(p[1])
+            if v not in _junk_load():
+                _JUNK['vnums'].append(v)
+            _junk_save()
+            _write('selljunk', 'OK: vnum %d cop listesinde (%s)' % (v, JUNK_PATH))
+        elif k == 'del':
+            v = int(p[1])
+            if v in _junk_load():
+                _JUNK['vnums'].remove(v)
+            _junk_save()
+            _write('selljunk', 'OK: vnum %d listeden cikarildi' % v)
+        elif k == 'name':
+            nm = a[5:].strip().lower()
+            if nm and nm not in _JUNK['names']:
+                _JUNK['names'].append(nm)
+            _junk_save()
+            _write('selljunk', 'OK: isim kalibi "%s" eklendi (esya isminde gecen satar)' % nm)
+        else:
+            _write('selljunk', 'kullanim: selljunk | selljunk list | selljunk add <vnum> | selljunk name <isim>\n')
+    except Exception, e:
+        _write('selljunk', 'HATA ' + _fmt_error(e) + '\n')
+
+def sellall(force=''):
+    """TUM ENVANTERI NPC'YE SAT (v4.7 - kullanici istegi): 'envanterin
+    hepsini npcye sat'. EFSUNLU esyalar yine ATLANIR (kayip riski!) -
+    gercekten tamami: sellall force. NPC dukkani selljunk gibi otomatik
+    acilir."""
+    try:
+        f = 1 if str(force).strip().lower() in ('force', 'f', 'hepsi') else 0
+        _sell_start('all', f)
+    except Exception, e:
+        _write('sellall', 'HATA ' + _fmt_error(e) + '\n')
+
+_DROP = {'win': None, 'on': 0, 'cur': 0, 'pass': 0, 't0': 0.0, 'n': 0}
+
+def _drop_done():
+    st = _DROP
+    st['on'] = 0
+    try:
+        if st['win'] is not None:
+            st['win'].Hide(); st['win'].Destroy()
+    except:
+        pass
+    st['win'] = None
+    _live('DROPALL: BITTI - %d esya atildi' % st['n'])
+    _write('dropall', 'OK: ATMA BITTI - %d slot yere atildi\n(bazi sunucular reddedenleri atlamis olabilir - kontrol: slots)' % st['n'])
+
+class _DropAllWnd(ui_WindowBase):
+    def __init__(self):
+        ui_WindowBase.__init__(self)
+        self.Show()
+
+    def OnUpdate(self):
+        try:
+            import time, player, net
+            st = _DROP
+            if not st['on']:
+                return
+            now = time.time()
+            if now - st['t0'] < 0.45:
+                return
+            st['t0'] = now
+            try:
+                tot = int(player.INVENTORY_SLOT_COUNT)
+            except:
+                tot = 90
+            if st['cur'] >= tot:
+                st['pass'] += 1
+                st['cur'] = 0
+                if st['pass'] >= 3:
+                    _drop_done()
+                return
+            s = st['cur']
+            try:
+                v = int(player.GetItemIndex(s))
+            except:
+                v = 0
+            if v <= 0:
+                st['cur'] = s + 1
+                return
+            try:
+                cnt = int(player.GetItemCount(s))
+            except:
+                cnt = 1
+            if cnt < 1:
+                cnt = 1
+            sent = 0
+            try:
+                net.SendItemDropPacketNew(s, cnt)
+                sent = 1
+            except:
+                try:
+                    net.SendItemDropPacket(s)
+                    sent = 1
+                except:
+                    pass
+            if sent:
+                st['n'] += 1
+                if st['n'] % 10 == 1:
+                    _live('DROPALL: %d esya atildi...' % st['n'])
+            st['cur'] = s + 1
+        except Exception, e:
+            _live('DROPALL hatasi: ' + _fmt_error(e))
+
+def dropall():
+    """TUM ENVANTERI YERE AT (v4.7 - kullanici istegi): 'envanterin hepsini
+    yere at (ama bazi svlerde hepsini atmayabiliyor tek tek atacak)' ->
+    esyalar TEK TEK atilir (0.45sn arayla - sunucu reddetse bile 3 tur
+    dogrulama tekrari). EFsunlular dahil HER SEY atilir - geri alinamaz!"""
+    try:
+        if not _ingame():
+            _write('dropall', 'HATA: oyunda degilsin\n')
+            return
+        _DROP.update({'on': 1, 'cur': 0, 'pass': 0, 't0': 0.0, 'n': 0})
+        if _DROP['win'] is None:
+            _DROP['win'] = _DropAllWnd()
+        _write('dropall', 'OK: TUM ENVANTER YERE ATILIYOR\ntek tek atilir (0.45sn arayla) - bazi sunucular toplu atmayi reddeder\nefsunlular DAHIL her sey atilir (GERI ALINAMAZ!)\n3 tur dogrulama: sunucu reddedenler tekrar denenir')
+        _live('DROPALL: basladi - tek tek atiliyor')
+    except Exception, e:
+        _write('dropall', 'HATA ' + _fmt_error(e) + '\n')
+
 # ---------------------------------------------------------------------------
 # modul kaydi - DLL snippet'leri `import maxlib; maxlib.xxx()` der
 # ---------------------------------------------------------------------------
@@ -6378,10 +6772,19 @@ _install_error_hooks()   # oto hata izleme - yanlis sifre vb. last_error.txt'ye
 # v4.4 KULLANICI ISTEGI: oyuna girer girmez konsola uzun yazi dizileri
 # (balik/komut listesi) basilmasin. Tam rapor DOSYADA:
 #   results\last_pylib_load.txt  |  konsola sadece 1 kisa satir:
+# v4.7: live.txt oturum basinda TEMIZ baslar - DLL acilisinda konsol
+# ESKI oturumun [LIVE] balik satirlarini geri oynatiyordu (kullanici raporu)
+try:
+    _lf = open(LIVE_PATH, 'w')
+    _lf.close()
+except:
+    pass
+
 _write('pylib_load',
        'PLUSMAXGOD_PyScript v%s yuklendi (ANA THREAD)' % PYLIB_VERSION + chr(10) +
-       'v4.6: near artik METIN taslarini bulur | speed/aspeed dongulu | antifly saldirisiz' + chr(10) +
-       'YENI: warp antistun antislow autopot combo statdown skillupui statupui efsun' + chr(10) +
+       'v4.7: warp=LEGENDY yolu (sahne yeniden yuklenir) | otp1/otp2 (W tusu) | slots selljunk sellall dropall' + chr(10) +
+       'autopot hp/mp <pct> (normal pot) + autopot_item hp/mp (oto-pot esyasi 72723+)' + chr(10) +
+       'KALDIRILDI: speed/aspeed + chchange/relogin | dump: C modul API stub + pack.Get sysmodules yolu' + chr(10) +
        'v4.5: ui_WindowBase sira hatasi duzeltildi (v4.4 yuklenemeyip v3.2\'ye dusuyordu!)' + chr(10) +
        'v4.4 OZET: fishdelay/fishswap/fishswapnow/fishtp KALDIRILDI' + chr(10) +
        'YENI: morphtarget cloneplayer fakemount speed aspeed statup skillup antifly antiflyeffect itemfind iteminfo attr useon efsunsw gotake' + chr(10) +
