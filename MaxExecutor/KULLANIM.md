@@ -2,7 +2,10 @@
 
 > Paket içeriği, kurulum, komutlar, giriş akışı, sorun giderme — hepsi bu dosyada.
 > Mimari gerekçe için: `reports/DEV_REAL_BINARY_TEST.md` (RC18/RC19) + `reports/DEV_GIL_ANALYSIS.md` (RC1-RC17).
-> Son güncelleme: **Oturum 15 — MaxExecutor v2.0 PLUSMAXGOD / pylib v4.4 (saha testi 10 paketi)**
+> Son güncelleme: **Oturum 16 — MaxExecutor v2.1 PLUSMAXGOD / pylib v4.5 (saha testi 11: "hatalı sistem" kök-neden onarımı)**
+>
+> **v2.1/v4.5 ÖZET — SAHA TESTİ 11 KÖK NEDENİ (önceki v2.0 neden hiçbir şey çalışmadı):**
+> v4.4 pylib **HİÇ yüklenemiyordu**: yeni eklenen `_NearScanWnd`/`_GoTakeWnd`/`_AntiFlyWnd` sınıfları, `ui_WindowBase` tabanının tanımından (dosyanın ilerisinde, v4.2 bölümündeydi) **ÖNCE** kullanılıyordu → import anında `NameError` → pylib exec'i çöktü → BootImport **sessizce** eski `pylib.py v3.2`'ye düştü → `itemscanall`/`morph`/`otp`/`speed`/`morphtarget`/`fakemount` = AttributeError ("PYTHON HATASI"), `serverlist` eski mesaj, `near` = `_my_vid` hatası, her komutta "pylib v3.2 yüklendi" banner tekrarı. **v4.5 çözümü:** taban tanımı sınıfların ÜSTÜNE taşındı + `import ui` korumalı (ui yüklenmemişse yedek taban — dongu pencereleri zaten komut anında kurulur). **DLL v2.1 çözümleri:** (1) BootImport yükseltme denemesi **oturum başına 1 kez** (v2.0'ta her komutta yeniden deniyordu = banner spam + konsol karışıklığı); (2) yükleme başarısızsa **tam traceback `results\last_pylib_fail.txt`'ye yazılır** — sessiz düşüş artık imkansız; (3) ölü `fishtp` kalıntısı ("tek atış bitti") tamamen temizlendi. **Komut seti v2.0 ile aynı (91 komut, hepsi pylib'te var — otomatik çapraz-kontrol edildi).** Kurulum: DLL'i değiştir → yeniden enjekte → `C:\MaxExec\PLUSMAXGOD_PyScript.py` otomatik v4.5'e yükseltilir (elle kopyalama GEREKMEZ; bundle'daki .py dosyası manuel yedek için).
 >
 > **v2.0/v4.4 ÖZET — saha testi 10 (kullanıcı raporları):**
 > **KALDIRILDI:** `fishdelay` `fishswap` `fishswapnow` `fishtp` (çalışmıyordu/istenmedi; fishdelay'in auto-öğrenici mantığı dahili olarak yaşıyor).
@@ -32,7 +35,7 @@
 |---|---|---|
 | `bin/MaxExecutor.dll` | **Ana proje.** Oyun içine enjekte edilen 32-bit DLL. Ana thread'de (WndProc + SetTimer) Python çalıştırır. Hook YOK, SHM YOK, arka-plan PyRun YOK. **v1.8: PLUSMAXGOD komut ailesi (oyun-ici + kesif) + surum-ongoer BootImport + dump klasoru.** | Bu repo — derlendi (32-bit PE, `-O2`; zig cc `x86-windows-gnu`) |
 | `bin/MaxInject.exe` | DLL enjektörü. `metin2client.exe` sürecini bulur, DLL'i LoadLibrary ile yükler. | Bu repo — derlendi |
-| `PLUSMAXGOD_PyScript.py` | **pylib v4.1 (maxlib).** DLL içine gömülü; diskte eksik/eskiyse otomatik yazılır. Tüm komutlar: menü (login/charlist/mkchar...) + oyun-ici (stat/inv/tp...) + kesif (pyfiles/pydumpall/plusquest). | Bu repo |
+| `PLUSMAXGOD_PyScript.py` | **pylib v4.5 (maxlib).** DLL içine gömülü; diskte eksik/eskiyse otomatik yazılır. Tüm komutlar: menü (login/charlist/mkchar...) + oyun-ici (stat/inv/tp...) + kesif (pyfiles/pydumpall/plusquest). | Bu repo |
 | `pylib.py` | Eski v3.2 adı — YEDEK yolu olarak kabul edilir (BootImport önce PLUSMAXGOD'u dener). Silinebilir; DLL yeniden yazmaz. | Bu repo |
 | `MaximumPyScript_STABLE.py` | Eski mimarinin (SHM'li v17) RC12/RC13/RC14 yamalı hali. Alternatif yol. | Bu repo |
 | `MaxExecutor.cpp` / `MaxInject.cpp` | Kaynak kodlar (değişiklik yaparsan yeniden derlersin) | Bu repo |

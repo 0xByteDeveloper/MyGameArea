@@ -1,8 +1,20 @@
 # -*- coding: utf-8 -*-
 """
 ===========================================================================
- PLUSMAXGOD_PyScript.py - MaxExecutor Ana-Thread Komut Kutuphanesi (v4.4)
- "PLUSMAXGOD" SURUMU - v4.3 tamami + saha testi 10 fix paketi
+ PLUSMAXGOD_PyScript.py - MaxExecutor Ana-Thread Komut Kutuphanesi (v4.5)
+ "PLUSMAXGOD" SURUMU - v4.4 tamami + v4.5 kok-neden onarimi
+ v4.5 DEGISIKLIKLER (saha testi 11 "hatali sistem" raporu - KOK NEDEN):
+   * v4.4 YUKLENEMIYORDU: yeni _NearScanWnd/_GoTakeWnd/_AntiFlyWnd
+     siniflari ui_WindowBase tanimindan ONCE kullaniyordu -> import
+     aninda NameError -> BootImport sessizce ESKI pylib.py v3.2'ye
+     dustu -> itemscanall/morph/otp/speed/morphtarget/fakemount
+     AttributeError + serverlist eski mesaji + near _my_vid hatasi.
+     COZUM: ui_WindowBase tanimi siniflarin ustune tasindi + import ui
+     korumali (ui yuklu degilse yedek taban).
+   * fishtp kalintisi (oneshot / "tek atis bitti") tamamen temizlendi.
+   * DLL v2.1 cifti: BootImport yukseltme denemesi oturum basina 1 kez;
+     basarisizlik TRACEBACK ile results\last_pylib_fail.txt'e yazilir.
+ (v4.4 icerigi aynen korundu)
 ===========================================================================
  v4.4 DEGISIKLIKLER (kullanici saha raporlari + NightTown dump + LegendySF
  Client/GameSource kanitlari):
@@ -251,7 +263,7 @@ DUMP_DIR   = r'C:\MaxExec\dump'   # v4.0: py dump + PLUSQuest_live buraya
 # SURUM ISARETI - DLL v1.8 bunu okur (FIX-19). PLUSMAXGOD_PyScript.py
 # degistirmeden bu satiri silme/degistirme! Eski pylib (v3.x) major 3
 # oldugu icin DLL v1.8 acilista KOSKOCA uyar basar.
-PYLIB_VERSION = '4.4'
+PYLIB_VERSION = '4.5'
 
 RACE_TABLE = {
     0: ('Warrior', 'E'), 1: ('Ninja', 'K'), 2: ('Sura', 'E'), 3: ('Shaman', 'K'),
@@ -1866,6 +1878,30 @@ def near(quickmax=50000):
     except Exception, e:
         _write('near', 'HATA ' + _fmt_error(e) + '\n')
 
+# ---------------------------------------------------------------------------
+# v4.5 KOK-NEDEN DUZELTISI: ui taban sinifi buraya (siniflardan ONCE)
+# tasindi. v4.4'te 'ui_WindowBase = _ui_mod.ScriptWindow' tanimi asagida
+# (v4.2 bolumunde) idi; _NearScanWnd/_GoTakeWnd/_AntiFlyWnd gibi v4.4
+# siniflari tanimdan ONCE kullaniyordu -> import sirasinda NameError ->
+# exec basarisiz -> BootImport eski pylib.py v3.2'ye dusuyordu ('PYTHON
+# HATASI' ailesinin gercek kok nedeni). Artik sira: TANIM -> siniflar.
+# 'import ui' korumali: ui yuklu degilse yedek taban kullanilir (dongu
+# pencereleri zaten KOMUT aninda kurulur - o zamana ui kesin yukludur).
+# ---------------------------------------------------------------------------
+try:
+    import ui as _ui_mod
+except Exception:
+    _ui_mod = None
+try:
+    ui_WindowBase = _ui_mod.ScriptWindow
+except Exception:
+    class ui_WindowBase(object):   # v4.5 yedek taban (ui sonra yuklenir)
+        def __init__(self): pass
+        def Show(self): pass
+        def Hide(self): pass
+        def Destroy(self): pass
+        def SetTop(self): pass
+
 _NEAR = {'win': None, 'phase': 0, 'rows': {}}
 
 class _NearScanWnd(ui_WindowBase):
@@ -2881,8 +2917,7 @@ pyscanall = plusquest   # takma ad - ayni isi yapar
 # deseni: Pickup.py/fishbot1.0.py kaniti - ana thread guvenli, kilitlenme
 # yok; ayri thread KULLANILMAZ)
 # ===========================================================================
-import ui as _ui_mod
-ui_WindowBase = _ui_mod.ScriptWindow
+# (v4.5 DUZELT: ui_WindowBase tanimi bu konumdan yukariya tasindi)
 
 # ===========================================================================
 # v4.2 - GOD MOD PAKETI (saha testi 9 istekleri)
@@ -4212,7 +4247,7 @@ _FISH = {
     'delay': 'auto', 'cur_delay': 0,
     'keep': 0, 'spot': None, 'home': None,
     'bite_t': 0.0, 'bite_fish': '', 'bite_isfish': 0,
-    'last_result': '', 'cast_t': 0.0, 'bait_t': 0.0, 'oneshot': 0, 'pill': 0,
+    'last_result': '', 'cast_t': 0.0, 'bait_t': 0.0, 'pill': 0,
     'stats': {'atis': 0, 'isirtma': 0, 'ok': 0, 'hata': 0, 'birak': 0, 'yerhata': 0, 'asim': 0},
     'inv0': 0, 'hooks': [], 'auto_i': 0, 'learn': {},
 }
@@ -4615,9 +4650,6 @@ class _FishLoopWnd(ui_WindowBase):
                         v[0] = v[0] + 1
                         _fish_learn_save()
                 st['bite_fish'] = ''
-                if st['oneshot']:
-                    _fish_finish_oneshot()
-                    return
                 st['state'] = 'pre'; st['t0'] = now
                 _live(_fish_status_line())
                 return
@@ -4665,27 +4697,8 @@ def _start_fish(res):
         _write(res, 'HATA ' + _fmt_error(e) + '\n')
 
 def fish():
-    _FISH['oneshot'] = 0
     _start_fish('fish')
 
-def _fish_finish_oneshot():
-    _FISH['oneshot'] = 0
-    _FISH['state'] = 'stop'
-    _fish_remove_hooks()
-    try:
-        import player
-        player.SetAttackKeyState(0)
-    except:
-        pass
-    try:
-        if _FISH['win'] is not None:
-            _FISH['win'].Hide()
-            _FISH['win'].Destroy()
-    except:
-        pass
-    _FISH['win'] = None
-    _write('fish', 'BITTI: tek-atis modu tamam\n' + _fish_status_line() + '\nsonuc: ' + (_FISH['last_result'] or '?'))
-    _live('FISH: tek atis bitti | ' + _fish_status_line())
 
 def fishstop():
     try:
@@ -5693,6 +5706,7 @@ _install_error_hooks()   # oto hata izleme - yanlis sifre vb. last_error.txt'ye
 #   results\last_pylib_load.txt  |  konsola sadece 1 kisa satir:
 _write('pylib_load',
        'PLUSMAXGOD_PyScript v%s yuklendi (ANA THREAD)' % PYLIB_VERSION + chr(10) +
+       'v4.5: ui_WindowBase sira hatasi duzeltildi (v4.4 yuklenemeyip v3.2\'ye dusuyordu!)' + chr(10) +
        'v4.4 OZET: fishdelay/fishswap/fishswapnow/fishtp KALDIRILDI' + chr(10) +
        'YENI: morphtarget cloneplayer fakemount speed aspeed statup skillup antifly antiflyeffect itemfind iteminfo attr useon efsunsw gotake' + chr(10) +
        'DEGIS: near=genis vid taramasi + arka plan 4M | otp=attackkey+50ms | clone=Z+sac-fix | morph/spawn=gorsel tazeleme | relogin/chchange=ExitGame yolu' + chr(10) +

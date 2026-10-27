@@ -1,5 +1,7 @@
 # MaxExecutor — Ana-Thread Güvenli Python Executor (xgodmod4)
 
+> **v2.1 / pylib v4.5** — saha testi 11 kök-neden onarımı: v4.4'ün `ui_WindowBase` sıra hatası yüzünden HİÇ yüklenemeyip eski v3.2'ye sessizce düştüğü (`PYTHON HATASI` ailesi) düzeltildi; BootImport oturum-başına-1-kez + başarısızlık traceback'i `results\last_pylib_fail.txt`'ye yazıyor. Detay: KULLANIM.md üst bölümü.
+
 > **Yöntem:** WndProc subclass + dosya kuyruk + ana-thread `PyRun_SimpleString`
 > **Hook:** YOK · **Shared memory:** YOK · **Arka plan Python thread:** YOK
 > **Sürüm:** v2.0 PLUSMAXGOD (pylib v4.4 — saha testi 10: fish temizliği,

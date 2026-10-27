@@ -124,6 +124,17 @@
 //            basedir.txt ile tasinabilir (BASE_DIR\dump).
 //    FIX-35: SyncEmbeddedPylib yeni dosya adini yazar (PLUSMAXGOD_PyScript.py),
 //            eskisini PLUSMAXGOD_eski_v<surum>.py olarak yedekler.
+//  v2.1 "PLUSMAXGOD" (saha testi 11 - kok-neden onarimi, pylib v4.5 cifti):
+//     (1) KOK NEDEN: v4.4 pylib ICINDE sinif tabani (ui_WindowBase)
+//         tanimindan ONCE kullanildigi icin import aninda NameError
+//         yiyip HIC yuklenemiyordu -> BootImport sessizce eski
+//         pylib.py v3.2'ye dusuyordu -> itemscanall/morph/otp/speed/
+//         morphtarget/fakemount AttributeError + serverlist eski
+//         mesaji + near _my_vid hatasi. pylib v4.5'te tanim yukari
+//         tasindi; C++ tarafinda yukseltme denemesi oturum basina 1
+//         kez + basarisizlik last_pylib_fail.txt'e traceback yazar.
+//     (2) komut seti v2.0 ile ayni (91 maxlib cagrisi, tam kapli).
+//  v2.0 "PLUSMAXGOD" (saha testi 10 - GOD MOD paketi v3, pylib v4.4 cifti):
 //  v1.9 "PLUSMAXGOD" (saha testi 9 - GOD MOD paketi v2, pylib v4.2 cifti):
 //    FIX-36: CANLI CIKTI IZLEYICISI - C:\MaxExec\live.txt'yi 700ms'de bir
 //            okuyan ayri thread; yeni satirlar [LIVE] onekiyle konsola akar.
@@ -390,7 +401,7 @@ static void DrainQueue(void)
                 _snprintf(fp, MAX_PATH, "%s\\last_pyfail.txt", RESULT_DIR); fp[MAX_PATH-1]=0;
                 WriteFileAll(fp, std::string("PYTHON HATASI: ") + fd.cFileName +
                     "\nDetay: pyerr komutunu yaz (pyerr.log son satirlari).\n"
-                    "En sik neden: ESKI pylib - PLUSMAXGOD v4.4 ile degistir (bundle zip / GitHub)!\n");
+                    "En sik neden: ESKI pylib - PLUSMAXGOD v4.5 ile degistir (bundle zip / GitHub)!\n");
                 OutP("[MAXEXEC] !! PYTHON HATASI (%s) - detay icin: pyerr\n", fd.cFileName);
                 fflush(stdout);
             }
@@ -486,16 +497,32 @@ static void QRaw(const std::string& code)
 // ---------------------------------------------------------------------------
 static std::string BootImport(void)
 {
+    // v2.1 (saha testi 11 kok-neden onarimi):
+    //  (a) yukseltme denemesi OTURUM BASINA 1 KEZ - v2.0'ta her komutta
+    //      yeniden deniyordu; kirik pylib durumunda her komutta banner
+    //      tekrari + konsol karisikligi oluyordu.
+    //  (b) yukseltme BASARISIZSA artik results\last_pylib_fail.txt'e TAM
+    //      TRACEBACK yazilir - v4.4'teki sessiz dusus (ui_WindowBase sira
+    //      hatasi -> pylib.py v3.2'ye dusus) tespit edilemiyordu.
+    //  (c) son care pylib.py v3.2 yedek yolu korunur.
     std::string s;
     s += "try:\n"
          "    import maxlib\n"
          "    _mxv = int(str(getattr(maxlib, 'PYLIB_VERSION', '0')).split('.')[0])\n"
          "except Exception:\n"
          "    _mxv = 0\n";
-    s += "if _mxv < 4:\n"
+    s += "if _mxv < 4 and not globals().get('_MX_UPGRADE_TRIED', False):\n"
+         "    globals()['_MX_UPGRADE_TRIED'] = True\n"
          "    try:\n"
          "        exec(open(r'" + std::string(BASE_DIR) + "\\\\PLUSMAXGOD_PyScript.py').read())\n"
          "    except Exception:\n"
+         "        try:\n"
+         "            import traceback\n"
+         "            _f = open(r'" + std::string(RESULT_DIR) + "\\\\last_pylib_fail.txt', 'w')\n"
+         "            _f.write('PLUSMAXGOD_PyScript.py YUKLENEMEDI (DLL v2.1 / pylib v4.5) - TRACEBACK:\\n' + traceback.format_exc())\n"
+         "            _f.close()\n"
+         "        except Exception:\n"
+         "            pass\n"
          "        try:\n"
          "            exec(open(r'" + std::string(BASE_DIR) + "\\\\pylib.py').read())\n"
          "        except Exception:\n"
@@ -509,7 +536,7 @@ static std::string BootImport(void)
          "    maxlib._MX_OLD_WARNED = True\n"
          "    try:\n"
          "        import sys\n"
-         "        sys.stderr.write('!!! PYLIB ESKI v' + str(getattr(maxlib, 'PYLIB_VERSION', '?')) + ' - DLL v2.0 PLUSMAXGOD v4.4 ister! "
+         "        sys.stderr.write('!!! PYLIB ESKI v' + str(getattr(maxlib, 'PYLIB_VERSION', '?')) + ' - DLL v2.1 PLUSMAXGOD v4.5 ister! "
          "C:\\\\MaxExec\\\\PLUSMAXGOD_PyScript.py dosyasini yenisiyle degistir (bundle zip / GitHub) !!!\\\\n')\n"
          "    except Exception:\n"
          "        pass\n";
@@ -980,7 +1007,7 @@ static bool InitConsole(void)
         LogLine("CONOUT$ (stderr) yeniden acilamadi");
     setvbuf(stdout, NULL, _IONBF, 0);   // buffer'siz: crash olsa bile yazar
     setvbuf(stderr, NULL, _IONBF, 0);
-    SetConsoleTitleA("MaxExecutor v2.0 PLUSMAXGOD");
+    SetConsoleTitleA("MaxExecutor v2.1 PLUSMAXGOD");
     HWND cw = GetConsoleWindow();
     if (cw)
     {
@@ -1092,7 +1119,7 @@ static std::vector<std::string> SplitArgs(const std::string& line)
 
 static void PrintHelp(void)
 {
-    OutP("\n=== MaxExecutor v2.0 PLUSMAXGOD (oyun-ici + GOD MOD pylib v4.4) ===\n");
+    OutP("\n=== MaxExecutor v2.1 PLUSMAXGOD (oyun-ici + GOD MOD pylib v4.5) ===\n");
     OutP("  help                        : bu yardim\n");
     OutP("  status                      : anlik sahne/baglanti snapshot\n");
     OutP("  -- giris akisi (menu) --\n");
@@ -1153,7 +1180,9 @@ static void PrintHelp(void)
     OutP("  fishkeep <vnum|0>           : sadece hedef baligi tut\n");
     OutP("  fishspot <x> <y>|0          : su-noktasi modu (atis aninda suya, sonra geri)\n");
     OutP("  fishstat | fishtest | canli <mesaj>\n");
-    OutP("  (v4.4 not: fishdelay/fishswap/fishswapnow/fishtp KALDIRILDI)\n");
+    OutP("  (v4.4 not: fishdelay/fishswap/fishswapnow/fishtp KALDIRILDI;\n"
+         "   v4.5 not: pylib yukleme sira hatasi duzeltildi - onceki surum\n"
+         "   yuklenemeyip ESKI v3.2'ye dusuyordu, artik duzgun yuklenir)\n");
     OutP("  -- KESIF --\n");
     OutP("  pyfiles | pydump <ad> | pydumpall | pyscan <modul> | plusquest\n");
     OutP("  -- hata takibi --\n");
@@ -1257,8 +1286,8 @@ static DWORD WINAPI WorkerThread(LPVOID)
     const bool con = InitConsole();
 
     OutP("\n=============================================\n");
-    OutP("  MaxExecutor v2.0 PLUSMAXGOD - ana-thread executor\n");
-    OutP("  oyun-ici + kesif + GOD MOD v2 (pylib v4.4 cifti)\n");
+    OutP("  MaxExecutor v2.1 PLUSMAXGOD - ana-thread executor\n");
+    OutP("  oyun-ici + kesif + GOD MOD v2 (pylib v4.5 cifti)\n");
     OutP("  canli cikti: C:\\MaxExec\\live.txt izlenir -> [LIVE] akar\n");
     OutP("=============================================\n");
     if (!con)
@@ -1320,12 +1349,12 @@ static DWORD WINAPI WorkerThread(LPVOID)
                 char rp[MAX_PATH];
                 _snprintf(rp, MAX_PATH, "%s\\last_warning.txt", RESULT_DIR); rp[MAX_PATH-1]=0;
                 WriteFileAll(rp, std::string("! PYLIB ESI SURUM: v") + vShow +
-                    "  (DLL v2.0 PLUSMAXGOD v4.4 ister)\n"
+                    "  (DLL v2.1 PLUSMAXGOD v4.5 ister)\n"
                     "Yeni PLUSMAXGOD_PyScript.py'yi " + std::string(BASE_DIR) + " icine kopyala (bundle zip / GitHub).\n"
                     "ESKI pylib ILE: stat/pos/inv/equip/skill/near/chat/goto/tp/pyfiles/pydumpall/plusquest CALISMAZ.\n");
-                LogLine("UYARI: pylib ESI v%s - PLUSMAXGOD v4.4 gerekli! (%s)", vShow, pylibPath);
+                LogLine("UYARI: pylib ESI v%s - PLUSMAXGOD v4.5 gerekli! (%s)", vShow, pylibPath);
                 OutP("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-                OutP("!! PYLIB ESI: diskteki PLUSMAXGOD_PyScript.py = v%s  (gereken: v4.4)\n", vShow);
+                OutP("!! PYLIB ESI: diskteki PLUSMAXGOD_PyScript.py = v%s  (gereken: v4.5)\n", vShow);
                 OutP("!! Yeni PLUSMAXGOD_PyScript.py'yi %s icine kopyala (bundle zip)\n", BASE_DIR);
                 OutP("!! Eski pylib ile v4.0 komutlari CALISMAZ (stat/inv/tp/pyfiles..)\n");
                 OutP("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
@@ -1731,7 +1760,7 @@ BOOL APIENTRY DllMain(HMODULE hMod, DWORD reason, LPVOID)
         DisableThreadLibraryCalls(hMod);
         EnsureDirs();
         CreateThread(NULL, 0, WorkerThread, NULL, 0, NULL);
-        LogLine("MaxExecutor v2.0 PLUSMAXGOD yuklendi (pid=%lu) — worker baslatiliyor",
+        LogLine("MaxExecutor v2.1 PLUSMAXGOD yuklendi (pid=%lu) — worker baslatiliyor",
                 GetCurrentProcessId());
     }
     return TRUE;
