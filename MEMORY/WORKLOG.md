@@ -633,3 +633,23 @@ sahne adi notu dokumante edildi. Kod degisikligi YOK, rebuild YOK.
 - reports/LegendySF-Dump_Derin_Analiz_Raporu.pdf (19 sayfa; TOC + 2 grafik + 1 diyagram + 11 tablo + 3 kod kaniti)
 - reports/assets/: diagram_flow.png, chart_dump_kategoriler.png, chart_cpp_bindings.png, cover_kaynak.html
 - analysis/dump_inventory.json (154 dosyanin fonksiyon/API envanteri)
+
+## Oturum 19 (2026-10-28) — v2.4 / pylib v4.8: saha testi 14 DEV RAPORU
+
+**Rapor:** autopot 1 kere basip susuyor (karakter oldu) | otp2 bas-cek gibi | slots sayim yanlis (2x45=90 dogru, kod 168 diyordu, her sekmede 5 eksik) | selljunk/sellall satmiyor | surekli NPC aciyor + kapatamiyor | dropall atmiyor.
+
+**KANIT TARAMASI (dump.rar gercek client kaynaklari + nighttown kendi botlari):**
+- m2k Inventorymanager.py (NightTown'da calismis): `shop.IsOpen()` + **1-arg `net.SendShopSellPacket(slot)`** + **1-arg `net.SendItemDropPacket(slot)`** (xrange(0,90))
+- Taubuyer.py: ayni 1-arg satis yolu (NightTown kaniti)
+- uiShop.py OnSellItem: `net.SendShopSellPacketNew(slotPos, count)` (client UI'un kendisi; YENI paket)
+- game.py:326+ MoveUp: `player.SetSingleDIKKeyState(app.DIK_UP, True)` — W->MoveUp->DIK_UP zinciri
+- darealfreakbot/pasha37-levelbot GetDegree: `chr.SetRotation(deg(acos(dy/d))+180; px>=mx ise 360-rada)` = **S=0, B=90, K=180, D=270** (rot = deg(atan2(dx,dy))+180 mod 360)
+- teleport4.py: SetPixelPosition + DIK_UP press/release = sunucu hareket senkron hilesi (otp1'in yolu)
+
+**KOK NEDENLER:** (1) autopot TEK buyuk except — ilk exception'da dongu SESSIZ oluyor; (2) sell/drop ONCE 2-arg 'New' paket deniyordu — bu sunucu isletmiyor (1-arg kanitli), exception da olmadigi icin 1-arg'a hic dusmuyordu; (3) IsOpen flicker + waitnpc reset = NPCye surekli tiklama firtinasi; (4) slots INVENTORY_SLOT_COUNT(168) tercih ediyordu.
+
+**v4.8 DUZELTMELER:** autopot blok-blok try/except + ilk 3 hata [LIVE] + 30sn kalp atisi + 0.4sn dongu + olum/pot-yok mesajlari. otp2: sicrama YOK, SetRotation hedefe (100ms tik), W+UP her tik BASILI, varince/otpstop bırakır, uzaklik-artiyor tani uyarisi. slots: TOPLAM=pc*ps + 9 kolonlu harita (#=esya .=bos E=efsunlu ?=hata) + hata sayaci + GetGold yedegi + 90-usti alan taramasi. selljunk/sellall: faz makinesi (bekle/sat/dogrula), NPCye 1 tik + 8sn sessiz bekleme (acilir acilmaz satis; elle tiklama da kabul), 1-arg ONCE, `selljunk 0`/`sellall 0` DUR. dropall: 1-arg ONCE, `dropall 0` DUR, 0-atilan teshisi.
+
+**cpp v2.4:** CmdDropAll(sub) arg gecisi (dropall 0 kuyruga gecer) + help + surum dizgileri. **Dogrulama:** lib2to3 parse + module-exec simulasyonu (305 global) + dispatch capraz-kontrol (103 fonksiyon) + ikili denetim (eski spam formati YOK). DLL 876KB + EXE 222KB (zig, kaynakta 0 uyari). Commit **d5dc646**.
+
+**Sahada beklenecek:** autopot surekli basis + kalp atisi; otp2 donerek yurume (kamera-bagli hareket cikarsa SetRotation etkisiz — uzaklik-artiyor uyarisi tani); selljunk dukkan-acilinca otomatik satis + yontem=eski-1arg logu; dropall 1-arg atma; 3 stop komutu; slots haritasi eslesmesi.
