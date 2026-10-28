@@ -2,7 +2,15 @@
 
 > Paket içeriği, kurulum, komutlar, giriş akışı, sorun giderme — hepsi bu dosyada.
 > Mimari gerekçe için: `reports/DEV_REAL_BINARY_TEST.md` (RC18/RC19) + `reports/DEV_GIL_ANALYSIS.md` (RC1-RC17).
-> Son güncelleme: **Oturum 19 — MaxExecutor v2.4 PLUSMAXGOD / pylib v4.8 (saha testi 14 dev raporu — sürekli oto-pot + W-basılı yürüyüş + satma/atma paket düzeltmesi + durdurma komutları)**
+> Son güncelleme: **Oturum 20 — MaxExecutor v2.5 PLUSMAXGOD / pylib v4.9 (saha testi 15 dev raporu — 150ms hızlı nabız + BURST satma/atma + autopot KRİTİK mod + otp2 ışınlana-adım)**
+>
+> **v2.5/v4.9 ÖZET — saha testi 15 (tümü kanıtlı):**
+> **150MS HIZLI NABIZ (`_tick`):** saha raporu '1 tane satıyor bidaha satmıyor / 1 atıyor 1-2dk bekliyor / pot basmıyor karakter ölüyor' — döngüler tek kalbe (ui penceresi `OnUpdate`) bağlıydı ve bu istemcide yavaş/nadir tetikleniyordu. **DLL artık her 150ms'de `maxlib._tick()` çağırır** (kuyruk taraması ~1.5sn'de kalır) — autopot/sell/drop/otp döngüleri **ÇİFT KALPLE** yürür (DLL timer + ui penceresi; hepsi zaman-kapılı olduğu için çift tetiklenme güvenli).
+> **sellall/selljunk BURST:** m2k Taubuyer/Inventorymanager bu sunucuda satış paketlerini **TEK KAREDE arka arkaya** gönderiyor (beklemesiz!) — v4.8'in 0.4sn aralığı gereksizdi ve tam da o aralıkta takılıyordu. Artık **45 slot tek nabızda** (90 slot ~0.3sn), sonra 2sn doğrulama + kalanlar için en fazla 2 BURST tekrarı.
+> **dropall BURST:** m2k DropAllItems kanıtı — 90 paket tek karede gider. Artık **45 slot/nabız** + tur sonu 2.5sn doğrulama + kalanlar için yeni BURST (4 tura dek). '1 atıyor 1-2dk bekliyor' bitti.
+> **autopot KRİTİK MOD + format-bug:** 'TypeError: not enough arguments' sabit; can/mana **%50 altında 0.15sn** arayla (normal 0.4sn) — karakter ölürken pot basmama şikayeti. Kalp atışı 30sn'de bir [LIVE]'da.
+> **otp2 YENİ — IŞINLANA-IŞINLANA + ADIM (kullanıcı tarifi):** her adımda `SetPixelPosition` sıçraması + `MoveToDestPosition` + **1-kare UP basışı** (darealfreakbot Debug() deseni) + `net.SendCharacterPositionPacket` → **sendcharacterstate tetiklenir, sunucu konumu takip eder, geri atma YOK**. Adım boyu `otpstep` (240px = 24m, 25m TP-kontrolü altı). v4.8'in sürekli-W yürüyüşü değiştirildi.
+> **otp ALT-KOMUTLAR:** `otp delay <ms>` / `otp step <px>` / `otp stop` artık çalışır (saha raporu: 'otp delay 1' ValueError yiyordu).
 >
 > **v2.4/v4.8 ÖZET — saha testi 14 (tümü kanıtlı):**
 > **`autopot` SÜREKLİ İZLEME:** saha raporu '1 kere bastı bir daha basmadı ve karakter öldü' — kök neden: döngü tek büyük `except`'in içindeydi, ilk exception'dan sonra SESSİZCE ölüyordu. Artık her blok ayrı try/except'te + **ilk 3 hata [LIVE]'a yazılır** + **30 saniyede bir kalp atısı** (`[LIVE] AUTOPOT: izleme AKTIF (basilan kirmizi=N mavi=M)`). Eşik altındayken **0.4sn'de bir** pot basar, eşik ÜSTÜNE çıkınca işaretir. Karakter ölüyken pot basmaz (uyarı yazar), pot yoksa 5sn'de bir hatırlatır.
@@ -359,7 +367,7 @@ plusquest               TÜM yüklü modülleri tara → C:\MaxExec\dump\PLUSQue
 
 ---
 
-## 3e. v2.4 / pylib v4.8 — ENVANTER + WARP + OTOPOT (saha testi 14 günceli)
+## 3e. v2.5 / pylib v4.9 — ENVANTER + WARP + OTOPOT (saha testi 15 günceli)
 
 ```
 slots                        envanter ozeti + SLOT HARITASI (#=esya .=bos E=efsunlu ?=hata)
@@ -372,17 +380,21 @@ selljunk                     cop esyalari yakindaki NPC'ye sat (efsunlu ASLA sat
   selljunk list              listeyi goster | selljunk del <vnum> cikar
 sellall [force]              tum envanteri sat (force: efsunlu dahil - DIKKAT)
   sellall 0 | stop           DURDUR
-dropall                      tum envanteri YERE AT (1-arg kanitli paket, tek tek)
+dropall                      tum envanteri YERE AT (BURST: 45 slot/nabiz + 4 tur)
   dropall 0 | stop           DURDUR
 
 warp 384 390                 LEGENDY warp: SAHNE YENIDEN YUKLENIR (net.directenter tarzi)
                              koordinat = pos/100 (buyuk yazarsan otomatik /100)
 otp1 <x> <y>                 OTP yontem 1: saldiri tusu + adim-adim (kanitli eski yontem)
-otp2 <x> <y>                 OTP yontem 2 (v4.8): W+UP BASILI KALIR, karakter hedefe
-                             donderilir; sicrama yok; varince tuslari otomatik birakir
+otp2 <x> <y>                 OTP yontem 2 (v4.9): ISINLANA-ISINLANA + ADIM - her adimda
+                             SetPixelPosition sicramasi + MoveToDestPosition + 1-kare
+                             UP basin -> sendcharacterstate tetiklenir, geri atma YOK
+otp delay <ms>               otp bekleme suresi (mod 1; orn: otp delay 1300)
+otp step <px>                adim boyu px (240 oneri = 24m, 25m kontrol alti)
+otp stop | otpstop           yuruyusu durdur (tuslar birakilir)
 
-autopot hp 80                can %80 ALTINDAYKEN kirmizi pot 0.4sn'de bir SUREKLI
-                             (esige dek basar; 30sn'de bir kalp atisi yazar)
+autopot hp 80                can %80 ALTINDAYKEN kirmizi pot SUREKLI basilir
+                             (normal 0.4sn - KRITIK %50 alti 0.15sn; 30sn kalp atisi)
 autopot mp 80                mana %80 altinda NORMAL mavi pot (ayni surekli mantik)
 autopot                      durum raporu (hata sayaci dahil)
 autopot 0                    hepsini kapat
@@ -395,9 +407,9 @@ autopot_item 0               esya izlemesini kapat
 
 **warp koordinat hesabı:** `pos` raporu pixel verir (örn 38421 39017) → warp değeri = **/100** (384 390). Her harita 256x256 birim; atlas koordinatı verilirse **harita sınırı yok** (GlobalPositionToMapInfo o haritayı yükler). warp sonrası `pos` ile kontrol et — sunucu senkronu için konum paketi otomatik gider.
 
-**selljunk/sellall akışı (v4.8):** (1) komut anında yakın NPC'ye **1 tık** (`SendOnClickPacket`, 3500px içinde en yakın) — tekrarlı tıklama YOK ('sürekli npc açıyo' bitti). (2) `shop.IsOpen()` SESSİZ izlenir: dükkan açılınca satış otomatik başlar; 8 sn içinde açılmazsa EN FAZLA 1 tık daha, o da olmazsa durur ve 'NPCye KENDIN tikla' der — **sen elle tıklayınca da satış kendiliğinden başlar**. (3) Satış: çöp eşyalar **tek tek** (0.4sn arayla) ÖNCE `net.SendShopSellPacket(slot)` (m2k/Taubuyer NightTown kanıtı — 1-arg), yoksa `SendShopSellPacketNew(slot, adet)` (uiShop.py kanıtı). (4) Tam tur bitince **doğrulama turları**: kalan satılabilirler için en fazla 2 tekrar; bitince özet (satılan/atlanan) + 'dukkan açık kalır, ESC ile kapat'. (5) Efsunlular **asla satılmaz** (`sellall force` hariç). Durdurma her an: `selljunk 0` / `sellall 0`.
+**selljunk/sellall akışı (v4.9 BURST):** (1) komut anında yakın NPC'ye **1 tık** (`SendOnClickPacket`, 3500px içinde en yakın) — tekrarlı tıklama YOK. (2) `shop.IsOpen()` SESSİZ izlenir: dükkan açılınca **BURST satış** otomatik başlar; 8 sn içinde açılmazsa EN FAZLA 1 tık daha, o da olmazsa durur ve 'NPCye KENDIN tikla' der — **sen elle tıklayınca da satış kendiliğinden başlar**. (3) Satış: **45 slot tek nabızda** (90 slot ~0.3sn) — m2k Taubuyer/Inventorymanager deseni (beklemesiz paket dizisi; v4.8'in 0.4sn aralığı '1 tane satıyor' sorununun kendisiydi) — ÖNCE `net.SendShopSellPacket(slot)` (1-arg kanıt), yoksa `SendShopSellPacketNew(slot, adet)`. (4) Tur bitince 2sn doğrulama: kalan satılabilirler için en fazla 2 BURST tekrarı; bitince özet (paket/atlanan/kalan). (5) Efsunlular **asla satılmaz** (`sellall force` hariç). Durdurma her an: `selljunk 0` / `sellall 0`.
 
-**dropall akışı (v4.8):** 0.45 sn'de bir **1-arg `net.SendItemDropPacket(slot)`** (m2k DropAllItems NightTown kanıtı; v4.7'nin 2-arg New paketi bu sunucuda işlevsizdi). 2 doğrulama turu; hiçbir şey atılamazsa 'sunucu yere atmayı engelliyor olabilir' teşhisi yazar. Durdurma: `dropall 0`.
+**dropall akışı (v4.9 BURST):** **45 slot/nabız** `net.SendItemDropPacket(slot)` (m2k DropAllItems NightTown kanıtı — 90 paket tek karede gider; v4.8'in 0.45sn aralığı '1 atıyor 1-2dk bekliyor' sorununun kendisiydi). Tur sonu 2.5sn doğrulama: hâlâ duran eşyalar için yeni BURST (4 tura dek); hiçbir şey atılamazsa 'sunucu atmayı engelliyor olabilir' teşhisi yazar. Durdurma: `dropall 0`.
 
 ## 4. NEDEN BU MİMARİ GÜVENLİ? (kısa hatırlatma)
 

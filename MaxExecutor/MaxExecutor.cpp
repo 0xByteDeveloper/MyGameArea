@@ -124,6 +124,17 @@
 //            basedir.txt ile tasinabilir (BASE_DIR\dump).
 //    FIX-35: SyncEmbeddedPylib yeni dosya adini yazar (PLUSMAXGOD_PyScript.py),
 //            eskisini PLUSMAXGOD_eski_v<surum>.py olarak yedekler.
+//  v2.5 "PLUSMAXGOD" (saha testi 15 dev raporu, pylib v4.9 cifti):
+//     150MS HIZLI NABIZ: DLL artik her 150ms'de maxlib._tick() cagirir
+//     (kuyruk taramasi ~1.5sn'de kalir) - autopot/sell/drop/otp donguleri
+//     ui penceresi + DLL timer CIFT kalple yurur (dongulerin '1 is sonrasi
+//     durma' sorununun kok cozumu). sellall/selljunk/dropall BURST gonderim
+//     (45 slot/nabiz - m2k DropAllItems/Taubuyer NightTown kaniti; v4.8'in
+//     0.4-0.45sn beklemeleri kaldirildi). autopot KRITIK mod (%50 alti
+//     0.15sn) + format-bug fix ('TypeError: not enough arguments').
+//     otp2 ISINLANA-ISINLANA + ADIM (SetPixelPosition + MoveToDestPosition
+//     + 1-kare UP + SendCharacterPositionPacket - darealfreak kaniti).
+//     otp delay/step/stop alt-komutlari ('otp delay 1' ValueError fix).
 //  v2.4 "PLUSMAXGOD" (saha testi 14 dev raporu, pylib v4.8 cifti):
 //     (1) LIVE tailer acilista eski live.txt'yi konsola geri oynatiyordu
 //         -> ilk okuma artik dosya sonundan baslar (sadece yeni satirlar).
@@ -340,6 +351,7 @@ static volatile LONG g_nTimer = 0;   // TimerProc cagrilari (oyun pompasi kaniti
 static volatile LONG g_nDrain = 0;   // DrainQueue cagrilari
 static volatile LONG g_nExec = 0;    // gercekten PyRun edilen komutlar
 static volatile LONG g_nPyFail = 0;  // FIX-20: PyRun'in -1 dondurdugu komutlar
+static volatile LONG g_nFastTick = 0; // v2.5: maxlib._tick() cagrilari
 
 static void InitPaths(void)
 {
@@ -419,7 +431,7 @@ static void DrainQueue(void)
                 _snprintf(fp, MAX_PATH, "%s\\last_pyfail.txt", RESULT_DIR); fp[MAX_PATH-1]=0;
                 WriteFileAll(fp, std::string("PYTHON HATASI: ") + fd.cFileName +
                     "\nDetay: pyerr komutunu yaz (pyerr.log son satirlari).\n"
-                    "En sik neden: ESKI pylib - PLUSMAXGOD v4.8 ile degistir (bundle zip / GitHub)!\n");
+                    "En sik neden: ESKI pylib - PLUSMAXGOD v4.9 ile degistir (bundle zip / GitHub)!\n");
                 OutP("[MAXEXEC] !! PYTHON HATASI (%s) - detay icin: pyerr\n", fd.cFileName);
                 fflush(stdout);
             }
@@ -443,22 +455,49 @@ static LRESULT CALLBACK MaxExecWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp
 }
 
 // ---------------------------------------------------------------------------
+// v2.5 HIZLI NABIZ (saha testi 15 kok-onarimi): DLL 150ms'de bir
+// maxlib._tick() cagirir - autopot/sell/drop/otp donguleri artik sadece ui
+// penceresine degil DLL timer'ina da bagli (cift kalp). hasattr korumasi:
+// eski pylib'de _tick yok -> sessiz gecilir (pyfail sayilmaz).
+// ---------------------------------------------------------------------------
+static void FastTick(void)
+{
+    if (!pfn_PyRun_SimpleString) return;
+    InterlockedIncrement(&g_nFastTick);
+    const char* code =
+        "try:\n"
+        "    import maxlib\n"
+        "    if hasattr(maxlib, '_tick'):\n"
+        "        maxlib._tick()\n"
+        "except Exception:\n"
+        "    pass\n";
+    if (g_csOutInit) EnterCriticalSection(&g_csOut);
+    pfn_PyRun_SimpleString(code);
+    if (g_csOutInit) LeaveCriticalSection(&g_csOut);
+}
+
+// ---------------------------------------------------------------------------
 // TIMER YOLU (FIX-8) — WM_TIMER oyunun kendi mesaj pompasiyla TimerProc'a
 // ulasir; WndProc subclass'i geri alinsa bile CALISIR. Ana thread garanti
 // (pencerenin sahibi thread = oyun ana thread'i).
+// v2.5: 150ms hizli nabiz. Kuyruk tarayici (disk FindFirstFile) her 10.
+// nabizda (~1.5sn - eski davranis korunur); aradaki nabizlar pylib._tick.
 // ---------------------------------------------------------------------------
 static VOID CALLBACK MaxExecTimerProc(HWND hwnd, UINT, UINT_PTR, DWORD)
 {
     InterlockedIncrement(&g_nTimer);
-    DrainQueue();
+    if ((g_nTimer % 10) == 1)
+        DrainQueue();   // her ~1.5sn: komut kuyrugu + alive.txt nabzi
+    else
+        FastTick();     // aradaki ~150ms nabizlar: dongu surusu (v2.5)
 }
 
 static void InstallTimer(void)
 {
     if (!g_hGameWnd) return;
-    UINT_PTR id = SetTimer(g_hGameWnd, TIMER_ID_MAXEXEC, 1500, MaxExecTimerProc);
-    LogLine("SetTimer: %s (id=%lu, 1500ms)", id ? "KURULDU" : "BASARISIZ", (unsigned long)id);
-    OutP("ana-thread timer: %s\n", id ? "KURULDU (WndProc'tan bagimsiz drenaj)" : "BASARISIZ");
+    UINT_PTR id = SetTimer(g_hGameWnd, TIMER_ID_MAXEXEC, 150, MaxExecTimerProc);
+    LogLine("SetTimer: %s (id=%lu, 150ms hizli nabiz - v2.5)", id ? "KURULDU" : "BASARISIZ", (unsigned long)id);
+    OutP("ana-thread timer: %s (150ms hizli nabiz + 1.5sn kuyruk - v2.5)\n", id ? "KURULDU" : "BASARISIZ");
 }
 
 // Oyunun ana gorunur penceresini bul (bu surece ait, sahibi olmayan, en buyuk)
@@ -537,7 +576,7 @@ static std::string BootImport(void)
          "        try:\n"
          "            import traceback\n"
          "            _f = open(r'" + std::string(RESULT_DIR) + "\\\\last_pylib_fail.txt', 'w')\n"
-         "            _f.write('PLUSMAXGOD_PyScript.py YUKLENEMEDI (DLL v2.4 / pylib v4.8) - TRACEBACK:\\n' + traceback.format_exc())\n"
+         "            _f.write('PLUSMAXGOD_PyScript.py YUKLENEMEDI (DLL v2.5 / pylib v4.9) - TRACEBACK:\\n' + traceback.format_exc())\n"
          "            _f.close()\n"
          "        except Exception:\n"
          "            pass\n"
@@ -554,7 +593,7 @@ static std::string BootImport(void)
          "    maxlib._MX_OLD_WARNED = True\n"
          "    try:\n"
          "        import sys\n"
-         "        sys.stderr.write('!!! PYLIB ESKI v' + str(getattr(maxlib, 'PYLIB_VERSION', '?')) + ' - DLL v2.4 PLUSMAXGOD v4.8 ister! "
+         "        sys.stderr.write('!!! PYLIB ESKI v' + str(getattr(maxlib, 'PYLIB_VERSION', '?')) + ' - DLL v2.5 PLUSMAXGOD v4.9 ister! "
          "C:\\\\MaxExec\\\\PLUSMAXGOD_PyScript.py dosyasini yenisiyle degistir (bundle zip / GitHub) !!!\\\\n')\n"
          "    except Exception:\n"
          "        pass\n";
@@ -1040,7 +1079,7 @@ static bool InitConsole(void)
         LogLine("CONOUT$ (stderr) yeniden acilamadi");
     setvbuf(stdout, NULL, _IONBF, 0);   // buffer'siz: crash olsa bile yazar
     setvbuf(stderr, NULL, _IONBF, 0);
-    SetConsoleTitleA("MaxExecutor v2.4 PLUSMAXGOD");
+    SetConsoleTitleA("MaxExecutor v2.5 PLUSMAXGOD");
     HWND cw = GetConsoleWindow();
     if (cw)
     {
@@ -1158,7 +1197,7 @@ static std::vector<std::string> SplitArgs(const std::string& line)
 
 static void PrintHelp(void)
 {
-    OutP("\n=== MaxExecutor v2.4 PLUSMAXGOD (oyun-ici + GOD MOD pylib v4.8) ===\n");
+    OutP("\n=== MaxExecutor v2.5 PLUSMAXGOD (oyun-ici + GOD MOD pylib v4.9) ===\n");
     OutP("  help                        : bu yardim\n");
     OutP("  status                      : anlik sahne/baglanti snapshot\n");
     OutP("  -- giris akisi (menu) --\n");
@@ -1178,21 +1217,27 @@ static void PrintHelp(void)
     OutP("  ride | revive | logout | back | pickup : hizli eylemler\n");
     OutP("  zoom <mesafe> | use <slot> | drop <slot> <adet> | goto <x> <y> | tp <x> <y>\n");
     OutP("  key <DIK> <0/1> | attack <0/1>\n");
-    OutP("  -- v4.8: ENVANTER + WARP + OTPOT --\n");
-    OutP("  slots                       : v4.8 - envanter ozeti + SLOT HARITASI (#=esya .=bos E=efsunlu)\n");
-    OutP("  selljunk                    : v4.8 - COP esyalari NPC'ye sat (efsunlu ASLA satilmaz)\n");
+    OutP("  -- v4.9: SAHA TESTI 15 DUZELTMELERI --\n");
+    OutP("  sellall/selljunk/dropall      : BURST gonderim (45 slot/nabiz - m2k kaniti)\n");
+    OutP("  autopot hp/mp <pct>           : KRITIK mod - %50 alti 0.15sn arayla pot\n");
+    OutP("  otp2 <x> <y>                  : ISINLANA-ISINLANA + ADIM (sendcharacterstate)\n");
+    OutP("  otp delay <ms> | otp step <px> | otp stop : alt-komutlar (v2.5)\n");
+    OutP("  DLL 150ms hizli nabiz: maxlib._tick() - donguler cift kalple yurur\n");
+    OutP("  slots                       : envanter ozeti + SLOT HARITASI (#=esya .=bos E=efsunlu)\n");
+    OutP("  selljunk                    : v4.9 BURST - COP esyalari NPC'ye sat (efsunlu ASLA satilmaz)\n");
     OutP("       dukkan acilir acilmaz otomatik satar (acilmazsa NPCye kendin tikla)\n");
     OutP("       selljunk 0 = DURDUR | selljunk add <vnum> | del <vnum> | list | name <isim>\n");
-    OutP("  sellall [force]             : v4.8 - TUM envanteri sat (force: efsunlu dahil!) | DUR: sellall 0\n");
-    OutP("  dropall                     : v4.8 - tum envanteri YERE AT (1-arg kanitli paket) | DUR: dropall 0\n");
+    OutP("  sellall [force]             : v4.9 BURST - TUM envanteri sat (force: efsunlu dahil!) | DUR: sellall 0\n");
     OutP("  warp <x> <y>                : v4.7 - LEGENDY warp (sahne YENIDEN yuklenir!)\n");
     OutP("                                x,y = pos/100 (orn 38421 39017 -> warp 384 390)\n");
     OutP("  autopot hp 80 | autopot mp 80 | autopot (durum) | autopot 0\n");
-    OutP("       SUREKLI izleme: esik altindayken 0.4sn'de bir pot, esige dek (30sn kalp atisi)\n");
+    OutP("       SUREKLI izleme: esik altindayken 0.4sn'de bir pot, esige dek\n");
+    OutP("       KRITIK mod: %50 altinda 0.15sn arayla | 30sn kalp atisi | DUR: autopot 0\n");
     OutP("  autopot_item hp | autopot_item mp | autopot_item 0\n");
     OutP("       oto-pot ESYASI (72723-6/72727-30): pasifse basar, bitince yeniler\n");
-    OutP("  otp1 <x> <y> | otp2 <x> <y> : v4.8 - otp1=saldiri tusu (kanitli adim-adim)\n");
-    OutP("                                otp2=W+UP tusu SUREKLI BASILI yuruyus (varince birakir)\n");
+    OutP("  otp1 <x> <y>                : v4.9 - saldiri tusu adim-adim (kanitli)\n");
+    OutP("  otp2 <x> <y>                : v4.9 - ISINLANA-ISINLANA + ADIM (geri atma yok)\n");
+    OutP("  dropall                     : v4.9 BURST - tum envanteri YERE AT (45 slot/nabiz) | DUR: dropall 0\n");
     OutP("  -- v4.4: PUAN + HIZ + BINIS + ANTIFLY --\n");
     OutP("  statup <ht|iq|st|dx> [adet] : stat puani ver (orn: statup st 10)\n");
     OutP("  skillup <skill-idx> [adet]  : skill puani ver (idx: skill raporundan)\n");
@@ -1236,7 +1281,9 @@ static void PrintHelp(void)
          "   v4.7 not: speed/aspeed/chchange/relogin KALDIRILDI | warp Legendy\n"
          "            yolu | dump: C modul API stub + pack.Get sysmodules;\n"
          "   v4.8 not: autopot surekli | otp2 W-basili | slots sayim fix |\n"
-         "            selljunk/sellall/dropall 1-arg paket + stop (selljunk 0)\n");
+         "            selljunk/sellall/dropall 1-arg paket + stop (selljunk 0);\n"
+         "   v4.9 not: sell/drop BURST | autopot KRITIK mod | otp2 isinlana+adim |\n"
+         "            DLL 150ms nabiz | otp delay/step alt-komut)\n");
     OutP("  -- KESIF --\n");
     OutP("  pyfiles | pydump <ad> | pydumpall | pyscan <modul> | plusquest\n");
     OutP("  -- hata takibi --\n");
@@ -1341,8 +1388,8 @@ static DWORD WINAPI WorkerThread(LPVOID)
     const bool con = InitConsole();
 
     OutP("\n=============================================\n");
-    OutP("  MaxExecutor v2.4 PLUSMAXGOD - ana-thread executor\n");
-    OutP("  oyun-ici + kesif + GOD MOD v2 (pylib v4.8 cifti)\n");
+    OutP("  MaxExecutor v2.5 PLUSMAXGOD - ana-thread executor\n");
+    OutP("  oyun-ici + kesif + GOD MOD v2 (pylib v4.9 cifti)\n");
     OutP("  canli cikti: C:\\MaxExec\\live.txt izlenir -> [LIVE] akar\n");
     OutP("=============================================\n");
     if (!con)
@@ -1404,12 +1451,12 @@ static DWORD WINAPI WorkerThread(LPVOID)
                 char rp[MAX_PATH];
                 _snprintf(rp, MAX_PATH, "%s\\last_warning.txt", RESULT_DIR); rp[MAX_PATH-1]=0;
                 WriteFileAll(rp, std::string("! PYLIB ESI SURUM: v") + vShow +
-                    "  (DLL v2.4 PLUSMAXGOD v4.8 ister)\n"
+                    "  (DLL v2.5 PLUSMAXGOD v4.9 ister)\n"
                     "Yeni PLUSMAXGOD_PyScript.py'yi " + std::string(BASE_DIR) + " icine kopyala (bundle zip / GitHub).\n"
                     "ESKI pylib ILE: stat/pos/inv/equip/skill/near/chat/goto/tp/pyfiles/pydumpall/plusquest CALISMAZ.\n");
-                LogLine("UYARI: pylib ESI v%s - PLUSMAXGOD v4.8 gerekli! (%s)", vShow, pylibPath);
+                LogLine("UYARI: pylib ESI v%s - PLUSMAXGOD v4.9 gerekli! (%s)", vShow, pylibPath);
                 OutP("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-                OutP("!! PYLIB ESI: diskteki PLUSMAXGOD_PyScript.py = v%s  (gereken: v4.8)\n", vShow);
+                OutP("!! PYLIB ESI: diskteki PLUSMAXGOD_PyScript.py = v%s  (gereken: v4.9)\n", vShow);
                 OutP("!! Yeni PLUSMAXGOD_PyScript.py'yi %s icine kopyala (bundle zip)\n", BASE_DIR);
                 OutP("!! Eski pylib ile v4.0 komutlari CALISMAZ (stat/inv/tp/pyfiles..)\n");
                 OutP("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
@@ -1771,15 +1818,36 @@ static DWORD WINAPI WorkerThread(LPVOID)
         {
             CmdGoTake(a.size() >= 2 ? a[1] : "all");
         }
-        else if (cmd == "otp" || cmd == "otp1" || cmd == "optimizetp")
+        else if (cmd == "otp" || cmd == "otp1" || cmd == "optimizetp" || cmd == "otp2")
         {
-            if (a.size() >= 3) CmdOTP1(a[1], a[2]);
-            else OutP("kullanim: otp1 <x> <y>   (YONTEM 1: saldiri tusu basili - kanitli)\notp2 <x> <y> = YONTEM 2: W tusu basili | dur: otpstop\n");
-        }
-        else if (cmd == "otp2")
-        {
-            if (a.size() >= 3) CmdOTP2(a[1], a[2]);
-            else OutP("kullanim: otp2 <x> <y>   (YONTEM 2: W tusu basili - ataksiz)\notp1 <x> <y> = YONTEM 1: saldiri tusu | dur: otpstop\n");
+            // v2.5 (saha testi 15): 'otp delay 1' -> ValueError yiyordu.
+            // Artik alt-komutlar BURADA yakalanir (pylib yedek yonlendirme de var).
+            bool m2 = (cmd == "otp2");
+            if (a.size() >= 2)
+            {
+                const std::string& s1 = a[1];
+                if (s1 == "stop" || s1 == "dur" || s1 == "kapat" || s1 == "0")
+                    CmdOTPStop();
+                else if (s1 == "delay" || s1 == "bekle")
+                {
+                    if (a.size() >= 3) CmdOTPDelay(a[2]);
+                    else OutP("kullanim: otp delay <ms>   (orn: otp delay 1300 - beklemeyi ayarlar)\n");
+                }
+                else if (s1 == "step" || s1 == "adim")
+                {
+                    if (a.size() >= 3) CmdOTPStep(a[2]);
+                    else OutP("kullanim: otp step <px>   (240 oneri - 25m TP-kontrol alti)\n");
+                }
+                else if (a.size() >= 3)
+                {
+                    if (m2) CmdOTP2(a[1], a[2]);
+                    else    CmdOTP1(a[1], a[2]);
+                }
+                else
+                    OutP("kullanim: otp <x> <y> | otp2 <x> <y> | otp delay <ms> | otp step <px> | dur: otpstop\n");
+            }
+            else
+                OutP("kullanim: otp <x> <y> | otp2 <x> <y> | otp delay <ms> | otp step <px> | dur: otpstop\n");
         }
         else if (cmd == "otpstop")  CmdOTPStop();
         else if (cmd == "otpstep")  { if (a.size() >= 2) CmdOTPStep(a[1]); else OutP("kullanim: otpstep <px> (240 oneri)\n"); }
@@ -1857,7 +1925,7 @@ BOOL APIENTRY DllMain(HMODULE hMod, DWORD reason, LPVOID)
         DisableThreadLibraryCalls(hMod);
         EnsureDirs();
         CreateThread(NULL, 0, WorkerThread, NULL, 0, NULL);
-        LogLine("MaxExecutor v2.4 PLUSMAXGOD yuklendi (pid=%lu) — worker baslatiliyor",
+        LogLine("MaxExecutor v2.5 PLUSMAXGOD yuklendi (pid=%lu) — worker baslatiliyor",
                 GetCurrentProcessId());
     }
     return TRUE;

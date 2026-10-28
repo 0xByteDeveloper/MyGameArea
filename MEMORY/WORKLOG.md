@@ -653,3 +653,23 @@ sahne adi notu dokumante edildi. Kod degisikligi YOK, rebuild YOK.
 **cpp v2.4:** CmdDropAll(sub) arg gecisi (dropall 0 kuyruga gecer) + help + surum dizgileri. **Dogrulama:** lib2to3 parse + module-exec simulasyonu (305 global) + dispatch capraz-kontrol (103 fonksiyon) + ikili denetim (eski spam formati YOK). DLL 876KB + EXE 222KB (zig, kaynakta 0 uyari). Commit **d5dc646**.
 
 **Sahada beklenecek:** autopot surekli basis + kalp atisi; otp2 donerek yurume (kamera-bagli hareket cikarsa SetRotation etkisiz — uzaklik-artiyor uyarisi tani); selljunk dukkan-acilinca otomatik satis + yontem=eski-1arg logu; dropall 1-arg atma; 3 stop komutu; slots haritasi eslesmesi.
+
+## Oturum 20 (2026-10-28) — v2.5 / pylib v4.9: saha testi 15 DEV RAPORU
+
+**Rapor:** dropall 1 atiyor 1-2dk bekliyor sonra 2. yi atiyor | sellall/sellall force satmiyor (satarsa 1 tane) | autopot TypeError + karakter olurken pot basmiyor | 'otp delay 1/100' ValueError | otp2 istegi: isinlana isinlana gidecek ama yine adim atacak — her adim sendcharacterstate tetikler, oyun geri atmasin diye.
+
+**KOK NEDEN ANALIZI (kritik gozlem):** uc dongu de (sell/drop/autopot) ILK islemden sonra susuyor. Ortak nokta: hepsi ui penceresi OnUpdate + 0.4-0.45sn zaman kapisiyla calisiyordu. Kanit matrisi: (a) balik dongusu (ayni desen) SAHADA 32 atis yapmisti — OnUpdate o zamanlar calisiyordu; (b) m2k DropAllItems/Taubuyer bu sunucuda 90 paketi TEK KAREDE beklemesiz gonderiyor (hic zaman kapisi yok); (c) oturum-17 RE bulgusu: SendCharacterStatePacket Python'a kapali — istemci hareket handler'lari otomatik gonderiyor. Sonuc: pacing'in kendisi + tek kalp bagimliligi riskli — cozum CIFT KALP + BEKLEMESIZ GONDERIM.
+
+**v4.9 DUZELTMELER:**
+- **_tick() TEK NABIZ:** dll 150ms hizli timer artik maxlib._tick() cagirir (kuyruk taramasi her 10. nabizda ~1.5sn — eski davranis). _tick -> _autopot_tick/_otp_tick/_sell_tick/_drop_tick; ui pencereleri ayni govdelere yonlendirilir (CIFT SURUS — hepsi zaman-kapili, cift tetik guvenli). Eski DLL + yeni pylib uyumlu (hasattr korumasi sessiz gecer); yeni DLL + eski pylib uyumlu (ayni sekil).
+- **sell BURST:** faz1 artik 45 slot/nabiz (90 slot ~0.3sn — m2k deseni); faz2 dogrulama 2sn -> kalan icin 2 BURST tekrari; yanit/paket/atlama/kalan sayaclari v4.9 sozcukleriyle.
+- **drop BURST:** 45 slot/nabiz + tur sonu 2.5sn dogrulama + 4 tura dek tekrar; 'wait' faz anahtari yeni.
+- **autopot:** 6132/6197 format buglari ('%%%d...%%%d' % tek arg -> TypeError) % (p,p,50) tuplesi ile sabit + KRITIK mod (%50 alti 0.15sn, normal 0.4sn).
+- **otp alt-komutlar:** _otp_start artik 'delay/step/stop/dur/bekle/adim' anahtar kelimelerini yonlendirir (otp delay 1 ValueError sabit); cpp dispatch'i de ayni yakalama yapar (otp/otp1/otp2/optimizetp birlesik blok).
+- **otp2 ISINLANA+ADIM (kullanici tarifi):** her tik (>=100ms): SetPixelPosition(240px sinirli sicrama) + MoveToDestPosition(vid,nx,ny) + 1-kare DIK_UP basin/release (darealfreak Debug() deseni) + net.SendCharacterPositionPacket (warp kanali). W-basili yuruyus KALDIRILDI. Varista tus birakma korunur.
+
+**cpp v2.5:** SetTimer 1500->150ms + FastTick() (hasattr korumali maxlib._tick) + g_nFastTick sayaci; otp dispatch alt-komut yakalama; tum surum dizgileri v2.5/v4.9 (banner, baslik, BootImport, pylib-eski uyarisi, pyfail ipucu); help v4.9 blogu (BURST/KRITIK/isinlana+adim/150ms nabiz).
+
+**Dogrulama (scripts/verify_v49.py — yeniden yazildi, 5 katman):** (1) lib2to3 py2 parse; (2) py3 donusumle modul-seviye exec simulasyonu (ui stub, 269 global, 35 kritik sembol); (3) FONKSIYONEL duman testi — autopot KRITIK 0.15sn aralik + format temiz, otp delay/step/stop, otp2 tik zinciri (SPP+MTD+DIK_UP+konum paketi), sell BURST 45/tik, drop BURST 45+45+tur-sonu wait, _tick nabiz, yanit dizgileri; (4) dispatch capraz-kontrol (103 maxlib.* cagrisi); (5) DLL ikili denetim (v4.9/v2.5/_tick). ILK KOSUDA GERCEK BUG YAKALADI: autopot format dizgileri (6132/6197) yamada unutulmustu — test sayesinde DLL yeniden derlenmeden once sabit. DLL 882KB + EXE 222KB (zig 0.11.0, kaynakta 0 uyari; embed 295768 byte).
+
+**Sahada beklenecek:** sellall force dukkan acilinca ~0.3sn'de 90 paket (sunucu hizi yetmezse 2sn'de tekrar); dropall ayni; autopot %50 altinda 6-7 pot/sn'a dek; 'otp delay 100' artik OK yaniti; otp2 isinlana-isinlana hizli gider ve geri atma olmamali (SendCharacterPositionPacket + UP basin kanallari); alive.txt tick/drain sayaclari artik nabiz hizini gosterir (drain ~tick/10).

@@ -1,5 +1,7 @@
 # MaxExecutor — Ana-Thread Güvenli Python Executor (xgodmod4)
 
+> **v2.5 / pylib v4.9** — saha testi 15: **150ms hızlı nabız** (DLL her 150ms'de `maxlib._tick()` — döngüler ÇİFT KALP: DLL timer + ui penceresi; '1 tane sat/at sonra susma' kökten bitti) · `sellall`/`selljunk`/`dropall` **BURST** (45 slot/nabız — m2k kanıtı; 90 slot ~0.3sn + doğrulama turları) · `autopot` **KRİTİK mod** (%50 altında 0.15sn + format-bug düzeltmesi) · `otp2` **IŞINLANA-IŞINLANA + ADIM** (SetPixelPosition sıçraması + MoveToDestPosition + 1-kare UP + SendCharacterPositionPacket → sendcharacterstate tetiklenir, geri atma yok) · `otp delay/step/stop` alt-komutları ('otp delay 1' ValueError bitti). Detay: KULLANIM.md üst bölümü.
+>
 > **v2.4 / pylib v4.8** — saha testi 14: `autopot` SÜREKLİ izleme (0.4sn döngü + kalp atısı + görünen hatalar; '1 kere basip susma' bitti) · `otp2` W+UP tuşu SÜREKLİ BASILI gerçek yürüyüş (SetRotation hedefe, sıçrama yok, varınca otomatik bırakır) · `slots` sayım düzeltmesi (TOPLAM = sekme×boyu = 90 + slot haritası `#=esya .=bos E=efsunlu`) · `selljunk`/`sellall` 1-arg kanıtlı satış paketi + sessiz dükkan bekleme + DURDUR (`selljunk 0`) · `dropall` 1-arg kanıtlı atma paketi + DURDUR (`dropall 0`) · [LIVE] spam bitti. Detay: KULLANIM.md üst bölümü.
 
 > **v2.3 / pylib v4.7** — saha testi 13: speed/aspeed + chchange/relogin KALDIRILDI · warp LEGENDY yolu (sahne yeniden yüklenir) · otp1/otp2 ayrımı · autopot yeni şema · slots/selljunk/sellall/dropall · dump C-modül API-stub + pack.Get sysmodules yolu. Detay: KULLANIM.md üst bölümü.
