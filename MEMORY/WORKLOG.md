@@ -673,3 +673,26 @@ sahne adi notu dokumante edildi. Kod degisikligi YOK, rebuild YOK.
 **Dogrulama (scripts/verify_v49.py — yeniden yazildi, 5 katman):** (1) lib2to3 py2 parse; (2) py3 donusumle modul-seviye exec simulasyonu (ui stub, 269 global, 35 kritik sembol); (3) FONKSIYONEL duman testi — autopot KRITIK 0.15sn aralik + format temiz, otp delay/step/stop, otp2 tik zinciri (SPP+MTD+DIK_UP+konum paketi), sell BURST 45/tik, drop BURST 45+45+tur-sonu wait, _tick nabiz, yanit dizgileri; (4) dispatch capraz-kontrol (103 maxlib.* cagrisi); (5) DLL ikili denetim (v4.9/v2.5/_tick). ILK KOSUDA GERCEK BUG YAKALADI: autopot format dizgileri (6132/6197) yamada unutulmustu — test sayesinde DLL yeniden derlenmeden once sabit. DLL 882KB + EXE 222KB (zig 0.11.0, kaynakta 0 uyari; embed 295768 byte).
 
 **Sahada beklenecek:** sellall force dukkan acilinca ~0.3sn'de 90 paket (sunucu hizi yetmezse 2sn'de tekrar); dropall ayni; autopot %50 altinda 6-7 pot/sn'a dek; 'otp delay 100' artik OK yaniti; otp2 isinlana-isinlana hizli gider ve geri atma olmamali (SendCharacterPositionPacket + UP basin kanallari); alive.txt tick/drain sayaclari artik nabiz hizini gosterir (drain ~tick/10).
+
+## Oturum 21 (2026-10-28) — v2.6 / pylib v5.0: saha testi 16 DEV RAPORU
+
+**Rapor:** (1) slots cok-hucreli esya saymiyor ("bazi itemler 3 slot bazi 2 slot yer kapliyor, ilk envanterde 32 bos yer var" - oyun 32, v4.9 34 diyor) (2) dropall "5 dk da bir atiyor durmuyo" (3) sellall "5 dk sonra tekrar npcye tiklayip satmaya calisiyor" (4) kullanici istegi: hp surekli getstatus ile takip edip can potuna basmali (farkli thread while dongusu onerdi).
+
+**KANIT TARAMASI (nighttown kendi botlari + dump):**
+- `item.SelectItem(vnum)` + `item.GetItemSize()` -> (w,h): swich.py:905 + EQChanger.py:99 + pasha37:2238 + efsunbotu.py:793 + edithack.py:754 + itemcreator.py:322 (6 dosya)
+- **Izgara 5 sutun x 9 satir, slot=satir*5+sutun**: edithack.py:751-757 + itemcreator.py:315-322 ("slot>=5 ve isItem(slot-5) ve GetItemSize()[1]>=2 -> slot dolu" = yukseklik +5 adimla ASAGI kapatir)
+- `net.SendShopEndPacket()`: ShopScanner.py:566 + energybot.py:140 (bu sunucuda calisan botlar satis bitince boyle kapatir)
+- **IsOpen FLICKER gercek** (v4.8 saha testi 14'te belgelenmisti) -> v4.9'da flicker donusunde cur SIFIRLANIYORDU -> dukkan acilinca burst bastan -> faz2'ye HIC ulasilmadan **sonsuz faz0<->faz1 ping-pongu** = "5 dk sonra tekrar npcye tiklayip satmaya calisiyor" KOK NEDENI
+- dropall "5 dk da bir atiyor": sunucu BURST drop paketlerini YAVAS isleyebilir -> esyalar dongu bittikten SONRA dakikalar icinde tek tek duser (dongu 15sn'de biter; tekrar komut gerekmez)
+
+**v5.0 DUZELTMELER:**
+- **slots v5.0**: _item_size (cache'li GetItemSize) + _item_cells (5 sutun izgarasi, tasma kirpmali) + 2 GECISLI harita (once tum grid, sonra 'o' isaretleme - 1. geciste grid[j] IndexError vardi, verify yakaladi) + dolu=KAPLANAN HUCRE (kullanici 32'siyle birebir) + 5 slot/satir harita + cok-hucreli esya isim listesi. inv: (1x3)/(2x3) boyut etiketi + hucre sayimi.
+- **sell v5.0**: cur flicker'da KORUNUR + flick sayaci (10 = kesin dur) + 120sn HARD DEADLINE + KARA LISTE (2 turda duran slot bir daha denenmez -> ERKEN bitis) + SATILAMAYANLAR isim+boyut raporu + bitince dukkan OTOMATIK KAPANIR (SendShopEndPacket).
+- **drop v5.0**: ayni tedavi (kara liste 3 tur, pass<5) + ATILAMAYANLAR isim+boyut raporu + "sunucu yavas isleyebilir" notu.
+- **autopot v5.0 OTOMATIK**: C:\MaxExec\autopot.txt (hp 80/mp 50/off satirlari; dosya yoksa varsayilan hp 80 yazilir) + _ingame guard (oyun disinda sessiz - err sayaci sismez) + lazy pencere (oyuna girince otomatik acilir). Gercek OS thread ACILMADI: oyunun Python'u ana-thread bagli - DLL 150ms nabzi zaten kanitlanmis "while dongusu" (live.txt: kirmizi pot #1 can %40 KRITIK).
+
+**cpp v2.6:** kod ayni (v2.5 mimarisi saglam) - sadece el-sikisma/banner dizgileri v5.0'a gecti + help'e v5.0 blogu + pylib_embedded.h v5.0 (312297 byte).
+
+**Dogrulama (scripts/verify_v50.py - SAHTE SAATLI deterministik test):** lib2to3 + exec simulasyonu (37 kritik sembol) + FONKSIYONEL: _item_cells [0,5,10]/6-hucre; **KULLANICININ GERCEK ENVANTERI ile slots testi (11 esya -> 13 hucre -> 32 BOS = oyunla AYNI)**; sell FLICKER tam yolu (kapan-2sn-acil: cur=45 KORUNDU, v4.9'da cur=0 olurdu) + kara liste erken bitis (6 paket/2 tur) + dukkan kapandi + SATILAMAYAN 'Kask+0 (2x2)'; 120sn deadline; drop kara liste (6 paket/3 tur) + ATILAMAYAN 'Kilic+9 (1x3)','Zirh+4 (2x3)'; autopot oto-acilis + oyun-disi sessizlik + KRITIK pot; _tick cift nabiz; dispatch 104 cagri; DLL ikili (v2.6/v5.0 + gomulu kod parcalari). ILK KOSUDA GERCEK BUG YAKALADI (grid 1-gecis IndexError) - iki-gecisli harita ile sabit. DLL 900KB PE32 i386 (zig, rc=0).
+
+**Sahada beklenecek:** slots oyunla ayni sayim (32 bos) + 'o' govde hucreleri; sellall force ~15sn'de biter + SATILAMAYAN isim listesi + dukkan kendiliginden kapanir; dropall bitince ATILAMAYAN listesi (dakikalar sonra tek tek dusenler SUNUCUDAN); autopot hic komut yazmadan aktif (autopot.txt); 5dk tekrarlari kaybolur (cur korunuyor + 120sn limit) - tekrar gorulurse [LIVE] BASLADI satirlarinin zamandamgasi teshis verir.

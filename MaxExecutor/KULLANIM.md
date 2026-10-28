@@ -2,7 +2,13 @@
 
 > Paket içeriği, kurulum, komutlar, giriş akışı, sorun giderme — hepsi bu dosyada.
 > Mimari gerekçe için: `reports/DEV_REAL_BINARY_TEST.md` (RC18/RC19) + `reports/DEV_GIL_ANALYSIS.md` (RC1-RC17).
-> Son güncelleme: **Oturum 20 — MaxExecutor v2.5 PLUSMAXGOD / pylib v4.9 (saha testi 15 dev raporu — 150ms hızlı nabız + BURST satma/atma + autopot KRİTİK mod + otp2 ışınlana-adım)**
+> Son güncelleme: **Oturum 21 — MaxExecutor v2.6 PLUSMAXGOD / pylib v5.0 (saha testi 16 dev raporu — çok-hücreli eşya sayımı + sell/drop KARA LİSTE + 120sn hard limit + dükkan otomatik kapanır + autopot otomatik açılır)**
+>
+> **v2.6/v5.0 ÖZET — saha testi 16 (tümü kanıtlı):**
+> **`slots` ÇOK-HÜCRELİ EŞYA:** saha raporu 'bazı itemler 3 slot bazıları 2 slot yer kaplıyor, ilk envanterde 32 boş yer var' — v4.9 her eşyayı 1 slot sanıyordu (oyun 32 boş gösterirken biz 34 diyorduk). Artık `item.SelectItem(vnum)` + `item.GetItemSize()` ile **(w×h) boyutu okunur** (6 NightTown dosyasında çalışan desen: swich.py:905, EQChanger.py:99, pasha37:2238, efsunbotu.py:793, edithack.py:754, itemcreator.py:322) ve **kaplanan HÜCRE** sayılır — oyunun göstergesiyle AYNI (kullanıcının 32'siyle birebir eşleşir). Izgara **5 sütun × 9 satır**, slot = satır×5+sütun (edithack.py:751 'slot-5' kontrolü kanıtı: yüksekliği ≥2 olan eşya 5 slot alttaki hücreyi kapatır). Harita artık **5 slot/satır** (oyunun ızgarasıyla aynı yönelim): `#`=eşya-başı, `o`=eşya-devamı (çok-hücrelinin gövdesi), `.`=boş, `E`=efsunlu, `?`=hata. `inv` de her eşyaya `(1x3)`/`(2x3)` boyut etiketi ekler.
+> **`sellall`/`selljunk` v5.0 — '5 dk sonra tekrar npcye tıklayıp satmaya çalışıyor' KÖK NEDENİ:** v4.9'da `shop.IsOpen()` **FLICKER**'ı (kısa süre 0 dönmesi — saha testi 14'te belgelenmişti) faz1→faz0 geçişinde **`cur`'u SIFIRLIYORDU** → dükkan açılınca burst BAŞTAN başlıyordu → faz2 doğrulamasına HİÇ ulaşılmadan **sonsuz faz0↔faz1 ping-pongu**. Düzeltme: (1) **cur flicker'da KORUNUR** (progress kaybolmaz), (2) flicker sayacı (10 üstü = kesin dur), (3) **120sn HARD DEADLINE** — ne olursa olsun durur, (4) **KARA LİSTE:** 2 doğrulama turunda da satılmayan eşya bir daha denenmez, **SATILAMAYANLAR isim+boyut listesiyle** raporlanır (hangi eşyaların takılı kaldığı GÖRÜNÜR — görev/kilitli eşya teşhisi), (5) bitince **dükkan OTOMATİK KAPANIR** (`net.SendShopEndPacket` — ShopScanner.py:566 kanıtı; 'kapatamıyorum' şikayeti kapandı).
+> **`dropall` v5.0 — '5 dk da bir atıyor durmuyo':** aynı kara liste (3 turda da düşmeyen bir daha denenmez) + 120sn hard limit + **ATILAMAYANLAR isim+boyut raporu**. ÖNEMLİ NOT: sunucu BURST paketlerini **yavaş işleyebilir** → eşyalar döngü bittikten SONRA dakikalar içinde tek tek düşer ('5 dk'da bir düşme' gözlemi sunucudan, döngüden değil) — tekrar `dropall` yazmaya gerek yok; kalanlar raporda listelenir.
+> **`autopot` OTOMATİK AÇILIR (kullanıcı isteği: 'hp yi sürekli getstatus ile takip edip envanterdeki can potuna basması gerekmiyor mu?'):** pylib yüklenirken **`C:\MaxExec\autopot.txt`** okunur — `hp 80` / `mp 50` satırları otomatik aktifleşir; dosya yoksa **varsayılan `hp 80` yazilir ve açılır** (artık komut yazmak gerekmez). Kapatmak için dosyaya `off` yaz veya `autopot 0`. Döngüyü DLL'in 150ms nabzı (`maxlib._tick`) sürer — **gerçek OS thread açmak oyunun Python'unda ana-thread ihlali olurdu** (crash riski); mevcut çift-nabız + zaman-kapılı desen sahadaki kanıtlı çalışan yaklaşım (live.txt örneği: `[11:08:41] AUTOPOT: kirmizi pot #1 (can %40 KRITIK, slot=57)`).
 >
 > **v2.5/v4.9 ÖZET — saha testi 15 (tümü kanıtlı):**
 > **150MS HIZLI NABIZ (`_tick`):** saha raporu '1 tane satıyor bidaha satmıyor / 1 atıyor 1-2dk bekliyor / pot basmıyor karakter ölüyor' — döngüler tek kalbe (ui penceresi `OnUpdate`) bağlıydı ve bu istemcide yavaş/nadir tetikleniyordu. **DLL artık her 150ms'de `maxlib._tick()` çağırır** (kuyruk taraması ~1.5sn'de kalır) — autopot/sell/drop/otp döngüleri **ÇİFT KALPLE** yürür (DLL timer + ui penceresi; hepsi zaman-kapılı olduğu için çift tetiklenme güvenli).
@@ -367,11 +373,12 @@ plusquest               TÜM yüklü modülleri tara → C:\MaxExec\dump\PLUSQue
 
 ---
 
-## 3e. v2.5 / pylib v4.9 — ENVANTER + WARP + OTOPOT (saha testi 15 günceli)
+## 3e. v2.6 / pylib v5.0 — ENVANTER + WARP + OTOPOT (saha testi 16 günceli)
 
 ```
-slots                        envanter ozeti + SLOT HARITASI (#=esya .=bos E=efsunlu ?=hata)
-                             TOPLAM = sekme x sekme-boyu (2x45=90)
+slots                        envanter ozeti + SLOT HARITASI (v5.0 COK-HUCRELI!) (#=esya-basi
+                             o=esya-devami .=bos E=efsunlu ?=hata; 5 slot/satir = oyunun
+                             5x9 izgarasi; dolu = KAPLANAN HUCRE - oyunla AYNI sayim)
 selljunk                     cop esyalari yakindaki NPC'ye sat (efsunlu ASLA satilmaz)
                              NPCye 1 tik; dukkan ACILIR ACILMAZ satis baslar
   selljunk 0 | stop          DURDUR ('kapatamiyom' fix - spam yok)
@@ -379,8 +386,14 @@ selljunk                     cop esyalari yakindaki NPC'ye sat (efsunlu ASLA sat
   selljunk name fier         isminde 'fier' gecen esyalari cop say
   selljunk list              listeyi goster | selljunk del <vnum> cikar
 sellall [force]              tum envanteri sat (force: efsunlu dahil - DIKKAT)
+                             v5.0: kara liste (2 turda satilmayan bir daha denenmez,
+                             SATILAMAYANLAR isim listesiyle rapor) + 120sn siniri +
+                             flicker korumasi + bitince dukkan OTOMATIK KAPANIR
   sellall 0 | stop           DURDUR
-dropall                      tum envanteri YERE AT (BURST: 45 slot/nabiz + 4 tur)
+dropall                      tum envanteri YERE AT (BURST: 45 slot/nabiz)
+                             v5.0: kara liste (3 turda dusmeyen bir daha denenmez,
+                             ATILAMAYANLAR isim listesiyle rapor) + 120sn siniri
+                             NOT: sunucu yavaysa esyalar SONRA tek tek duser - normal
   dropall 0 | stop           DURDUR
 
 warp 384 390                 LEGENDY warp: SAHNE YENIDEN YUKLENIR (net.directenter tarzi)
@@ -395,6 +408,8 @@ otp stop | otpstop           yuruyusu durdur (tuslar birakilir)
 
 autopot hp 80                can %80 ALTINDAYKEN kirmizi pot SUREKLI basilir
                              (normal 0.4sn - KRITIK %50 alti 0.15sn; 30sn kalp atisi)
+                             v5.0: OTOMATIK ACILIR (C:\MaxExec\autopot.txt - varsayilan
+                             hp 80; kapatmak icin dosyaya 'off' yaz veya autopot 0)
 autopot mp 80                mana %80 altinda NORMAL mavi pot (ayni surekli mantik)
 autopot                      durum raporu (hata sayaci dahil)
 autopot 0                    hepsini kapat
@@ -407,9 +422,9 @@ autopot_item 0               esya izlemesini kapat
 
 **warp koordinat hesabı:** `pos` raporu pixel verir (örn 38421 39017) → warp değeri = **/100** (384 390). Her harita 256x256 birim; atlas koordinatı verilirse **harita sınırı yok** (GlobalPositionToMapInfo o haritayı yükler). warp sonrası `pos` ile kontrol et — sunucu senkronu için konum paketi otomatik gider.
 
-**selljunk/sellall akışı (v4.9 BURST):** (1) komut anında yakın NPC'ye **1 tık** (`SendOnClickPacket`, 3500px içinde en yakın) — tekrarlı tıklama YOK. (2) `shop.IsOpen()` SESSİZ izlenir: dükkan açılınca **BURST satış** otomatik başlar; 8 sn içinde açılmazsa EN FAZLA 1 tık daha, o da olmazsa durur ve 'NPCye KENDIN tikla' der — **sen elle tıklayınca da satış kendiliğinden başlar**. (3) Satış: **45 slot tek nabızda** (90 slot ~0.3sn) — m2k Taubuyer/Inventorymanager deseni (beklemesiz paket dizisi; v4.8'in 0.4sn aralığı '1 tane satıyor' sorununun kendisiydi) — ÖNCE `net.SendShopSellPacket(slot)` (1-arg kanıt), yoksa `SendShopSellPacketNew(slot, adet)`. (4) Tur bitince 2sn doğrulama: kalan satılabilirler için en fazla 2 BURST tekrarı; bitince özet (paket/atlanan/kalan). (5) Efsunlular **asla satılmaz** (`sellall force` hariç). Durdurma her an: `selljunk 0` / `sellall 0`.
+**selljunk/sellall akışı (v5.0):** (1) komut anında yakın NPC'ye **1 tık** (`SendOnClickPacket`, 3500px içinde en yakın) — tekrarlı tıklama YOK. (2) `shop.IsOpen()` SESSİZ izlenir: dükkan açılınca **BURST satış** otomatik başlar; 8 sn içinde açılmazsa EN FAZLA 1 tık daha, o da olmazsa durur ve 'NPCye KENDIN tikla' der — **sen elle tıklayınca da satış kendiliğinden başlar**. (3) Satış: **45 slot tek nabızda** (90 slot ~0.3sn) — m2k Taubuyer/Inventorymanager deseni (beklemesiz paket dizisi; v4.8'in 0.4sn aralığı '1 tane satıyor' sorununun kendisiydi) — ÖNCE `net.SendShopSellPacket(slot)` (1-arg kanıt), yoksa `SendShopSellPacketNew(slot, adet)`. (4) Tur bitince 2sn doğrulama: **KARA LİSTE** — 2 turda da satılmayan eşya bir daha denenmez, döngü erken biter; **SATILAMAYANLAR isim+boyut listesiyle raporlanır** (görev/kilitli eşya teşhisi). (5) **120sn HARD SINIR** — döngü ne olursa olsun durur ('5 dk sonra tekrar satmaya çalışıyor' bitti; kök neden: v4.9'da IsOpen flicker'ı `cur`'u sıfırlayıp sonsuz faz geçişi yapıyordu — v5.0'da cur KORUNUR + flicker sayacı). (6) Bitince **dükkan OTOMATİK KAPANIR** (`net.SendShopEndPacket` — ShopScanner.py:566 kanıtı; 'kapatamıyorum' şikayeti kapandı). (7) Efsunlular **asla satılmaz** (`sellall force` hariç). Durdurma her an: `selljunk 0` / `sellall 0`.
 
-**dropall akışı (v4.9 BURST):** **45 slot/nabız** `net.SendItemDropPacket(slot)` (m2k DropAllItems NightTown kanıtı — 90 paket tek karede gider; v4.8'in 0.45sn aralığı '1 atıyor 1-2dk bekliyor' sorununun kendisiydi). Tur sonu 2.5sn doğrulama: hâlâ duran eşyalar için yeni BURST (4 tura dek); hiçbir şey atılamazsa 'sunucu atmayı engelliyor olabilir' teşhisi yazar. Durdurma: `dropall 0`.
+**dropall akışı (v5.0):** **45 slot/nabız** `net.SendItemDropPacket(slot)` (m2k DropAllItems NightTown kanıtı — 90 paket tek karede gider). Tur sonu 2.5sn doğrulama: hâlâ duran eşyalar için yeni BURST — **3 turda da düşmeyen KARA LİSTEYE girer** (bir daha denenmez) ve **ATILAMAYANLAR isim+boyut listesiyle raporlanır**. **120sn HARD SINIR** — döngü ne olursa olsun durur. ÖNEMLİ: sunucu paketleri **yavaş işleyebilir** — eşyalar döngü bittikten sonra dakikalar içinde tek tek düşerse BU NORMALDİR (sunucunun drop kuyruğu; '5 dk'da bir düşme' gözlemi), tekrar `dropall` yazmaya gerek yok. Hiçbir şey atılamazsa 'sunucu atmayı engelliyor olabilir' teşhisi yazar. Durdurma: `dropall 0`.
 
 ## 4. NEDEN BU MİMARİ GÜVENLİ? (kısa hatırlatma)
 

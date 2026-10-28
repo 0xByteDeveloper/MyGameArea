@@ -124,6 +124,12 @@
 //            basedir.txt ile tasinabilir (BASE_DIR\dump).
 //    FIX-35: SyncEmbeddedPylib yeni dosya adini yazar (PLUSMAXGOD_PyScript.py),
 //            eskisini PLUSMAXGOD_eski_v<surum>.py olarak yedekler.
+//  v2.6 (saha testi 16 raporu, pylib v5.0 cifti): DLL kodu ayni (150ms
+//         nabiz + kuyruk zaten v2.5'te saglam) - sadece el-sikisma/banner
+//         dizgileri v5.0'a gecti. TUM davranis degisiklikleri pylib v5.0'da:
+//         slots cok-hucreli esya (GetItemSize), sell/drop kara liste +
+//         120sn siniri + flicker korumasi, sellall bitince dukkan otomatik
+//         kapanir, autopot otomatik acilis (autopot.txt).
 //  v2.5 "PLUSMAXGOD" (saha testi 15 dev raporu, pylib v4.9 cifti):
 //     150MS HIZLI NABIZ: DLL artik her 150ms'de maxlib._tick() cagirir
 //     (kuyruk taramasi ~1.5sn'de kalir) - autopot/sell/drop/otp donguleri
@@ -431,7 +437,7 @@ static void DrainQueue(void)
                 _snprintf(fp, MAX_PATH, "%s\\last_pyfail.txt", RESULT_DIR); fp[MAX_PATH-1]=0;
                 WriteFileAll(fp, std::string("PYTHON HATASI: ") + fd.cFileName +
                     "\nDetay: pyerr komutunu yaz (pyerr.log son satirlari).\n"
-                    "En sik neden: ESKI pylib - PLUSMAXGOD v4.9 ile degistir (bundle zip / GitHub)!\n");
+                    "En sik neden: ESKI pylib - PLUSMAXGOD v5.0 ile degistir (bundle zip / GitHub)!\n");
                 OutP("[MAXEXEC] !! PYTHON HATASI (%s) - detay icin: pyerr\n", fd.cFileName);
                 fflush(stdout);
             }
@@ -497,7 +503,7 @@ static void InstallTimer(void)
     if (!g_hGameWnd) return;
     UINT_PTR id = SetTimer(g_hGameWnd, TIMER_ID_MAXEXEC, 150, MaxExecTimerProc);
     LogLine("SetTimer: %s (id=%lu, 150ms hizli nabiz - v2.5)", id ? "KURULDU" : "BASARISIZ", (unsigned long)id);
-    OutP("ana-thread timer: %s (150ms hizli nabiz + 1.5sn kuyruk - v2.5)\n", id ? "KURULDU" : "BASARISIZ");
+    OutP("ana-thread timer: %s (150ms hizli nabiz + 1.5sn kuyruk - v2.6)\n", id ? "KURULDU" : "BASARISIZ");
 }
 
 // Oyunun ana gorunur penceresini bul (bu surece ait, sahibi olmayan, en buyuk)
@@ -576,7 +582,7 @@ static std::string BootImport(void)
          "        try:\n"
          "            import traceback\n"
          "            _f = open(r'" + std::string(RESULT_DIR) + "\\\\last_pylib_fail.txt', 'w')\n"
-         "            _f.write('PLUSMAXGOD_PyScript.py YUKLENEMEDI (DLL v2.5 / pylib v4.9) - TRACEBACK:\\n' + traceback.format_exc())\n"
+         "            _f.write('PLUSMAXGOD_PyScript.py YUKLENEMEDI (DLL v2.6 / pylib v5.0) - TRACEBACK:\\n' + traceback.format_exc())\n"
          "            _f.close()\n"
          "        except Exception:\n"
          "            pass\n"
@@ -593,7 +599,7 @@ static std::string BootImport(void)
          "    maxlib._MX_OLD_WARNED = True\n"
          "    try:\n"
          "        import sys\n"
-         "        sys.stderr.write('!!! PYLIB ESKI v' + str(getattr(maxlib, 'PYLIB_VERSION', '?')) + ' - DLL v2.5 PLUSMAXGOD v4.9 ister! "
+         "        sys.stderr.write('!!! PYLIB ESKI v' + str(getattr(maxlib, 'PYLIB_VERSION', '?')) + ' - DLL v2.6 PLUSMAXGOD v5.0 ister! "
          "C:\\\\MaxExec\\\\PLUSMAXGOD_PyScript.py dosyasini yenisiyle degistir (bundle zip / GitHub) !!!\\\\n')\n"
          "    except Exception:\n"
          "        pass\n";
@@ -1079,7 +1085,7 @@ static bool InitConsole(void)
         LogLine("CONOUT$ (stderr) yeniden acilamadi");
     setvbuf(stdout, NULL, _IONBF, 0);   // buffer'siz: crash olsa bile yazar
     setvbuf(stderr, NULL, _IONBF, 0);
-    SetConsoleTitleA("MaxExecutor v2.5 PLUSMAXGOD");
+    SetConsoleTitleA("MaxExecutor v2.6 PLUSMAXGOD");
     HWND cw = GetConsoleWindow();
     if (cw)
     {
@@ -1197,7 +1203,7 @@ static std::vector<std::string> SplitArgs(const std::string& line)
 
 static void PrintHelp(void)
 {
-    OutP("\n=== MaxExecutor v2.5 PLUSMAXGOD (oyun-ici + GOD MOD pylib v4.9) ===\n");
+    OutP("\n=== MaxExecutor v2.6 PLUSMAXGOD (oyun-ici + GOD MOD pylib v5.0) ===\n");
     OutP("  help                        : bu yardim\n");
     OutP("  status                      : anlik sahne/baglanti snapshot\n");
     OutP("  -- giris akisi (menu) --\n");
@@ -1217,6 +1223,16 @@ static void PrintHelp(void)
     OutP("  ride | revive | logout | back | pickup : hizli eylemler\n");
     OutP("  zoom <mesafe> | use <slot> | drop <slot> <adet> | goto <x> <y> | tp <x> <y>\n");
     OutP("  key <DIK> <0/1> | attack <0/1>\n");
+    OutP("  -- v5.0: SAHA TESTI 16 DUZELTMELERI --\n");
+    OutP("  slots                      : v5.0 COK-HUCRELI esya sayimi (kilic 1x3, zirh 2x3 -\n");
+    OutP("                                oyunun gostergesiyle AYNI bos slot; harita 5 kolon)\n");
+    OutP("  selljunk/sellall           : v5.0 kara liste (2 turda satilmayan bir daha\n");
+    OutP("                                denenmez, isim listesi raporlanir) + 120sn siniri\n");
+    OutP("                                + flicker korumasi + bitince dukkan KAPANIR\n");
+    OutP("  dropall                    : v5.0 ayni tedavi + ATILAMAYAN esya isim listesi\n");
+    OutP("                                (sunucu yavaysa esyalar sonra tek tek duser)\n");
+    OutP("  autopot                    : v5.0 OTOMATIK ACILIR - C:\\MaxExec\\autopot.txt\n");
+    OutP("                                (varsayilan hp 80; kapatmak: dosyaya off / autopot 0)\n");
     OutP("  -- v4.9: SAHA TESTI 15 DUZELTMELERI --\n");
     OutP("  sellall/selljunk/dropall      : BURST gonderim (45 slot/nabiz - m2k kaniti)\n");
     OutP("  autopot hp/mp <pct>           : KRITIK mod - %50 alti 0.15sn arayla pot\n");
@@ -1282,7 +1298,8 @@ static void PrintHelp(void)
          "            yolu | dump: C modul API stub + pack.Get sysmodules;\n"
          "   v4.8 not: autopot surekli | otp2 W-basili | slots sayim fix |\n"
          "            selljunk/sellall/dropall 1-arg paket + stop (selljunk 0);\n"
-         "   v4.9 not: sell/drop BURST | autopot KRITIK mod | otp2 isinlana+adim |\n"
+         "   v5.0 not: slots cok-hucreli | sell/drop kara liste + 120sn + dukkan kapanir |\n"
+         "   autopot otomatik (autopot.txt) | v4.9: sell/drop BURST | otp2 isinlana+adim |\n"
          "            DLL 150ms nabiz | otp delay/step alt-komut)\n");
     OutP("  -- KESIF --\n");
     OutP("  pyfiles | pydump <ad> | pydumpall | pyscan <modul> | plusquest\n");
@@ -1388,8 +1405,8 @@ static DWORD WINAPI WorkerThread(LPVOID)
     const bool con = InitConsole();
 
     OutP("\n=============================================\n");
-    OutP("  MaxExecutor v2.5 PLUSMAXGOD - ana-thread executor\n");
-    OutP("  oyun-ici + kesif + GOD MOD v2 (pylib v4.9 cifti)\n");
+    OutP("  MaxExecutor v2.6 PLUSMAXGOD - ana-thread executor\n");
+    OutP("  oyun-ici + kesif + GOD MOD v2 (pylib v5.0 cifti)\n");
     OutP("  canli cikti: C:\\MaxExec\\live.txt izlenir -> [LIVE] akar\n");
     OutP("=============================================\n");
     if (!con)
@@ -1451,12 +1468,12 @@ static DWORD WINAPI WorkerThread(LPVOID)
                 char rp[MAX_PATH];
                 _snprintf(rp, MAX_PATH, "%s\\last_warning.txt", RESULT_DIR); rp[MAX_PATH-1]=0;
                 WriteFileAll(rp, std::string("! PYLIB ESI SURUM: v") + vShow +
-                    "  (DLL v2.5 PLUSMAXGOD v4.9 ister)\n"
+                    "  (DLL v2.6 PLUSMAXGOD v5.0 ister)\n"
                     "Yeni PLUSMAXGOD_PyScript.py'yi " + std::string(BASE_DIR) + " icine kopyala (bundle zip / GitHub).\n"
                     "ESKI pylib ILE: stat/pos/inv/equip/skill/near/chat/goto/tp/pyfiles/pydumpall/plusquest CALISMAZ.\n");
-                LogLine("UYARI: pylib ESI v%s - PLUSMAXGOD v4.9 gerekli! (%s)", vShow, pylibPath);
+                LogLine("UYARI: pylib ESI v%s - PLUSMAXGOD v5.0 gerekli! (%s)", vShow, pylibPath);
                 OutP("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-                OutP("!! PYLIB ESI: diskteki PLUSMAXGOD_PyScript.py = v%s  (gereken: v4.9)\n", vShow);
+                OutP("!! PYLIB ESI: diskteki PLUSMAXGOD_PyScript.py = v%s  (gereken: v5.0)\n", vShow);
                 OutP("!! Yeni PLUSMAXGOD_PyScript.py'yi %s icine kopyala (bundle zip)\n", BASE_DIR);
                 OutP("!! Eski pylib ile v4.0 komutlari CALISMAZ (stat/inv/tp/pyfiles..)\n");
                 OutP("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
