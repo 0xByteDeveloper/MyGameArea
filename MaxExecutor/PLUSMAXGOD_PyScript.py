@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 """
 ===========================================================================
- PLUSMAXGOD_PyScript.py - MaxExecutor Ana-Thread Komut Kutuphanesi (v5.0)
+ PLUSMAXGOD_PyScript.py - MaxExecutor Ana-Thread Komut Kutuphanesi (v5.1)
+ v5.1 DEGISIKLIKLER:
+   * oto-pot (hp/mp otomatik iksir basma + oto-pot esyasi izlemesi)
+     ozelligi ve ilgili tum komutlar TAMAMEN KALDIRILDI (kullanici istegi).
+     Otomatik acilis dosyasi okuma/yazma davranisi da cikarildi.
  v5.0 DEGISIKLIKLER (saha testi 16 raporu - tumu kanitli):
    * slots COK-HUCRELI ESYA: bazi esyalar 2-3 hucre kaplar (kilic 1x3, zirh
      2x3). v4.9 her esyayi 1 slot saniyordu -> oyun 32 bos gosterirken biz 34
@@ -20,17 +24,7 @@
      NOT: sunucu BURST paketlerini yavas isleyebilir -> esyalar dongu
      bittikten sonra dakikalar icinde tek tek duser ('5 dk da bir atiyo'
      buydu); tekrar dropall yazmaya gerek yok, kalanlar raporlanir.
-   * autopot OTOMATIK ACILIS (kullanici istegi: 'hp surekli getstatus ile
-     takip edip can potuna basmali'): pylib yuklenirken
-     C:\\MaxExec\\autopot.txt okunur (hp 80 / mp 50 / off) - yoksa varsayilan
-     'hp 80' yazilir ve aktiflesir. DLL'in 150ms nabzi donguyu surer (gercek
-     OS thread'i oyunun Python'unda ana-thread ihlali olur - riskli ve
-     gereksiz; mevcut cift-nabiz desenli dongu kanitlanmis calisiyor).
  v4.8 DEGISIKLIKLER (saha testi 14 dev raporu - tumu kanitli):
-   * autopot SUREKLI IZLEME: '1 kere basip susma' duzeltildi - esik
-     altindayken 0.4sn'de bir pot basar, esigi gecene kadar. Tek buyuk
-     except KALDIRILDI (ilk exception'da dongu sessizce oliyordu); her
-     blok ayri + ilk 3 hata [LIVE]'da + 30sn kalp atisi.
    * otp2 SUREKLI BASILI: 'bas cek degil' - SetPixelPosition sicramalari
      KALDIRILDI; karakter SetRotation ile hedefe donderilir, W+UP tusu
      basili KALIR (her tik yenilenir), varince otomatik birakilir.
@@ -60,10 +54,6 @@
      basili: player.SetSingleDIKKeyState(app.DIK_W, 1))
    * otpstop FIX: saldiri tusu artik MUTLAKA birakilir (yol ortasinda
      durdurunca BASILI kaliyordu - attackkeystate bug raporu)
-   * autopot YENI SEMA: 'autopot hp 80' / 'autopot mp 80' ayri ayri,
-     NORMAL pot basar (oto-pot esyasi haric); autopot_item hp/mp:
-     72723-6/72727-30 oto-pot esyasi aktif degilse basar (kanit:
-     constInfo.IS_AUTO_POTION + uiInventory metinSocket[0])
    * YENI: slots (envanter doluluk %) | selljunk/sellall (NPC'ye sat;
      efsunlu ASLA satilmaz; m2k Inventorymanager + uiShop kaniti) |
      dropall (tek tek atma - bazi sunucular toplu atmayi reddeder)
@@ -83,8 +73,8 @@
      (networkModule.py oyun yolu - karakter ekraninda takilma bitti)
    * attr etiketleri: efsun 1-5 + 6./7. BONUS (efsunbotu kaniti)
    * YENI: warp (otp adim + SendCharacterPositionPacket) | antistun |
-     antislow | autopot (27001-3 kirmizi 27004-6 mavi) | combo
-     (surekli vurus: chr.testSetComboType) | statdown (/stat-) |
+     antislow | combo (surekli vurus: chr.testSetComboType) |
+     statdown (/stat-) |
      skillupui/statupui (oyunun kendi UI fonksiyonlari) |
      efsun <slot>|all (bonus efsun raporu)
  "PLUSMAXGOD" SURUMU - v4.4 tamami + v4.5 kok-neden onarimi
@@ -348,7 +338,7 @@ DUMP_DIR   = r'C:\MaxExec\dump'   # v4.0: py dump + PLUSQuest_live buraya
 # SURUM ISARETI - DLL v1.8 bunu okur (FIX-19). PLUSMAXGOD_PyScript.py
 # degistirmeden bu satiri silme/degistirme! Eski pylib (v3.x) major 3
 # oldugu icin DLL v1.8 acilista KOSKOCA uyar basar.
-PYLIB_VERSION = '5.0'
+PYLIB_VERSION = '5.2'
 
 RACE_TABLE = {
     0: ('Warrior', 'E'), 1: ('Ninja', 'K'), 2: ('Sura', 'E'), 3: ('Shaman', 'K'),
@@ -721,13 +711,14 @@ def serverlist():
 # ---------------------------------------------------------------------------
 # 2) SELSERVER - server+CH sec, OK butonuna bas (calisan scriptin yolu)
 # ---------------------------------------------------------------------------
-# v4.2: kimlik hatirla (chchange/relogin bunlari kullanir) + C:\MaxExec\login.dat
-_SAVE = {'srv': 0, 'ch': 0, 'id': '', 'pwd': '', 'slot': 0}
+# v5.2: kimlik hatirla (chchange/relogin bunlari kullanir) + C:\MaxExec\login.dat
+# v5.2 YENI: 'third' alani (bazi serverlar 3. editline ister: PIN/ID/guard code)
+_SAVE = {'srv': 0, 'ch': 0, 'id': '', 'pwd': '', 'slot': 0, 'third': ''}
 
 def _save_login_file():
     try:
         f = open(r'C:\MaxExec\login.dat', 'w')
-        f.write('%s\t%s\t%d\t%d\t%d\n' % (_SAVE['id'], _SAVE['pwd'], _SAVE['srv'], _SAVE['ch'], _SAVE['slot']))
+        f.write('%s\t%s\t%d\t%d\t%d\t%s\n' % (_SAVE['id'], _SAVE['pwd'], _SAVE['srv'], _SAVE['ch'], _SAVE['slot'], _SAVE.get('third', '')))
         f.close()
     except:
         pass
@@ -742,99 +733,667 @@ def _load_login_file():
             _SAVE['srv'] = int(p[2]) if len(p) > 2 and p[2].lstrip('-').isdigit() else 0
             _SAVE['ch'] = int(p[3]) if len(p) > 3 and p[3].lstrip('-').isdigit() else 0
             _SAVE['slot'] = int(p[4]) if len(p) > 4 and p[4].lstrip('-').isdigit() else 0
+            _SAVE['third'] = p[5] if len(p) > 5 else ''
     except:
         pass
 
-def selserver(srv, ch):
+# ---------------------------------------------------------------------------
+# 2a) UNIVERSAL UI YARDIMCILARI (v5.2 - GitHub 28-client arastirmasi sonucu)
+# ---------------------------------------------------------------------------
+# Arastirma kanitlari (RESEARCH.md): resmi 2014 akisi (idEditLine/pwdEditLine/
+# serverList/channelList/serverSelectButton) - m2dev-client, Lead, Baseline,
+# battal34, TurkMMO-MS5.8 | Marty 5.3 akisi (serverList YOK, channelButton
+# dict, pw.Connect(id,pwd)) - AdmKojuro | eski katman (authSocket.SetLoginInfo,
+# info['channel']) - N2Play | coklu-hesap slotu (id_editline_s, autoLogin(idx))
+# - reign2 | PIN 3. alani (pin_edit_line) - proyecto-metin.
+# SONUC: tek bir attr adi YOK - aday listeleri + GetChild yolu + dir() taramasi
+# sart. Asagidaki yardimcilar 5 mimariyi de kapsar.
+
+_LOGIN_ID_NAMES = ('idEditLine', 'id_editline', 'idEditline', 'EditLine_ID',
+                   'userIdEditLine', 'idEditLineBox', 'userId')
+_LOGIN_PWD_NAMES = ('pwdEditLine', 'pwd_editline', 'pwdEditline', 'EditLine_PWD',
+                    'passwordEditLine', 'passEditLine', 'pwdEditLineBox')
+_LOGIN_BTN_NAMES = ('loginButton', 'LoginButton', 'login_connectButton',
+                    'loginOKButton', 'btnLogin', 'connectLoginButton')
+_SERVERLIST_NAMES = ('serverList', 'ServerList', 'serverListBox')
+_CHLIST_NAMES = ('channelList', 'ChannelList', 'channelListBox')
+_REGIONLIST_NAMES = ('regionList', 'RegionList', 'regionListBox')
+_OKBTN_NAMES = ('serverSelectButton', 'ServerSelectButton', 'serverInitButton',
+                'serverOKButton', 'serverGoButton', 'selectConnectButton')
+
+def _child_by_names(pw, names):
+    """attr yolu -> GetChild yolu -> dir() gevsek tarama. Donduren:
+    (bulunan_ad, nesne, yol) | (None, None, None)."""
+    if pw is None:
+        return None, None, None
+    # YOL 1: dogrudan attr
+    for nm in names:
+        try:
+            v = getattr(pw, nm, None)
+            if v is not None:
+                return nm, v, 'attr'
+        except:
+            pass
+    # YOL 2: GetChild (uiscript adi ile - clientlarin cogunda calisir)
+    for nm in names:
+        try:
+            if hasattr(pw, 'GetChild'):
+                v = pw.GetChild(nm)
+                if v is not None:
+                    return nm, v, 'GetChild'
+        except:
+            pass
+    # YOL 3: dir() gevsek eslesme (ad farklilari: idEditLine2, serverListBoxEx...)
     try:
-        _SAVE['srv'] = int(srv); _SAVE['ch'] = int(ch)
+        for a in dir(pw):
+            la = a.lower()
+            for nm in names:
+                ln = nm.lower()
+                if la == ln or (len(ln) > 5 and ln in la):
+                    try:
+                        v = getattr(pw, a, None)
+                    except:
+                        continue
+                    if v is not None:
+                        return a, v, 'tarama'
+    except:
+        pass
+    return None, None, None
+
+def _scan_editlines(pw):
+    """LoginWindow'daki TUM editline'lar: [(attr, nesne), ...] (GetText olanlar)."""
+    found = []
+    seen = {}
+    if pw is None:
+        return found
+    try:
+        for a in dir(pw):
+            la = a.lower()
+            if 'editline' in la or 'edit_line' in la or la == 'pin':
+                try:
+                    v = getattr(pw, a, None)
+                except:
+                    continue
+                if v is None or not hasattr(v, 'GetText'):
+                    continue
+                if id(v) in seen:
+                    continue
+                seen[id(v)] = 1
+                found.append((a, v))
+    except:
+        pass
+    # GetChild yolu: bilinen uiscript editline adlari (attr'a atanmamis olabilir)
+    for nm in ('EditLine_ID', 'EditLine_PWD', 'id_editline', 'pwd_editline',
+               'idEditLine', 'pwdEditLine', 'pin_editline', 'editline_pin',
+               'connect_editline', 'guardcode'):
+        try:
+            if hasattr(pw, 'GetChild'):
+                v = pw.GetChild(nm)
+                if v is not None and hasattr(v, 'GetText') and id(v) not in seen:
+                    seen[id(v)] = 1
+                    found.append(('GetChild:' + nm, v))
+        except:
+            pass
+    return found
+
+def _classify_editlines(pw):
+    """Editline'lari rolune gore ayirir: (id_t, pwd_t, third_list, tumu).
+    id_t/pwd_t: (ad, nesne) | None. third_list: 3. alan adaylari."""
+    els = _scan_editlines(pw)
+    id_t = None; pwd_t = None; used = {}
+    # tur 1: kesin adlar
+    for a, v in els:
+        la = a.lower().replace('getchild:', '')
+        if id_t is None and ('ideditline' in la or 'id_editline' in la or
+                             la.endswith('_id') or 'userid' in la):
+            id_t = (a, v); used[id(v)] = 1
+        elif pwd_t is None and ('pwd' in la or 'pass' in la):
+            pwd_t = (a, v); used[id(v)] = 1
+    # tur 2: gevsek (id/user iceren - pwd olmayan)
+    if id_t is None:
+        for a, v in els:
+            if id(v) in used:
+                continue
+            la = a.lower()
+            if 'pwd' not in la and 'pass' not in la and ('id' in la or 'user' in la or 'pin' in la):
+                id_t = (a, v); used[id(v)] = 1
+                break
+    if pwd_t is None:
+        for a, v in els:
+            if id(v) in used:
+                continue
+            pwd_t = (a, v); used[id(v)] = 1
+            break
+    third = [(a, v) for a, v in els if id(v) not in used]
+    return id_t, pwd_t, third, els
+
+def _set_editline(el, text):
+    """EditLine.SetText guvenli cagri (bazi clientlarda SetTextF/ime farklari)."""
+    try:
+        el.SetText(text)
+        return 'SetText'
+    except:
+        pass
+    try:
+        el.SetTextF(text)
+        return 'SetTextF'
+    except:
+        pass
+    try:
+        el.InsertIntoCurrentLine(text)
+        return 'Insert'
+    except:
+        pass
+    return None
+
+def _press_button(btn):
+    """Buton tetikleme: CallEvent -> Event -> Down (client farklilari icin)."""
+    for m in ('CallEvent', 'Event', 'Down'):
+        if hasattr(btn, m):
+            try:
+                getattr(btn, m)()
+                return m
+            except:
+                pass
+    return None
+
+# ---------------------------------------------------------------------------
+# 2b) SELSERVER UNIVERSAL (v5.2) - 3 mimari destekler:
+#     (1) listbox'li (resmi 2014: serverList+channelList+serverSelectButton)
+#     (2) Marty 5.3 tarzi (serverList YOK, channelButton dict + pw.SetChannel)
+#     (3) coklu bolge (regionList + REGION_DICT)
+#     ok=0 verilirse OK butonuna basmaz (bazi serverlarda OK yok/kullanilmaz)
+# ---------------------------------------------------------------------------
+def selserver(srv, ch, ok=1):
+    try:
+        srv = int(srv); ch = int(ch)
+        _SAVE['srv'] = srv; _SAVE['ch'] = ch
         _save_login_file()
         pw = _pw_by_type('LoginWindow')
         if pw is None:
             _write('server', 'HATA: LoginWindow sahnesinde degil (SCENE=%s)\n' % _scene_name())
             return
         log = ['SCENE=%s' % _scene_name()]
-        sl = getattr(pw, 'serverList', None)
-        if sl is None or not hasattr(sl, 'SelectItem'):
-            _write('server', '\n'.join(log + ['HATA: serverList.SelectItem YOK! (once `serverlist` yaz)']) + '\n')
-            return
-        sl.SelectItem(srv)
-        log.append('OK: serverList.SelectItem(%d)' % srv)
-        time.sleep(0.3)
-        cl = getattr(pw, 'channelList', None)
+        ok_pressed = False
+        # (0) coklu bolge clientlari: region listesi (srv index'i BOLGE olabilir)
+        rn, rl, ry = _child_by_names(pw, _REGIONLIST_NAMES)
+        if rl is not None and hasattr(rl, 'SelectItem'):
+            try:
+                cnt = 0
+                try:
+                    cnt = int(rl.GetItemCount())
+                except:
+                    pass
+                if cnt > 1:
+                    rl.SelectItem(srv)
+                    log.append('OK: regionList.SelectItem(%d) [coklu-bolge, %d bolge]' % (srv, cnt))
+                    time.sleep(0.3)
+                    srv = 0  # bolge secildi; server index'i sifirdan baslar
+            except Exception, e0:
+                log.append('UYARI: regionList secilemedi (%s)' % _fmt_error(e0))
+        # (1) resmi 2014 listbox yolu
+        sn, sl, sy = _child_by_names(pw, _SERVERLIST_NAMES)
+        if sl is not None and hasattr(sl, 'SelectItem'):
+            try:
+                sl.SelectItem(srv)
+                log.append('OK: %s.SelectItem(%d) [%s]' % (str(sn), srv, sy))
+                time.sleep(0.3)
+            except Exception, e1:
+                log.append('UYARI: server secilemedi (%s)' % _fmt_error(e1))
+        cn, cl, cy = _child_by_names(pw, _CHLIST_NAMES)
         if cl is not None and hasattr(cl, 'SelectItem'):
             try:
                 cl.SelectItem(ch)
-                log.append('OK: channelList.SelectItem(%d)' % ch)
+                log.append('OK: %s.SelectItem(%d) [%s]' % (str(cn), ch, cy))
                 time.sleep(0.3)
             except Exception, e2:
                 log.append('UYARI: channel secilemedi (%s)' % _fmt_error(e2))
+        elif cl is None:
+            # (2) Marty 5.3 tarzi: channelButton dict (ch -> buton)
+            cb = getattr(pw, 'channelButton', None)
+            picked = None
+            if cb is not None:
+                try:
+                    items = list(cb.items())
+                    for k, b in items:
+                        if int(k) == ch:
+                            picked = b
+                            break
+                    if picked is None:
+                        # dict anahtar 1'den mi basliyor? (ch=0 -> ilk buton)
+                        if ch == 0 and len(items) > 0:
+                            picked = sorted(items, key=lambda kv: int(kv[0]))[0][1]
+                except Exception, e3:
+                    log.append('UYARI: channelButton dict okunamadi (%s)' % _fmt_error(e3))
+            if picked is not None:
+                m = _press_button(picked)
+                if m:
+                    log.append('OK: channelButton[%d].%s() [Marty buton tarzi]' % (ch, m))
+                else:
+                    log.append('UYARI: channelButton[%d] tetiklenemedi' % ch)
+            elif hasattr(pw, 'SetChannel'):
+                try:
+                    pw.SetChannel(ch)
+                    log.append('OK: pw.SetChannel(%d) [Marty metodu]' % ch)
+                except Exception, e4:
+                    log.append('UYARI: pw.SetChannel calismadi (%s)' % _fmt_error(e4))
+            else:
+                log.append('UYARI: channelList YOK - TEK-SERVER/Tek-CH modu olabilir (ch index kullanilmiyor)')
+        # (3) OK butonu (ok parametresi)
+        if int(ok):
+            on_, btn, by = _child_by_names(pw, _OKBTN_NAMES)
+            if btn is None:
+                # gevsek tarama: ...Select...Button
+                try:
+                    for a in dir(pw):
+                        if 'elect' in a and 'utton' in a:
+                            btn = getattr(pw, a, None)
+                            if btn is not None:
+                                on_ = a; by = 'tarama'
+                                break
+                except:
+                    pass
+            if btn is not None and hasattr(btn, 'CallEvent'):
+                try:
+                    btn.CallEvent()
+                    ok_pressed = True
+                    log.append('OK: %s.CallEvent() [%s] -> server board onaylandi' % (str(on_), by))
+                except Exception, e5:
+                    log.append('UYARI: OK butonu basilamadi (%s)' % _fmt_error(e5))
+            else:
+                log.append('UYARI: OK butonu YOK - bazi clientlarda (Marty 5.3) OK zaten yok, login direkt baglanir')
         else:
-            log.append('UYARI: channelList yok (bazi clientlarda server secince dolar)')
-        btn = getattr(pw, 'serverSelectButton', None)
-        if btn is None:
-            # aday tara
-            for a in dir(pw):
-                if 'elect' in a and 'utton' in a:
-                    btn = getattr(pw, a)
-                    log.append('aday buton attr: %s' % a)
-                    break
-        if btn is not None and hasattr(btn, 'CallEvent'):
-            btn.CallEvent()
-            log.append('OK: serverSelectButton.CallEvent() -> login ekranina gecmeli')
-        else:
-            _write('server', '\n'.join(log + ['HATA: OK butonu bulunamadi!']) + '\n')
-            return
+            log.append('ok=0: OK butonuna basilMAdi (kullanici istegi)')
         _write('server', '\n'.join(log) + '\n')
     except Exception, e:
         _write('server', 'HATA ' + _fmt_error(e) + '\n')
 
 # ---------------------------------------------------------------------------
-# 3) LOGIN - UI yolu once (calisan script), paket yolu yedek
+# 3) LOGIN UNIVERSAL (v5.2) - 3 yol sirali:
+#    YOL A: UI - id/pwd/3.alan editline + login butonu (5 mimariyi kapsayan
+#           aday taramasi; 3. alan varsa VE third verildiyse doldurulur,
+#           verilmese bile raporlanir)
+#    YOL B: pw.Connect(id, pwd) - resmi 2014 + Marty 5.3 class metodu
+#    YOL C: paket - stream/net.SetLoginInfo + Connect (authSocket yedegi)
 # ---------------------------------------------------------------------------
-def login(user, pwd):
+def login(user, pwd, third=None):
     try:
         _SAVE['id'] = str(user); _SAVE['pwd'] = str(pwd)
+        if third is not None:
+            _SAVE['third'] = str(third)
         _save_login_file()
         log = ['SCENE=%s' % _scene_name()]
         pw = _pw_by_type('LoginWindow')
         ui_ok = False
         if pw is not None:
-            ide = getattr(pw, 'idEditLine', None)
-            pwe = getattr(pw, 'pwdEditLine', None)
-            lbtn = getattr(pw, 'loginButton', None)
-            if ide is not None and pwe is not None and lbtn is not None and hasattr(lbtn, 'CallEvent'):
-                ide.SetText(user)
-                pwe.SetText(pwd)
-                time.sleep(0.3)
-                lbtn.CallEvent()
-                ui_ok = True
-                log.append('OK: UI yolu (idEditLine+pwdEditLine+loginButton.CallEvent)')
+            # --- YOL A: editline taramasi (attr + GetChild + dir taramasi)
+            id_t, pwd_t, third_t, els = _classify_editlines(pw)
+            if id_t is not None and pwd_t is not None:
+                try:
+                    m1 = _set_editline(id_t[1], user)
+                    m2 = _set_editline(pwd_t[1], pwd)
+                    log.append('OK: id alan dolduruldu (%s via %s)' % (id_t[0], m1))
+                    log.append('OK: pwd alan dolduruldu (%s via %s)' % (pwd_t[0], m2))
+                    if third_t:
+                        t0 = third_t[0]
+                        log.append('BILGI: 3. editline algilandi: %s (tip: %s)' % (t0[0], type(t0[1]).__name__))
+                        if third is not None and str(third) != '':
+                            m3 = _set_editline(t0[1], str(third))
+                            if m3:
+                                log.append('OK: 3. alan dolduruldu (%s via %s) = "%s"' % (t0[0], m3, str(third)))
+                            else:
+                                log.append('UYARI: 3. alan doldurulamadi (SetText yok)')
+                        else:
+                            log.append('UYARI: 3. alan DOLDURULMADI - server istiyorsa login <id> <pwd> <3.alan> dene')
+                    time.sleep(0.3)
+                except Exception, ef:
+                    log.append('UYARI: alanlar doldurulamadi (%s)' % _fmt_error(ef))
+                # login butonu (coklu aday)
+                bn, btn, by = _child_by_names(pw, _LOGIN_BTN_NAMES)
+                if btn is not None and hasattr(btn, 'CallEvent'):
+                    try:
+                        btn.CallEvent()
+                        ui_ok = True
+                        log.append('OK: %s.CallEvent() [%s]' % (str(bn), by))
+                    except Exception, eb:
+                        log.append('UYARI: login butonu basilamadi (%s)' % _fmt_error(eb))
+                elif btn is None and hasattr(pw, '__OnClickLoginButton'):
+                    try:
+                        pw.__OnClickLoginButton()
+                        ui_ok = True
+                        log.append('OK: pw.__OnClickLoginButton() direkt cagrildi')
+                    except Exception, ec:
+                        log.append('UYARI: __OnClickLoginButton calismadi (%s)' % _fmt_error(ec))
+            # --- YOL B: pw.Connect(id, pwd) class metodu (resmi 2014 + Marty)
+            if not ui_ok and hasattr(pw, 'Connect') and callable(pw.Connect):
+                try:
+                    pw.Connect(user, pwd)
+                    ui_ok = True
+                    log.append('OK: pw.Connect(id,pwd) class metodu')
+                except Exception, eB:
+                    log.append('UYARI: pw.Connect calismadi (%s)' % _fmt_error(eB))
+        else:
+            log.append('UYARI: LoginWindow bulunamadi - paket yolu denenecek (SCENE=%s)' % _scene_name())
+        # --- YOL C: paket yolu (authSocket yedegi ile)
         if not ui_ok:
             import net
-            net.SetLoginInfo(user, pwd)
             sent = None
+            if hasattr(net, 'SetLoginInfo'):
+                try:
+                    net.SetLoginInfo(user, pwd)
+                    sent = 'net.SetLoginInfo'
+                except Exception, eC:
+                    log.append('UYARI: net.SetLoginInfo (%s)' % _fmt_error(eC))
+            elif hasattr(net, 'SetLoginInfoMap'):
+                # eski clientlarda map parametreli imza (N2Play authSocket tarzi)
+                try:
+                    net.SetLoginInfo(user, pwd, 'EN', 0)
+                    sent = 'net.SetLoginInfo(4arg)'
+                except:
+                    pass
             ms = _get_ms()
             if ms is not None and hasattr(ms, 'Connect'):
                 try:
                     ms.Connect()
-                    sent = 'stream.Connect()'
+                    sent = (sent or '?') + ' + stream.Connect()'
                 except:
-                    sent = None
-            if sent is None and hasattr(net, 'ConnectToAccountServer'):
+                    pass
+            if sent is not None and 'Connect' not in sent and hasattr(net, 'ConnectToAccountServer'):
                 try:
                     net.ConnectToAccountServer()
-                    sent = 'net.ConnectToAccountServer()'
-                except Exception, e2:
-                    _write('login', '\n'.join(log + ['HATA Connect: ' + _fmt_error(e2)]) + '\n')
-                    return
-            log.append('OK: paket yolu (SetLoginInfo + %s)' % (sent or 'baglanti yok!'))
+                    sent = sent + ' + net.ConnectToAccountServer()'
+                except Exception, eC2:
+                    log.append('UYARI: net.ConnectToAccountServer (%s)' % _fmt_error(eC2))
+            if sent:
+                ui_ok = True
+                log.append('OK: paket yolu (%s)' % sent)
+            else:
+                log.append('HATA: tum login yollari basarisiz - `uiprobe` ciktisini gonder')
         log.append('Beklenen: waitfor SelectCharacterWindow 30')
         log.append('Sonuc takibi: lasterr (yanlis sifre = LOGIN_FAILURE: WRONGPWD yakalanir)')
         _write('login', '\n'.join(log) + '\n')
         _write('status', status_text())
     except Exception, e:
         _write('login', 'HATA ' + _fmt_error(e) + '\n')
+
+# ---------------------------------------------------------------------------
+# 3b) UIPROBE (v5.2 YENI) - login ekranini TAM tarar: hangi mimaride
+#     oldugunu, 3. editline olup olmadigini, hangi argumanlarla login/
+#     selserver verilmesi gerektigini raporlar. Saha tani komutu.
+# ---------------------------------------------------------------------------
+def uiprobe():
+    try:
+        pw = _pw_by_type('LoginWindow')
+        lines = ['SCENE=%s' % _scene_name()]
+        if pw is None:
+            lines.append('HATA: LoginWindow sahnesinde degil - probe icin login ekrani acik olmali')
+            _write('uiprobe', '\n'.join(lines) + '\n')
+            return
+        try:
+            lines.append('class: %s (modul: %s)' % (type(pw).__name__, type(pw).__module__))
+        except:
+            pass
+        # --- editline envanteri
+        id_t, pwd_t, third_t, els = _classify_editlines(pw)
+        lines.append('--- EDITLINE (%d) ---' % len(els))
+        for a, v in els:
+            tag = ''
+            if id_t is not None and a == id_t[0]:
+                tag = ' <- ID'
+            elif pwd_t is not None and a == pwd_t[0]:
+                tag = ' <- PWD'
+            elif any(a == t[0] for t in third_t):
+                tag = ' <- 3.ALAN ADAYI'
+            txtlen = '?'
+            try:
+                txtlen = len(v.GetText() or '')
+            except:
+                pass
+            has_set = 'SetText' if hasattr(v, 'SetText') else ('SetTextF' if hasattr(v, 'SetTextF') else 'SetText-YOK')
+            lines.append('  %s (sinif=%s, metin_uzunluk=%s, %s)%s' % (a, type(v).__name__, str(txtlen), has_set, tag))
+        if third_t:
+            lines.append('SONUC: 3. editline VAR - login <id> <pwd> <3.alan> kullan (3. alan adlari: %s)' %
+                         ', '.join(t[0] for t in third_t[:3]))
+        else:
+            lines.append('SONUC: 3. editline YOK - login <id> <pwd> yeterli')
+        # --- buton envanteri
+        lines.append('--- BUTON (CallEvent olanlar) ---')
+        n_btn = 0
+        try:
+            for a in dir(pw):
+                if 'utton' in a or a in ('loginButton', 'serverSelectButton'):
+                    v = getattr(pw, a, None)
+                    if v is not None and hasattr(v, 'CallEvent'):
+                        n_btn += 1
+                        lines.append('  %s (sinif=%s)' % (a, type(v).__name__))
+        except:
+            pass
+        if n_btn == 0:
+            lines.append('  (attr ile buton yok - GetChild/uiscript adi farkli olabilir)')
+        # --- listbox envanteri
+        lines.append('--- LISTBOX / SECIM ---')
+        rn, rl, ry = _child_by_names(pw, _REGIONLIST_NAMES)
+        sn, sl, sy = _child_by_names(pw, _SERVERLIST_NAMES)
+        cn, cl, cy = _child_by_names(pw, _CHLIST_NAMES)
+        for nm, obj, yol in (('regionList', rl, ry), ('serverList', sl, sy), ('channelList', cl, cy)):
+            if obj is None:
+                lines.append('  %s: YOK' % nm)
+            else:
+                cnt = '?'; sel = '?'
+                try:
+                    cnt = int(obj.GetItemCount())
+                except:
+                    pass
+                try:
+                    sel = str(obj.GetSelectedItem())
+                except:
+                    pass
+                lines.append('  %s: adet=%s secili=%s (sinif=%s, yol=%s)' % (nm, str(cnt), sel, type(obj).__name__, yol))
+        # --- Marty channelButton dict
+        cb = getattr(pw, 'channelButton', None)
+        if cb is not None:
+            try:
+                keys = sorted([str(k) for k in cb.keys()])
+                lines.append('  channelButton dict VAR: CH butonlari = %s (Marty tarzi - OK butonu yok)' % ','.join(keys))
+            except:
+                lines.append('  channelButton dict VAR (icerik okunamadi)')
+        # --- metotlar
+        meth = []
+        for m in ('Connect', 'SetChannel', '__OnClickLoginButton', '__OnClickSelectServerButton'):
+            if hasattr(pw, m):
+                meth.append(m)
+        if meth:
+            lines.append('  LoginWindow metotlari: %s' % ', '.join(meth))
+        # --- serverInfo.REGION_DICT (coklu bolge bilgisi)
+        try:
+            import serverInfo
+            rd = getattr(serverInfo, 'REGION_DICT', None)
+            if rd:
+                lines.append('--- serverInfo.REGION_DICT (%d bolge) ---' % len(rd))
+                for rid in sorted(rd.keys())[:6]:
+                    try:
+                        reg = rd[rid]
+                        svs = [str(k) + ':' + str(reg[k].get('name', '?')) for k in sorted(reg.keys()) if isinstance(reg[k], dict)][:10]
+                        lines.append('  bolge[%s]: %s' % (str(rid), ', '.join(svs)))
+                    except:
+                        lines.append('  bolge[%s]: (okunamadi)' % str(rid))
+        except:
+            lines.append('serverInfo.REGION_DICT: okunamadi (modul yok)')
+        # --- oneriler
+        lines.append('--- ONERI AKISI ---')
+        if sl is not None:
+            lines.append('  selserver <srv> <ch>  ->  login <id> <pwd> [3.alan]')
+        else:
+            lines.append('  TEK-SERVER modu: selserver 0 <ch> ok=0 dene, sonra login <id> <pwd> [3.alan]')
+        lines.append('  gizemli alanlarda: uiprobe ciktisini sunucu degisince tekrar al')
+        _write('uiprobe', '\n'.join(lines) + '\n')
+    except Exception, e:
+        _write('uiprobe', 'HATA ' + _fmt_error(e) + '\n')
+
+# ---------------------------------------------------------------------------
+# 3c) RELOGIN (v5.2 YENI - v4.6'daki komutun universal donusu)
+#     Iki mod:
+#       TAM  (default): /logout -> char ekranina dus -> net.Disconnect ->
+#                       login ekranina dus -> selserver+login (yeni oturum)
+#       HIZI (reloginquick): /logout -> char ekranina dus -> selchar(slot)
+#                       (baglanti acik kalir, sadece karaktere tekrar girer)
+#     State-machine: DLL 150ms nabzi (_tick) surer - ana thread bloklanmaz.
+# ---------------------------------------------------------------------------
+_RELOGIN = {'on': 0, 'step': 0, 't0': 0.0, 'deadline': 0.0,
+            'id': '', 'pwd': '', 'third': '', 'srv': 0, 'ch': 0, 'slot': 0,
+            'log': []}
+
+def _relog_live(msg):
+    try:
+        _RELOGIN['log'].append(msg)
+        if len(_RELOGIN['log']) > 40:
+            _RELOGIN['log'] = _RELOGIN['log'][-40:]
+        try:
+            sys.stdout.write('[RELOGIN] ' + msg + chr(10))
+        except:
+            pass
+    except:
+        pass
+
+def _relog_flush(final):
+    try:
+        if final:
+            _write('relogin', chr(10).join(_RELOGIN['log']) + chr(10))
+        else:
+            # araci adim raporlarini da yaz (cokme durumunda kanit)
+            _write('relogin_step', chr(10).join(_RELOGIN['log']) + chr(10))
+    except:
+        pass
+
+def relogin(id=None, pwd=None, srv=None, ch=None, third=None, ok=1):
+    """TAM relogin: logout -> disconnect -> login ekraninda yeni oturum.
+    Parametre verilmezse C:\\MaxExec\\login.dat (login/selserver kayitlari)
+    kullanilir. Oyunda degilse direkt login akisina gecer."""
+    try:
+        _load_login_file()
+        _RELOGIN['id'] = str(id) if id is not None else _SAVE.get('id', '')
+        _RELOGIN['pwd'] = str(pwd) if pwd is not None else _SAVE.get('pwd', '')
+        _RELOGIN['third'] = str(third) if third is not None else _SAVE.get('third', '')
+        _RELOGIN['srv'] = int(srv) if srv is not None else int(_SAVE.get('srv', 0))
+        _RELOGIN['ch'] = int(ch) if ch is not None else int(_SAVE.get('ch', 0))
+        if not _RELOGIN['id'] or not _RELOGIN['pwd']:
+            _write('relogin', 'HATA: id/pwd yok - `relogin <id> <pwd> [srv] [ch]` ver veya once login/selserver kullan\n')
+            return
+        import time as _t
+        _RELOGIN.update({'on': 1, 'step': 0, 't0': _t.time(), 'deadline': _t.time() + 15.0, 'log': []})
+        _relog_live('TAM relogin BASLADI: %s (srv=%d ch=%d)' % (_RELOGIN['id'], _RELOGIN['srv'], _RELOGIN['ch']))
+        _relog_flush(False)
+        _write('relogin', 'OK: relogin state-machine basladi (DLL 150ms nabzi surer)\nAdimlar: logout -> disconnect -> login -> selserver -> login\nTakip: last_relogin_step.txt | sonuc: last_relogin.txt\n')
+    except Exception, e:
+        _write('relogin', 'HATA ' + _fmt_error(e) + '\n')
+
+def reloginquick(slot=0):
+    """HIZI relogin: /logout -> char ekranindan ayni karaktere tekrar gir
+    (baglanti korunur - sadece karaktere donus)."""
+    try:
+        import time as _t
+        _RELOGIN.update({'on': 2, 'step': 10, 't0': _t.time(), 'deadline': _t.time() + 15.0,
+                         'slot': int(slot), 'log': [], 'id': _SAVE.get('id', ''), 'pwd': _SAVE.get('pwd', ''),
+                         'third': _SAVE.get('third', ''), 'srv': _SAVE.get('srv', 0), 'ch': _SAVE.get('ch', 0)})
+        _relog_live('HIZI relogin BASLADI (slot %d): /logout -> selchar' % int(slot))
+        _relog_flush(False)
+        _write('relogin', 'OK: HIZI relogin basladi (/logout -> selchar %d)\n' % int(slot))
+    except Exception, e:
+        _write('relogin', 'HATA ' + _fmt_error(e) + '\n')
+
+def _relogin_tick():
+    """_tick() icinden ~150ms'de bir cagrilir (DLL nabzi)."""
+    if not _RELOGIN.get('on'):
+        return
+    try:
+        import time as _t
+        now = _t.time()
+        if now - _RELOGIN['t0'] < 0.25:
+            return
+        _RELOGIN['t0'] = now
+        sc = _scene_name()
+        st = _RELOGIN['step']
+        # zaman asimi korumasi
+        if now > _RELOGIN['deadline']:
+            _relog_live('ZAMAN ASIMI (adim %d, sahne=%s) - relogin DURDURULDU' % (st, sc))
+            _relog_flush(True)
+            _RELOGIN['on'] = 0
+            return
+        if st == 0:  # oyunda mi? -> /logout
+            if sc == 'GameWindow':
+                try:
+                    import net
+                    net.SendChatPacket('/logout')
+                    _relog_live('oyunda: /logout gonderildi (sahne=%s)' % sc)
+                except Exception, e0:
+                    _relog_live('/logout gonderilemedi (%s) - disconnect yolu' % _fmt_error(e0))
+            else:
+                _relog_live('oyunda degil (sahne=%s) - direkt login akisi' % sc)
+            _RELOGIN['step'] = 1
+            _RELOGIN['deadline'] = now + 15.0
+        elif st == 1:  # char ekranini bekle
+            if sc == 'SelectCharacterWindow':
+                _relog_live('char ekranina dusuldu')
+                _RELOGIN['step'] = 2
+                _RELOGIN['deadline'] = now + 15.0
+        elif st == 2:  # char ekraninda: TAM mod -> disconnect | HIZI mod -> selchar
+            if _RELOGIN['on'] == 2:  # HIZI
+                _relog_live('selchar(%d) gonderiliyor' % _RELOGIN['slot'])
+                try:
+                    selchar(_RELOGIN['slot'])
+                except Exception, e1:
+                    _relog_live('selchar hatasi: %s' % _fmt_error(e1))
+                _RELOGIN['step'] = 5
+                _RELOGIN['deadline'] = now + 30.0
+                return
+            import net
+            done = False
+            for meth in ('Disconnect', 'DisconnectGame'):
+                if hasattr(net, meth):
+                    try:
+                        getattr(net, meth)()
+                        _relog_live('net.%s() cagrildi - login ekranina dusuluyor' % meth)
+                        done = True
+                        break
+                    except Exception, e2:
+                        _relog_live('net.%s hatasi: %s' % (meth, _fmt_error(e2)))
+            if done:
+                _RELOGIN['step'] = 3
+                _RELOGIN['deadline'] = now + 20.0
+            # disconnect metodu yoksa: 2s bekle, tekrar dene (deadline korur)
+        elif st == 3:  # login ekranini bekle
+            if sc in ('LoginWindow', 'LoginWindow+ServerList'):
+                _relog_live('login ekranina dusuldu - selserver(%d,%d) + login uygulanacak' % (_RELOGIN['srv'], _RELOGIN['ch']))
+                try:
+                    selserver(_RELOGIN['srv'], _RELOGIN['ch'], 1)
+                except Exception, e3:
+                    _relog_live('selserver hatasi: %s' % _fmt_error(e3))
+                _RELOGIN['step'] = 4
+                _RELOGIN['deadline'] = now + 20.0
+        elif st == 4:  # login uygula
+            _relog_live('login(%s, ***) uygulaniyor' % _RELOGIN['id'])
+            try:
+                login(_RELOGIN['id'], _RELOGIN['pwd'], _RELOGIN['third'] or None)
+            except Exception, e4:
+                _relog_live('login hatasi: %s' % _fmt_error(e4))
+            _RELOGIN['step'] = 5
+            _RELOGIN['deadline'] = now + 40.0
+        elif st == 5:  # sonuc bekle
+            if sc == 'GameWindow':
+                _relog_live('BASARILI: GameWindow\'a donuldu (relogin tamam)')
+                _relog_flush(True)
+                _RELOGIN['on'] = 0
+            elif sc == 'SelectCharacterWindow' and _RELOGIN['on'] == 2:
+                _relog_live('BASARILI: char ekranina donuldu (hizi relogin tamam)')
+                _relog_flush(True)
+                _RELOGIN['on'] = 0
+    except Exception, e:
+        try:
+            _relog_live('tick hatasi: %s - relogin durduruldu' % _fmt_error(e))
+            _relog_flush(True)
+            _RELOGIN['on'] = 0
+        except:
+            pass
 
 # ---------------------------------------------------------------------------
 # 4) CHARLIST - 5 slot tablosu (net slot data)
@@ -5979,358 +6538,6 @@ def antislow(mode):
     except Exception, e:
         _write('antislow', 'HATA ' + _fmt_error(e) + '\n')
 
-# --- AUTOPOT v4.7 (kullanici istegi YENI sema) ------------------------------
-# KANIT: New_Levelbot Auto Potion (GetStatus(HP/MAX_HP) + 27001-3 kirmizi /
-# 27004-6 mavi + SendItemUsePacket). OTO-POT ESYASI kanit: constInfo.py
-# IS_AUTO_POTION_HP (72723-72726 + 76021-2 + 79012) / _SP (72727-72730 +
-# 76004-5 + 79013) + uiInventory.py metinSocket[0]=aktiflik isareti.
-# KULLANICI ISTEGI: 'autopot hp 80' = can %80 altina dusunce NORMAL hp potu
-# bas (oto-pot esyasi DEGIL); 'autopot_item hp' = oto-pot esyasi (72724
-# gibi) aktif degilse bas - aktifse basmaya gerek yok.
-POT_HP_VNUMS = (27001, 27002, 27003)          # normal kirmizi (Licoare Rosie)
-POT_SP_VNUMS = (27004, 27005, 27006)          # normal mavi (Licoare Albastra)
-AUTOPOT_HP_VNUMS = (72723, 72724, 72725, 72726, 76021, 76022, 79012)
-AUTOPOT_SP_VNUMS = (72727, 72728, 72729, 72730, 76004, 76005, 79013)
-_AUTOPOT = {'win': None, 'hp': 0, 'sp': 0, 't_hp': 0.0, 't_sp': 0.0,
-            'n_hp': 0, 'n_sp': 0, 'item_hp': 0, 'item_sp': 0, 't_it': 0.0,
-            'item_msg': 0,
-            # v4.8: gorunurluk + hataya dayaniklilik (saha testi 14: pot 1 kere
-            # basip susan dongu - sessiz except yuzunden hata gorunmuyordu)
-            'err': 0, 't_msg': 0.0, 't_log': 0.0, 't_hb': 0.0}
-
-# ---------------------------------------------------------------------------
-# v5.0 AUTOPOT OTOMATIK ACILIS (kullanici istegi - saha testi 16: 'hp yi
-# surekli getstatus ile takip edip envanterdeki can potuna basmasi gerekmiyo
-# mu?'): pylib yuklenirken C:\MaxExec\autopot.txt okunur; 'hp 80' / 'mp 50'
-# satirlari otomatik aktiflesir. Dosya yoksa VARSAYILAN 'hp 80' yazilir.
-# Donguyu DLL'in 150ms nabzi (maxlib._tick) surer - gercek OS thread'i
-# oyunun Python'unda ana-thread ihlali olurdu (crash riski); mevcut
-# cift-nabiz + zaman-kapili dongu kanitlanmis calisiyor (live.txt ornegi:
-# '[11:08:41] AUTOPOT: kirmizi pot #1 (can %40 KRITIK, slot=57)').
-# ---------------------------------------------------------------------------
-AUTOPOT_CFG = r'C:\MaxExec\autopot.txt'
-
-def _autopot_boot():
-    """autopot.txt oku ve izlemeyi otomatik ac. Satirlar: 'hp 80', 'mp 50',
-    'off' (hepsini kapat). Dosya yoksa 'hp 80' yazilir (varsayilan acik)."""
-    try:
-        hp = 0
-        sp = 0
-        try:
-            f = open(AUTOPOT_CFG, 'r')
-            for ln in f:
-                p = str(ln).strip().lower().split()
-                if not p:
-                    continue
-                if p[0] in ('off', '0', 'kapat', 'kapali', 'none'):
-                    hp = 0
-                    sp = 0
-                    continue
-                if p[0] in ('hp', 'can', 'kirmizi') and len(p) > 1:
-                    try:
-                        hp = max(5, min(95, int(p[1])))
-                    except:
-                        hp = 80
-                elif p[0] in ('mp', 'sp', 'mana', 'mavi') and len(p) > 1:
-                    try:
-                        sp = max(5, min(95, int(p[1])))
-                    except:
-                        sp = 50
-            f.close()
-        except:
-            try:
-                f = open(AUTOPOT_CFG, 'w')
-                f.write('hp 80\n')
-                f.close()
-            except:
-                pass
-            hp = 80
-        if hp:
-            _AUTOPOT['hp'] = hp
-        if sp:
-            _AUTOPOT['sp'] = sp
-        if hp or sp:
-            _live('AUTOPOT: otomatik acildi (hp=%s mp=%s) - dosya: %s | kapatmak icin: autopot 0' % (_AUTOPOT['hp'] or 'kapali', _AUTOPOT['sp'] or 'kapali', AUTOPOT_CFG))
-    except:
-        pass
-
-def _pot_find(vnums):
-    import player
-    try:
-        total = int(player.INVENTORY_SLOT_COUNT)
-    except:
-        total = 90
-    for s in range(total):
-        try:
-            v = int(player.GetItemIndex(s))
-        except:
-            continue
-        if v in vnums:
-            return s, v
-    return -1, 0
-
-def _autopot_item_active(slot):
-    """oto-pot esyasi AKTIF mi? (uiInventory.py kaniti: metinSocket[0]
-    != 0 -> aktif). -1 = okunamadi, 0 = pasif, 1 = aktif."""
-    try:
-        import player
-        v = int(player.GetItemMetinSocket(slot, 0))
-        return 1 if v != 0 else 0
-    except:
-        return -1
-
-def _autopot_item_check(kind):
-    """oto-pot esyasini kontrol et: envanterde VAR + PASIF ise bas.
-    kind: 'hp' | 'sp'. Aktifse hicbir sey yapma (kullanici istegi).
-    Esya yoksa bir kez uyari yaz (spam engeli)."""
-    try:
-        import player, net
-        if kind == 'hp':
-            vnums = AUTOPOT_HP_VNUMS
-        else:
-            vnums = AUTOPOT_SP_VNUMS
-        s, v = _pot_find(vnums)
-        if s < 0:
-            if _AUTOPOT['item_msg'] < 3:
-                _AUTOPOT['item_msg'] += 1
-                _live('AUTOPOT_ITEM: %s oto-pot esyasi yok (72723+ gibi) - /i 72724 ile alabilirsin' % kind.upper())
-            return
-        act = _autopot_item_active(s)
-        if act == 0:
-            net.SendItemUsePacket(s)
-            _live('AUTOPOT_ITEM: %s oto-pot esyasi AKTIFLESTIRILDI (slot=%d vnum=%d)' % (kind.upper(), s, v))
-        elif act == 1:
-            _AUTOPOT['item_msg'] = 0   # aktif - mesaj sifirla (bitti/yenile)
-    except:
-        pass
-
-class _AutoPotWnd(ui_WindowBase):
-    def __init__(self):
-        ui_WindowBase.__init__(self)
-        self.Show()
-
-    def OnUpdate(self):
-        # v4.9: govde _autopot_tick'te - hem bu pencere hem DLL'in 150ms
-        # nabzi (maxlib._tick) ayni govdeyi cagirir (cift surus, zaman
-        # kapili -> guvenli). saha testi 15: karakter olurken pot
-        # basinmiyordu; dongu artik DLL timer'indan da yurur.
-        _autopot_tick()
-
-def _autopot_tick():
-    # v4.8 SUREKLI IZLEME (saha testi 14: '1 kere basti bidaha basmadi'):
-    # eski kodda TEK buyuk try/except vardi -> ilk exception'dan sonra dongu
-    # SESSIZCE oluyordu (hata hic gorunmuyordu). Simdi her blok kendi
-    # try/except'inde; ilk 3 hata [LIVE]'a YAZILIR + 30sn kalp atisi var.
-    # v4.9 (saha testi 15 'karakter oldu pot basmadi'): KRITIK MOD - can/mana
-    # %50 altinda basilma araligi 0.15sn'ye iner + DLL nabzi surusu.
-    try:
-        import time, player, net
-    except Exception, e:
-        _AUTOPOT['err'] += 1
-        if _AUTOPOT['err'] <= 3:
-            _live('AUTOPOT import hatasi: ' + _fmt_error(e))
-        return
-    st = _AUTOPOT
-    now = time.time()
-    # v5.0: oyun disinda SESSIZ bekle (err sayaci sismez; autopot.txt oto-
-    # acilisi LoadingWindow'da hata uretmesin) + oyuna girer girmez izleme
-    # penceresini OTOMATIK ac (kullanici komut yazmak zorunda degil)
-    if not _ingame():
-        return
-    if st['win'] is None and (st['hp'] or st['sp'] or st['item_hp'] or st['item_sp']):
-        try:
-            st['win'] = _AutoPotWnd()
-        except:
-            pass
-    # --- normal pot: CAN (%X ustune dek; kritik 0.15sn, normal 0.4sn) ---
-    if st['hp'] > 0:
-        try:
-            hp = int(player.GetStatus(player.HP))
-            mhp = int(player.GetStatus(player.MAX_HP))
-        except Exception, e:
-            st['err'] += 1
-            if st['err'] <= 3:
-                _live('AUTOPOT can-okuma hatasi: ' + _fmt_error(e))
-            hp = 0; mhp = 0
-        if mhp > 0:
-            pct = hp * 100 / mhp
-            if hp <= 0:
-                if now - st['t_msg'] >= 5.0:
-                    st['t_msg'] = now
-                    _live('AUTOPOT: karakter OLU - pot islevsiz (revive: revive)')
-            elif pct < st['hp']:
-                crit = pct < 50
-                cad = 0.15 if crit else 0.4
-                if now - st['t_hp'] >= cad:
-                    st['t_hp'] = now
-                    s, v = _pot_find(POT_HP_VNUMS)
-                    if s >= 0:
-                        try:
-                            net.SendItemUsePacket(s)
-                            st['n_hp'] += 1
-                            # HER basis gorunur: ilk bas + 3sn'de bir ozet
-                            if st['n_hp'] == 1 or (now - st['t_log']) >= 3.0:
-                                st['t_log'] = now
-                                _live('AUTOPOT: kirmizi pot #%d (can %%%d%s, slot=%d)' % (st['n_hp'], pct, ' KRITIK' if crit else '', s))
-                        except Exception, e:
-                            st['err'] += 1
-                            if st['err'] <= 3:
-                                _live('AUTOPOT pot-basma hatasi: ' + _fmt_error(e))
-                    else:
-                        if (now - st['t_msg']) >= 5.0:
-                            st['t_msg'] = now
-                            _live('AUTOPOT: kirmizi pot YOK (can %%%d)! /i 27001 200' % pct)
-            else:
-                st['t_hp'] = now
-    # --- normal pot: MANA (ayni surekli mantik + kritik mod) ---
-    if st['sp'] > 0:
-        try:
-            sp = int(player.GetStatus(player.SP))
-            msp = int(player.GetStatus(player.MAX_SP))
-        except Exception, e:
-            st['err'] += 1
-            if st['err'] <= 3:
-                _live('AUTOPOT mana-okuma hatasi: ' + _fmt_error(e))
-            sp = 0; msp = 0
-        if msp > 0:
-            pct = sp * 100 / msp
-            if pct < st['sp']:
-                crit = pct < 50
-                cad = 0.15 if crit else 0.4
-                if now - st['t_sp'] >= cad:
-                    st['t_sp'] = now
-                    s, v = _pot_find(POT_SP_VNUMS)
-                    if s >= 0:
-                        try:
-                            net.SendItemUsePacket(s)
-                            st['n_sp'] += 1
-                            if st['n_sp'] == 1 or (now - st['t_log']) >= 3.0:
-                                st['t_log'] = now
-                                _live('AUTOPOT: mavi pot #%d (mana %%%d%s, slot=%d)' % (st['n_sp'], pct, ' KRITIK' if crit else '', s))
-                        except Exception, e:
-                            st['err'] += 1
-                            if st['err'] <= 3:
-                                _live('AUTOPOT pot-basma hatasi: ' + _fmt_error(e))
-                    else:
-                        if (now - st['t_msg']) >= 5.0:
-                            st['t_msg'] = now
-                            _live('AUTOPOT: mavi pot YOK (mana %%%d)! /i 27004 200' % pct)
-            else:
-                st['t_sp'] = now
-    # --- oto-pot esyalari (3sn'de bir kontrol; bitince yenisini basar) ---
-    if st['item_hp'] or st['item_sp']:
-        if now - st['t_it'] >= 3.0:
-            st['t_it'] = now
-            if st['item_hp']:
-                _autopot_item_check('hp')
-            if st['item_sp']:
-                _autopot_item_check('sp')
-    # --- 30sn KALP ATISI: dongu hayatta mi? (saha testi 14 tanisi) ---
-    if (st['hp'] or st['sp'] or st['item_hp'] or st['item_sp']):
-        if (now - st['t_hb']) >= 30.0:
-            st['t_hb'] = now
-            _live('AUTOPOT: izleme AKTIF (basilan kirmizi=%d mavi=%d)' % (st['n_hp'], st['n_sp']))
-
-
-def _autopot_status():
-    st = _AUTOPOT
-    def _s(v):
-        return ('%d%%' % v) if v > 0 else 'KAPALI'
-    L = ['AUTOPOT DURUMU (v4.8 - SUREKLI IZLEME)',
-         '  can   (normal kirmizi pot 27001-3) : %s  basilan=%d' % (_s(st['hp']), st['n_hp']),
-         '  mana (normal mavi pot 27004-6)     : %s  basilan=%d' % (_s(st['sp']), st['n_sp']),
-         '  oto-pot esyasi HP (72723-6...)     : %s' % ('IZLEMEDE' if st['item_hp'] else 'KAPALI'),
-         '  oto-pot esyasi SP (72727-30...)    : %s' % ('IZLEMEDE' if st['item_sp'] else 'KAPALI')]
-    L.append('---')
-    L.append('mantik: can/mana esik ALTINDAYKEN pot 0.4 saniyede bir basilir,')
-    L.append('esik ustune cikinca isaretir - her 30 saniyede bir [LIVE] kalp atisi')
-    L.append('hata sayaci: %d (ilk 3 hata [LIVE] gorunur)' % st['err'])
-    L.append('kullanim: autopot hp 80 | autopot mp 80 | autopot 0')
-    L.append('oto-pot esyasi: autopot_item hp | autopot_item mp | autopot_item 0')
-    _write('autopot', chr(10).join(L) + chr(10))
-
-def autopot(arg='durum', pct=80):
-    """OTOMATIK POT v4.8 - SUREKLI IZLEME (saha testi 14 duzeltmesi):
-    autopot hp 80   -> can %80 ALTINDA KALDIGI SURECE kirmizi pot 0.4sn'de
-                       bir basilir, can esigi gecene kadar (once 1 kere basip
-                       susuyordu - duzeltildi: dongu + kalp atisi + gorunur
-                       hatalar)
-    autopot mp 80   -> mana icin ayni surekli mantik (mavi pot 27004-6)
-    autopot         -> durum raporu
-    autopot 0       -> hepsini kapat (oto-pot esyasi izlemesi dahil)
-    oto-pot ESYASI (72724 gibi) icin: autopot_item hp | autopot_item mp"""
-    try:
-        if not _ingame():
-            _write('autopot', 'HATA: oyunda degilsin\n')
-            return
-        a = str(arg).strip().lower()
-        if a in ('0', 'kapat', 'off', 'kapa'):
-            for k in ('hp', 'sp', 'item_hp', 'item_sp'):
-                _AUTOPOT[k] = 0
-            _write('autopot', 'OK: AUTOPOT TAMAMEN KAPALI (can/mana pot + oto-pot esyasi izlemesi)')
-            return
-        if a == 'hp':
-            try:
-                p = max(5, min(95, int(pct)))
-            except:
-                p = 80
-            _AUTOPOT['hp'] = p
-            _AUTOPOT['err'] = 0
-            _AUTOPOT['t_hb'] = 0.0
-            if _AUTOPOT['win'] is None:
-                _AUTOPOT['win'] = _AutoPotWnd()
-            _write('autopot', 'OK: CAN pot AKTIF (v4.9) - can %%%d ALTINDAYKEN kirmizi pot SUREKLI basilir\n(%%%d ustune cikana kadar; normal 0.4sn - KRITIK %%%d alti 0.15sn arayla)\nmana icin: autopot mp <pct> | kapat: autopot hp 0 (veya autopot 0 hepsi)\nher 30 saniyede bir kalp atisi: [LIVE] izleme AKTIF' % (p, p, 50))
-        elif a in ('mp', 'sp', 'mana'):
-            try:
-                p = max(5, min(95, int(pct)))
-            except:
-                p = 80
-            _AUTOPOT['sp'] = p
-            _AUTOPOT['err'] = 0
-            _AUTOPOT['t_hb'] = 0.0
-            if _AUTOPOT['win'] is None:
-                _AUTOPOT['win'] = _AutoPotWnd()
-            _write('autopot', 'OK: MANA pot AKTIF (v4.9) - mana %%%d ALTINDAYKEN mavi pot SUREKLI basilir\n(%%%d ustune cikana kadar; normal 0.4sn - KRITIK %%%d alti 0.15sn arayla)\ncan icin: autopot hp <pct> | kapat: autopot mp 0 (veya autopot 0 hepsi)' % (p, p, 50))
-        else:
-            _autopot_status()
-    except Exception, e:
-        _write('autopot', 'HATA ' + _fmt_error(e) + '\n')
-
-def autopot_item(arg='?'):
-    """OTO-POT ESYASI v4.7 (kullanici istegi - ornek esya 72724):
-    autopot_item hp -> 72723-72726 (+76021-2, 79012) bulur; PASIF ise basar
-                       (AKTIF ise basmaz - gerek yok). Biri bitince 3sn
-                       icinde yenisini otomatik basar.
-    autopot_item mp -> 72727-72730 (+76004-5, 79013) ayni sekilde.
-    autopot_item 0  -> izlemeyi kapat.
-    AKTIFLIK KANIT: uiInventory.py - metinSocket[0] != 0 = esya aktif."""
-    try:
-        if not _ingame():
-            _write('autopot_item', 'HATA: oyunda degilsin\n')
-            return
-        a = str(arg).strip().lower()
-        if a in ('0', 'kapat', 'off'):
-            _AUTOPOT['item_hp'] = 0
-            _AUTOPOT['item_sp'] = 0
-            _write('autopot_item', 'OK: oto-pot esyasi izlemesi KAPALI')
-            return
-        if a == 'hp':
-            _AUTOPOT['item_hp'] = 1
-            if _AUTOPOT['win'] is None:
-                _AUTOPOT['win'] = _AutoPotWnd()
-            _autopot_item_check('hp')
-            _write('autopot_item', 'OK: HP oto-pot esyasi IZLEMEDE (72723-6 + 76021-2 + 79012)\nesya PASIFSE hemen basildi; AKTIFSE dokunulmadi (gerek yok).\nEsya bitince yenisi otomatik basilir (3sn kontrol).\nkapat: autopot_item 0')
-        elif a in ('mp', 'sp', 'mana'):
-            _AUTOPOT['item_sp'] = 1
-            if _AUTOPOT['win'] is None:
-                _AUTOPOT['win'] = _AutoPotWnd()
-            _autopot_item_check('sp')
-            _write('autopot_item', 'OK: SP oto-pot esyasi IZLEMEDE (72727-30 + 76004-5 + 79013)\nesya PASIFSE hemen basildi; AKTIFSE dokunulmadi (gerek yok).\nkapat: autopot_item 0')
-        else:
-            _autopot_status()
-    except Exception, e:
-        _write('autopot_item', 'HATA ' + _fmt_error(e) + '\n')
-
 # --- COMBO (surekli vurus - 'damage animasyonu' tekniği) --------------------
 def combo(m):
     """SUREKLI VURUS (kullanici tarifli: 'renderle ilgili animasyonu damage
@@ -7573,10 +7780,10 @@ def _tick():
             return
         st['t'] = now
         st['n'] += 1
-        _autopot_tick()
         _otp_tick()
         _sell_tick()
         _drop_tick()
+        _relogin_tick()   # v5.2: relogin state-machine (DLL nabzi ile surer)
     except Exception, e:
         st = _TICK
         st['err'] += 1
@@ -7616,19 +7823,19 @@ try:
 except:
     pass
 
-# v5.0: autopot otomatik acilis (kullanici istegi: hp surekli izlenmeli)
-# dosya: C:\MaxExec\autopot.txt (satirlar: hp 80 / mp 50 / off) - dosya
-# yoksa varsayilan 'hp 80' yazilir ve aktiflesir
-_autopot_boot()
-
 _write('pylib_load',
        'PLUSMAXGOD_PyScript v%s yuklendi (ANA THREAD)' % PYLIB_VERSION + chr(10) +
+       'v5.2: UNIVERSAL LOGIN/SELSERVER - 28-client GitHub arastirmasi ile (RESEARCH.md)' + chr(10) +
+       '  login <id> <pwd> [3.alan]  : 3-parametreli login (PIN/guard/slot) + pw.Connect yolu' + chr(10) +
+       '  selserver <srv> <ch> [ok]  : listbox + Marty channelButton + coklu-bolge + ok=0 modu' + chr(10) +
+       '  uiprobe                    : login ekrani tam taramasi (mimari tespit + 3. alan raporu)' + chr(10) +
+       '  relogin [id pwd [srv ch]]  : TAM relogin (logout->disconnect->login akisi)' + chr(10) +
+       '  reloginquick [slot]        : HIZI relogin (logout->selchar, baglanti korunur)' + chr(10) +
+       'v5.1: oto-pot (hp/mp) ozelligi ve komutlari KALDIRILDI' + chr(10) +
        'v5.0: slots COK-HUCRELI esya (GetItemSize - oyunla AYNI sayim) | sell/drop KARA LISTE + 120sn siniri + isimli kalan raporu' + chr(10) +
        'sellall bitince dukkan OTOMATIK KAPANIR (SendShopEndPacket) | sell flicker korumasi (sonsuz dongu kok-nedeni kapandi)' + chr(10) +
-       'autopot OTOMATIK ACILIR (C:\\MaxExec\\autopot.txt - varsayilan hp 80; kapatmak icin dosyaya off yaz veya autopot 0)' + chr(10) +
-       'v4.9: sell/drop BURST + autopot KRITIK mod 0.15sn | otp2 ISINLANA+ADIM | DLL 150ms nabzi (_tick)' + chr(10) +
-       'otp delay/step alt-komut | durdurma: selljunk 0 / sellall 0 / dropall 0 | autopot hp/mp + autopot_item' + chr(10) +
-       'KALDIRILDI: speed/aspeed + chchange/relogin | dump: C modul API stub + pack.Get sysmodules yolu' + chr(10) +
+       'v4.9: sell/drop BURST | otp2 ISINLANA+ADIM | DLL 150ms nabzi (_tick)' + chr(10) +
+       'otp delay/step alt-komut | durdurma: selljunk 0 / sellall 0 / dropall 0' + chr(10) +
        'v4.5: ui_WindowBase sira hatasi duzeltildi (v4.4 yuklenemeyip v3.2\'ye dusuyordu!)' + chr(10) +
        'v4.4 OZET: fishdelay/fishswap/fishswapnow/fishtp KALDIRILDI' + chr(10) +
        'YENI: morphtarget cloneplayer fakemount speed aspeed statup skillup antifly antiflyeffect itemfind iteminfo attr useon efsunsw gotake' + chr(10) +

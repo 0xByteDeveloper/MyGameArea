@@ -124,20 +124,30 @@
 //            basedir.txt ile tasinabilir (BASE_DIR\dump).
 //    FIX-35: SyncEmbeddedPylib yeni dosya adini yazar (PLUSMAXGOD_PyScript.py),
 //            eskisini PLUSMAXGOD_eski_v<surum>.py olarak yedekler.
+//  v2.7 (kullanici istegi: EVRENSEL/UNIVERSAL login, pylib v5.2 cifti):
+//     28-client GitHub arastirmasi (RESEARCH.md) sonucu DLL tarafinda:
+//     (1) login <id> <pwd> [3.alan] - 3. parametre (PIN/guard/slot) verilebilir
+//     (2) selserver <srv> <ch> [ok] - ok=0: OK butonuna basma (bazi clientlarda
+//         OK yok: Marty 5.3 channelButton/tek-server)
+//     (3) uiprobe - login ekrani tam taramasi (mimari + 3. alan raporu)
+//     (4) relogin [id pwd [srv ch]] / relogin quick [slot] - v2.4'te
+//         kaldirilan relogin'in universal donusu (state-machine, pylib
+//         v5.2 _relogin_tick DLL 150ms nabziyle surer)
+//     DLL kodu degisikligi sadece komut arguman genisletmesi - ana
+//     davranis pylib v5.2 universal yardimcilarinda.
 //  v2.6 (saha testi 16 raporu, pylib v5.0 cifti): DLL kodu ayni (150ms
 //         nabiz + kuyruk zaten v2.5'te saglam) - sadece el-sikisma/banner
 //         dizgileri v5.0'a gecti. TUM davranis degisiklikleri pylib v5.0'da:
 //         slots cok-hucreli esya (GetItemSize), sell/drop kara liste +
 //         120sn siniri + flicker korumasi, sellall bitince dukkan otomatik
-//         kapanir, autopot otomatik acilis (autopot.txt).
+//         kapanir. (v5.1: oto-pot komutlari KALDIRILDI.)
 //  v2.5 "PLUSMAXGOD" (saha testi 15 dev raporu, pylib v4.9 cifti):
 //     150MS HIZLI NABIZ: DLL artik her 150ms'de maxlib._tick() cagirir
-//     (kuyruk taramasi ~1.5sn'de kalir) - autopot/sell/drop/otp donguleri
+//     (kuyruk taramasi ~1.5sn'de kalir) - sell/drop/otp donguleri
 //     ui penceresi + DLL timer CIFT kalple yurur (dongulerin '1 is sonrasi
 //     durma' sorununun kok cozumu). sellall/selljunk/dropall BURST gonderim
 //     (45 slot/nabiz - m2k DropAllItems/Taubuyer NightTown kaniti; v4.8'in
-//     0.4-0.45sn beklemeleri kaldirildi). autopot KRITIK mod (%50 alti
-//     0.15sn) + format-bug fix ('TypeError: not enough arguments').
+//     0.4-0.45sn beklemeleri kaldirildi).
 //     otp2 ISINLANA-ISINLANA + ADIM (SetPixelPosition + MoveToDestPosition
 //     + 1-kare UP + SendCharacterPositionPacket - darealfreak kaniti).
 //     otp delay/step/stop alt-komutlari ('otp delay 1' ValueError fix).
@@ -147,12 +157,12 @@
 //     (2) KALDIRILDI: speed/aspeed (sunucu tanimiyor) + chchange/relogin
 //         (karakteri degistirmisti; sonra detayli yeniden yapilacak).
 //     (3) YENI: slots/selljunk/sellall/dropall (envanter yonetimi),
-//         autopot hp/mp + autopot_item (oto-pot esyasi), otp1/otp2,
+//         otp1/otp2,
 //         warp = Legendy yolu (background.WarpTest - sahne yeniden yuklenir).
 //  v2.2 "PLUSMAXGOD" (saha testi 12 dev raporu, pylib v4.6 cifti):
 //     9 yeni komut: warp (otp adim + SendCharacterPositionPacket),
-//     antistun, antislow (AFFECT temizleme donguleri), autopot
-//     (27001-3/27004-6 vnum kanitli), combo (surekli vurus),
+//     antistun, antislow (AFFECT temizleme donguleri),
+//     combo (surekli vurus),
 //     statdown (/stat-), skillupui/statupui (oyunun kendi UI
 //     fonksiyonlari), efsun (bonus efsun okuma).
 //     pylib v4.6: near tip-filtresi kalkti (METIN tasi tip=2
@@ -462,7 +472,7 @@ static LRESULT CALLBACK MaxExecWndProc(HWND hwnd, UINT msg, WPARAM wp, LPARAM lp
 
 // ---------------------------------------------------------------------------
 // v2.5 HIZLI NABIZ (saha testi 15 kok-onarimi): DLL 150ms'de bir
-// maxlib._tick() cagirir - autopot/sell/drop/otp donguleri artik sadece ui
+// maxlib._tick() cagirir - sell/drop/otp donguleri artik sadece ui
 // penceresine degil DLL timer'ina da bagli (cift kalp). hasattr korumasi:
 // eski pylib'de _tick yok -> sessiz gecilir (pyfail sayilmaz).
 // ---------------------------------------------------------------------------
@@ -582,7 +592,7 @@ static std::string BootImport(void)
          "        try:\n"
          "            import traceback\n"
          "            _f = open(r'" + std::string(RESULT_DIR) + "\\\\last_pylib_fail.txt', 'w')\n"
-         "            _f.write('PLUSMAXGOD_PyScript.py YUKLENEMEDI (DLL v2.6 / pylib v5.0) - TRACEBACK:\\n' + traceback.format_exc())\n"
+         "            _f.write('PLUSMAXGOD_PyScript.py YUKLENEMEDI (DLL v2.7 / pylib v5.2) - TRACEBACK:\\n' + traceback.format_exc())\n"
          "            _f.close()\n"
          "        except Exception:\n"
          "            pass\n"
@@ -595,11 +605,11 @@ static std::string BootImport(void)
          "    _mxv = int(str(getattr(maxlib, 'PYLIB_VERSION', '0')).split('.')[0])\n"
          "except Exception:\n"
          "    _mxv = 0\n"
-         "if _mxv < 4 and not getattr(maxlib, '_MX_OLD_WARNED', False):\n"
+         "if _mxv < 5 and not getattr(maxlib, '_MX_OLD_WARNED', False):\n"
          "    maxlib._MX_OLD_WARNED = True\n"
          "    try:\n"
          "        import sys\n"
-         "        sys.stderr.write('!!! PYLIB ESKI v' + str(getattr(maxlib, 'PYLIB_VERSION', '?')) + ' - DLL v2.6 PLUSMAXGOD v5.0 ister! "
+         "        sys.stderr.write('!!! PYLIB ESKI v' + str(getattr(maxlib, 'PYLIB_VERSION', '?')) + ' - DLL v2.7 PLUSMAXGOD v5.2 ister! "
          "C:\\\\MaxExec\\\\PLUSMAXGOD_PyScript.py dosyasini yenisiyle degistir (bundle zip / GitHub) !!!\\\\n')\n"
          "    except Exception:\n"
          "        pass\n";
@@ -675,21 +685,59 @@ static void CmdLoad(const std::string& path)
     OutP("[MAXEXEC] Python hatalari icin: %s\n", PYERR_LOG);
 }
 
-static void CmdLogin(const std::string& id, const std::string& pwd)
+static void CmdLogin(const std::string& id, const std::string& pwd, const std::string& third)
 {
     // FIX-23: cagri satiri kisa tamponda uretilir, bootstrap std::string
     // ile birlestirilir - _snprintf'un BootImport'i kesmesi artik imkansiz.
-    char call[512];
-    _snprintf(call, sizeof(call), "maxlib.login(r'%s', r'%s')\n", id.c_str(), pwd.c_str());
+    // v2.7: third (3. alan: PIN/guard/slot) bos degilse maxlib.login'e
+    // 3. arguman olarak gecer (pylib v5.2 universal imza).
+    char call[768];
+    if (!third.empty())
+        _snprintf(call, sizeof(call), "maxlib.login(r'%s', r'%s', r'%s')\n", id.c_str(), pwd.c_str(), third.c_str());
+    else
+        _snprintf(call, sizeof(call), "maxlib.login(r'%s', r'%s')\n", id.c_str(), pwd.c_str());
     call[sizeof(call)-1] = 0;
     QRaw(BootImport() + call);
 }
 
-static void CmdSelServer(int srv, int ch)
+static void CmdSelServer(int srv, int ch, int ok)
 {
+    // v2.7: ok parametresi - 0 verilirse OK butonuna basilmaz
+    // (bazi clientlarda OK yok: Marty 5.3 channelButton/tek-server).
     char call[64];   // FIX-23
-    _snprintf(call, sizeof(call), "maxlib.selserver(%d, %d)\n", srv, ch);
+    _snprintf(call, sizeof(call), "maxlib.selserver(%d, %d, %d)\n", srv, ch, ok ? 1 : 0);
     call[sizeof(call)-1] = 0;
+    QRaw(BootImport() + call);
+}
+
+static void CmdUiProbe(void)
+{
+    // v2.7: login ekrani tam taramasi (pylib v5.2 uiprobe)
+    QRaw(BootImport() + "maxlib.uiprobe()\n");
+}
+
+static void CmdRelogin(int nArg, const std::string* args)
+{
+    // v2.7: relogin universal donusu (v2.4'te kaldirilan komut).
+    //   relogin                        -> login.dat kaydindan
+    //   relogin <id> <pwd>             -> verilen kimlik
+    //   relogin <id> <pwd> <srv> <ch>  -> kimlik + server/ch
+    //   relogin quick [slot]           -> HIZI mod (logout->selchar)
+    std::string call;
+    if (nArg >= 1 && args[0] == "quick")
+    {
+        int slot = 0;
+        if (nArg >= 2) slot = atoi(args[1].c_str());
+        char buf[96];
+        _snprintf(buf, sizeof(buf), "maxlib.reloginquick(%d)\n", slot);
+        call = buf;
+    }
+    else if (nArg >= 4)
+        call = "maxlib.relogin(r'" + args[0] + "', r'" + args[1] + "', " + args[2] + ", " + args[3] + ")\n";
+    else if (nArg >= 2)
+        call = "maxlib.relogin(r'" + args[0] + "', r'" + args[1] + "')\n";
+    else
+        call = "maxlib.relogin()\n";
     QRaw(BootImport() + call);
 }
 
@@ -981,9 +1029,6 @@ static void CmdSlots(void)                       { QRaw(BootImport() + "maxlib.s
 static void CmdSellJunk(const std::string& sub)  { QRaw(BootImport() + "maxlib.selljunk(" + PyStr(sub) + ")\n"); }
 static void CmdSellAll(const std::string& f)     { QRaw(BootImport() + "maxlib.sellall(" + PyStr(f) + ")\n"); }
 static void CmdDropAll(const std::string& sub)   { QRaw(BootImport() + "maxlib.dropall(" + PyStr(sub) + ")\n"); }
-static void CmdAutoPot(const std::string& arg, const std::string& pct)
-                                                { QRaw(BootImport() + "maxlib.autopot(" + PyStr(arg) + ", " + PyStr(pct) + ")\n"); }
-static void CmdAutoPotItem(const std::string& k) { QRaw(BootImport() + "maxlib.autopot_item(" + PyStr(k) + ")\n"); }
 static void CmdCombo(const std::string& n)      { QRaw(BootImport() + "maxlib.combo(" + PyStr(n) + ")\n"); }
 static void CmdStatDown(const std::string& p, const std::string& n)  { QRaw(BootImport() + "maxlib.statdown(" + PyStr(p) + ", " + PyStr(n) + ")\n"); }
 static void CmdSkillUpUI(const std::string& s) { QRaw(BootImport() + "maxlib.skillupui(" + PyStr(s) + ")\n"); }
@@ -1085,7 +1130,7 @@ static bool InitConsole(void)
         LogLine("CONOUT$ (stderr) yeniden acilamadi");
     setvbuf(stdout, NULL, _IONBF, 0);   // buffer'siz: crash olsa bile yazar
     setvbuf(stderr, NULL, _IONBF, 0);
-    SetConsoleTitleA("MaxExecutor v2.6 PLUSMAXGOD");
+    SetConsoleTitleA("MaxExecutor v2.7 PLUSMAXGOD");
     HWND cw = GetConsoleWindow();
     if (cw)
     {
@@ -1203,13 +1248,16 @@ static std::vector<std::string> SplitArgs(const std::string& line)
 
 static void PrintHelp(void)
 {
-    OutP("\n=== MaxExecutor v2.6 PLUSMAXGOD (oyun-ici + GOD MOD pylib v5.0) ===\n");
+    OutP("\n=== MaxExecutor v2.7 PLUSMAXGOD (UNIVERSAL login + GOD MOD pylib v5.2) ===\n");
     OutP("  help                        : bu yardim\n");
     OutP("  status                      : anlik sahne/baglanti snapshot\n");
     OutP("  -- giris akisi (menu) --\n");
-    OutP("  serverlist                  : server/CH listbox icerigi\n");
-    OutP("  selserver <srv> <ch>        : server+CH sec, OK'a bas\n");
-    OutP("  login <id> <pwd>            : login ekraninda UI doldurur + giris\n");
+    OutP("  serverlist                  : server/CH listbox icerigi + REGION_DICT + Marty CH butonlari\n");
+    OutP("  selserver <srv> <ch> [ok]   : server+CH sec, OK'a bas (ok=0: OK yoksa/bazilmasin)\n");
+    OutP("  login <id> <pwd> [3.alan]   : login ekraninda UI doldurur + giris (3.alan: PIN/guard/slot)\n");
+    OutP("  uiprobe                     : login ekrani TAM taramasi (mimari + 3. alan raporu - v5.2)\n");
+    OutP("  relogin [id pwd [srv ch]]   : TAM relogin (logout->disconnect->login akisi - v5.2)\n");
+    OutP("  relogin quick [slot]        : HIZI relogin (logout->selchar, baglanti korunur)\n");
     OutP("  charlist                    : 5 slot tablosunu doken rapor\n");
     OutP("  selchar <slot>              : karakter slotu SEC (0-4)\n");
     OutP("  enter <slot>                : oyuna giris - UI START yolu (DirectEnter yedek)\n");
@@ -1231,11 +1279,9 @@ static void PrintHelp(void)
     OutP("                                + flicker korumasi + bitince dukkan KAPANIR\n");
     OutP("  dropall                    : v5.0 ayni tedavi + ATILAMAYAN esya isim listesi\n");
     OutP("                                (sunucu yavaysa esyalar sonra tek tek duser)\n");
-    OutP("  autopot                    : v5.0 OTOMATIK ACILIR - C:\\MaxExec\\autopot.txt\n");
-    OutP("                                (varsayilan hp 80; kapatmak: dosyaya off / autopot 0)\n");
     OutP("  -- v4.9: SAHA TESTI 15 DUZELTMELERI --\n");
     OutP("  sellall/selljunk/dropall      : BURST gonderim (45 slot/nabiz - m2k kaniti)\n");
-    OutP("  autopot hp/mp <pct>           : KRITIK mod - %50 alti 0.15sn arayla pot\n");
+    OutP("  (v5.1 not: oto-pot hp/mp komutlari KALDIRILDI)\n");
     OutP("  otp2 <x> <y>                  : ISINLANA-ISINLANA + ADIM (sendcharacterstate)\n");
     OutP("  otp delay <ms> | otp step <px> | otp stop : alt-komutlar (v2.5)\n");
     OutP("  DLL 150ms hizli nabiz: maxlib._tick() - donguler cift kalple yurur\n");
@@ -1246,11 +1292,6 @@ static void PrintHelp(void)
     OutP("  sellall [force]             : v4.9 BURST - TUM envanteri sat (force: efsunlu dahil!) | DUR: sellall 0\n");
     OutP("  warp <x> <y>                : v4.7 - LEGENDY warp (sahne YENIDEN yuklenir!)\n");
     OutP("                                x,y = pos/100 (orn 38421 39017 -> warp 384 390)\n");
-    OutP("  autopot hp 80 | autopot mp 80 | autopot (durum) | autopot 0\n");
-    OutP("       SUREKLI izleme: esik altindayken 0.4sn'de bir pot, esige dek\n");
-    OutP("       KRITIK mod: %50 altinda 0.15sn arayla | 30sn kalp atisi | DUR: autopot 0\n");
-    OutP("  autopot_item hp | autopot_item mp | autopot_item 0\n");
-    OutP("       oto-pot ESYASI (72723-6/72727-30): pasifse basar, bitince yeniler\n");
     OutP("  otp1 <x> <y>                : v4.9 - saldiri tusu adim-adim (kanitli)\n");
     OutP("  otp2 <x> <y>                : v4.9 - ISINLANA-ISINLANA + ADIM (geri atma yok)\n");
     OutP("  dropall                     : v4.9 BURST - tum envanteri YERE AT (45 slot/nabiz) | DUR: dropall 0\n");
@@ -1294,22 +1335,22 @@ static void PrintHelp(void)
     OutP("  (v4.4 not: fishdelay/fishswap/fishswapnow/fishtp KALDIRILDI;\n"
          "   v4.5 not: pylib yukleme sira hatasi duzeltildi;\n"
          "   v4.6 not: near artik METIN taslarini bulur | antifly saldirisiz;\n"
-         "   v4.7 not: speed/aspeed/chchange/relogin KALDIRILDI | warp Legendy\n"
+         "   v4.7 not: speed/aspeed KALDIRILDI | warp Legendy | relogin v5.2'de universal DONDU\n"
          "            yolu | dump: C modul API stub + pack.Get sysmodules;\n"
-         "   v4.8 not: autopot surekli | otp2 W-basili | slots sayim fix |\n"
+         "   v4.8 not: otp2 W-basili | slots sayim fix |\n"
          "            selljunk/sellall/dropall 1-arg paket + stop (selljunk 0);\n"
          "   v5.0 not: slots cok-hucreli | sell/drop kara liste + 120sn + dukkan kapanir |\n"
-         "   autopot otomatik (autopot.txt) | v4.9: sell/drop BURST | otp2 isinlana+adim |\n"
+         "   v4.9: sell/drop BURST | otp2 isinlana+adim |\n"
          "            DLL 150ms nabiz | otp delay/step alt-komut)\n");
     OutP("  -- KESIF --\n");
     OutP("  pyfiles | pydump <ad> | pydumpall | pyscan <modul> | plusquest\n");
     OutP("  -- hata takibi --\n");
     OutP("  lasterr | pyerr | log | load <py> | raw <kod> | waitfor <Scene> <sn> | exit\n");
-    OutP("GIRIS: status -> selserver 0 0 -> login <id> <pwd> -> charlist -> selchar 0 -> enter 0\n");
+    OutP("GIRIS: status -> uiprobe -> selserver 0 0 -> login <id> <pwd> [3.alan] -> charlist -> selchar 0 -> enter 0\n");
+    OutP("HIZLI YENIDEN GIRIS: relogin (login.dat kaydindan otomatik akis) | oyundan cikmadan: relogin quick 0\n");
     OutP("BALIK: fishtest -> /i 27400 (olta) + /i 27801 200 (solucan) -> fish -> [LIVE] izle\n");
     OutP("  uzaktan: goto <su kenari> -> fishspot <x> <y> -> fish\n");
     OutP("ENVANTER: slots -> selljunk (cop sat) -> sellall (hepsi) -> dropall (yere at)\n");
-    OutP("OTPOT: autopot hp 80 + autopot mp 80 + autopot_item hp (oto-pot esyasi 72724)\n");
     OutP("Saglik: %s | oyun hatalari: results\\last_error.txt\n", ALIVE_FILE);
     OutP("dump klasoru: %s | plusquest cikti: %s\\PLUSQuest_live.txt\n\n", DUMP_DIR, DUMP_DIR);
 }
@@ -1405,8 +1446,8 @@ static DWORD WINAPI WorkerThread(LPVOID)
     const bool con = InitConsole();
 
     OutP("\n=============================================\n");
-    OutP("  MaxExecutor v2.6 PLUSMAXGOD - ana-thread executor\n");
-    OutP("  oyun-ici + kesif + GOD MOD v2 (pylib v5.0 cifti)\n");
+    OutP("  MaxExecutor v2.7 PLUSMAXGOD - ana-thread executor\n");
+    OutP("  oyun-ici + kesif + GOD MOD v2 (pylib v5.2 cifti)\n");
     OutP("  canli cikti: C:\\MaxExec\\live.txt izlenir -> [LIVE] akar\n");
     OutP("=============================================\n");
     if (!con)
@@ -1468,12 +1509,12 @@ static DWORD WINAPI WorkerThread(LPVOID)
                 char rp[MAX_PATH];
                 _snprintf(rp, MAX_PATH, "%s\\last_warning.txt", RESULT_DIR); rp[MAX_PATH-1]=0;
                 WriteFileAll(rp, std::string("! PYLIB ESI SURUM: v") + vShow +
-                    "  (DLL v2.6 PLUSMAXGOD v5.0 ister)\n"
+                    "  (DLL v2.7 PLUSMAXGOD v5.2 ister)\n"
                     "Yeni PLUSMAXGOD_PyScript.py'yi " + std::string(BASE_DIR) + " icine kopyala (bundle zip / GitHub).\n"
                     "ESKI pylib ILE: stat/pos/inv/equip/skill/near/chat/goto/tp/pyfiles/pydumpall/plusquest CALISMAZ.\n");
-                LogLine("UYARI: pylib ESI v%s - PLUSMAXGOD v5.0 gerekli! (%s)", vShow, pylibPath);
+                LogLine("UYARI: pylib ESI v%s - PLUSMAXGOD v5.2 gerekli! (%s)", vShow, pylibPath);
                 OutP("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-                OutP("!! PYLIB ESI: diskteki PLUSMAXGOD_PyScript.py = v%s  (gereken: v5.0)\n", vShow);
+                OutP("!! PYLIB ESI: diskteki PLUSMAXGOD_PyScript.py = v%s  (gereken: v5.2)\n", vShow);
                 OutP("!! Yeni PLUSMAXGOD_PyScript.py'yi %s icine kopyala (bundle zip)\n", BASE_DIR);
                 OutP("!! Eski pylib ile v4.0 komutlari CALISMAZ (stat/inv/tp/pyfiles..)\n");
                 OutP("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
@@ -1522,13 +1563,30 @@ static DWORD WINAPI WorkerThread(LPVOID)
         else if (cmd == "charlist") CmdCharlist();
         else if (cmd == "login")
         {
-            if (a.size() >= 3) CmdLogin(a[1], a[2]);
-            else OutP("kullanim: login <id> <sifre>\n");
+            // v2.7: login <id> <pwd> [3.alan] - 3. parametre (PIN/guard/slot)
+            if (a.size() >= 4) CmdLogin(a[1], a[2], a[3]);
+            else if (a.size() >= 3) CmdLogin(a[1], a[2], "");
+            else OutP("kullanim: login <id> <sifre> [3.alan]   (3. alan: PIN/guard/slot - isteyen serverlarda; hangi alanlar var? uiprobe)\n");
         }
         else if (cmd == "selserver")
         {
-            if (a.size() >= 3) CmdSelServer(atoi(a[1].c_str()), atoi(a[2].c_str()));
-            else OutP("kullanim: selserver <server> <kanal>   (orn. selserver 0 0)\n");
+            // v2.7: selserver <srv> <ch> [ok] - ok=0: OK butonuna basma
+            if (a.size() >= 4) CmdSelServer(atoi(a[1].c_str()), atoi(a[2].c_str()), atoi(a[3].c_str()));
+            else if (a.size() >= 3) CmdSelServer(atoi(a[1].c_str()), atoi(a[2].c_str()), 1);
+            else OutP("kullanim: selserver <server> <kanal> [ok]   (orn. selserver 0 0 | selserver 0 0 0 = OK'a basma)\n");
+        }
+        else if (cmd == "uiprobe")
+        {
+            // v2.7: login ekrani tani komutu (sonuc: last_uiprobe.txt)
+            CmdUiProbe();
+        }
+        else if (cmd == "relogin")
+        {
+            // v2.7: universal relogin - login.dat veya verilen kimlik
+            //   relogin | relogin <id> <pwd> [srv] [ch] | relogin quick [slot]
+            std::vector<std::string> ex;
+            for (size_t i = 1; i < a.size(); ++i) ex.push_back(a[i]);
+            CmdRelogin((int)ex.size(), ex.empty() ? NULL : &ex[0]);
         }
         else if (cmd == "empire")
         {
@@ -1761,16 +1819,6 @@ static DWORD WINAPI WorkerThread(LPVOID)
         }
         else if (cmd == "antistun") CmdAntiStun(a.size() >= 2 ? a[1] : "1");
         else if (cmd == "antislow") CmdAntiSlow(a.size() >= 2 ? a[1] : "1");
-        else if (cmd == "autopot")
-        {
-            // v2.3 yeni sema: autopot hp 80 | autopot mp 80 | autopot (durum) | autopot 0
-            if (a.size() >= 2) CmdAutoPot(a[1], a.size() >= 3 ? a[2] : "80");
-            else CmdAutoPot("durum", "0");
-        }
-        else if (cmd == "autopot_item")
-        {
-            CmdAutoPotItem(a.size() >= 2 ? a[1] : "?");
-        }
         else if (cmd == "slots") CmdSlots();
         else if (cmd == "selljunk")
         {

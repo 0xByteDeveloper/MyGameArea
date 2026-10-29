@@ -2,24 +2,30 @@
 
 > Paket içeriği, kurulum, komutlar, giriş akışı, sorun giderme — hepsi bu dosyada.
 > Mimari gerekçe için: `reports/DEV_REAL_BINARY_TEST.md` (RC18/RC19) + `reports/DEV_GIL_ANALYSIS.md` (RC1-RC17).
-> Son güncelleme: **Oturum 21 — MaxExecutor v2.6 PLUSMAXGOD / pylib v5.0 (saha testi 16 dev raporu — çok-hücreli eşya sayımı + sell/drop KARA LİSTE + 120sn hard limit + dükkan otomatik kapanır + autopot otomatik açılır)**
+> Son güncelleme: **v5.2 — UNIVERSAL LOGIN/SELSERVER: 28-client GitHub araştırmasıyla (RESEARCH.md) login/selserver tüm sunucu tiplerine uyarlandı. YENI: `login <id> <pwd> [3.alan]` (3-parametreli login: PIN/guard/slot), `selserver <srv> <ch> [ok]` (ok=0: OK'suz clientlar), `uiprobe` (login ekranı tanı komutu), `relogin [id pwd [srv ch]]` + `relogin quick [slot]` (v2.3'te kaldırılan relogin'in universal dönüşü). Önceki: v5.1 — oto-pot (hp/mp otomatik pot) özelliği ve tüm komutları PAKETTEN TAMAMEN KALDIRILDI (kullanıcı isteği). Önceki: Oturum 21 — MaxExecutor v2.6 PLUSMAXGOD / pylib v5.0**
+>
+> **v2.7/v5.2 UNIVERSAL ÖZET — 28 client dump araştırması (tam rapor: RESEARCH.md):**
+> **5 farklı login mimarisi tespit edildi ve HEPSİ desteklendi:** (M1) resmi 2014 akışı: `idEditLine`+`pwdEditLine`+`serverList`+`channelList`+`serverSelectButton` (28 dump'ın 14'ü — m2dev-client, Lead, Baseline, battal34 TR, TurkMMO-MS5.8 TR...); (M2) Marty 5.3 gömülü akış: server listesi YOK, CH butonları dict (`channelButton`), OK butonu YOK, login ekranı CH seçimiyle BİRLEŞİK; (M3) eski/kendi network katmanı (`authSocket.SetLoginInfo`, `info["channel"]` — N2Play); (M4) çoklu-hesap container UI (`id_editline_s`/`pwd_editlines` + `autoLogin(index)` — reign2); (M5) PIN 3. alanı (`pin_edit_line` — proyecto-metin).
+> **`login <id> <pwd> [3.alan]`:** 3. parametre 4 farklı anlamda çıkıyor (SAB hesap slotu / PIN / guard-code / sunucu-ID). Universal çözüm: id/pwd adaylarına ek olarak kalan HER editline taranır → 3. alan BULUNUR+RAPORLANIR, `third` verilirse DOLDURULUR. Buton yolu: `loginButton` adayları → `__OnClickLoginButton()` → `pw.Connect(id,pwd)` (resmi 2014 İLE Marty 5.3'te aynı imza) → paket yolu (`stream.SetLoginInfo`/`net.SetLoginInfo`/`authSocket`).
+> **`selserver <srv> <ch> [ok]`:** bölge listesi (çoklu-bölge: Romania vb.) → serverList → channelList → Marty `channelButton` dict → `pw.SetChannel()` zinciri; `ok=0` verirsen OK butonuna BASMaz (OK'suz clientlar için — v2.7'de DLL komutu da 3. argüman alır).
+> **`uiprobe` YENI:** login ekranının TAM envanteri: class, TÜM editline'lar (hangi rolde), butonlar, listbox'lar + adet + seçili index, `channelButton` dict, `serverInfo.REGION_DICT` (bölge/server adları), LoginWindow metotları + **hangi argümanlarla login/selserver verileceği önerisi** → `results\last_uiprobe.txt`.
+> **`relogin` DÖNDÜ (universal):** v2.3'te kaldırılan komut iki modla geri geldi — **TAM mod** `relogin [id pwd [srv ch]]`: `/logout → char ekranı → net.Disconnect → login ekranı → selserver+login` (yeni oturum; parametre verilmezse login.dat kaydından) · **HIZLI mod** `relogin quick [slot]`: `/logout → selchar` (bağlantı korunur). State-machine DLL 150ms nabziyle sürer (ana thread bloklanmaz); adım raporları `results\last_relogin_step.txt`, sonuc `last_relogin.txt`.
+> **pylib_embedded.h v5.2 ile yeniden üretildi** (scripts/embed_pylib.py) — DLL açılışta diskteki pylib eksik/eski ise v5.2'yi otomatik yazar. DLL kaynak kodu v2.7: `login` 3. argüman, `selserver` ok argümanı, `uiprobe`, `relogin` komutları. **NOT: paketteki MaxExecutor.dll hâlen v2.6 derlemesidir — v2.7 kaynak kodunu derleyen kullanıcı 3. parametre/relogin komutlarını kazanır; pylib v5.2 eski DLL ile de 2-argümanlı login/selserver çalıştırır.**
 >
 > **v2.6/v5.0 ÖZET — saha testi 16 (tümü kanıtlı):**
 > **`slots` ÇOK-HÜCRELİ EŞYA:** saha raporu 'bazı itemler 3 slot bazıları 2 slot yer kaplıyor, ilk envanterde 32 boş yer var' — v4.9 her eşyayı 1 slot sanıyordu (oyun 32 boş gösterirken biz 34 diyorduk). Artık `item.SelectItem(vnum)` + `item.GetItemSize()` ile **(w×h) boyutu okunur** (6 NightTown dosyasında çalışan desen: swich.py:905, EQChanger.py:99, pasha37:2238, efsunbotu.py:793, edithack.py:754, itemcreator.py:322) ve **kaplanan HÜCRE** sayılır — oyunun göstergesiyle AYNI (kullanıcının 32'siyle birebir eşleşir). Izgara **5 sütun × 9 satır**, slot = satır×5+sütun (edithack.py:751 'slot-5' kontrolü kanıtı: yüksekliği ≥2 olan eşya 5 slot alttaki hücreyi kapatır). Harita artık **5 slot/satır** (oyunun ızgarasıyla aynı yönelim): `#`=eşya-başı, `o`=eşya-devamı (çok-hücrelinin gövdesi), `.`=boş, `E`=efsunlu, `?`=hata. `inv` de her eşyaya `(1x3)`/`(2x3)` boyut etiketi ekler.
 > **`sellall`/`selljunk` v5.0 — '5 dk sonra tekrar npcye tıklayıp satmaya çalışıyor' KÖK NEDENİ:** v4.9'da `shop.IsOpen()` **FLICKER**'ı (kısa süre 0 dönmesi — saha testi 14'te belgelenmişti) faz1→faz0 geçişinde **`cur`'u SIFIRLIYORDU** → dükkan açılınca burst BAŞTAN başlıyordu → faz2 doğrulamasına HİÇ ulaşılmadan **sonsuz faz0↔faz1 ping-pongu**. Düzeltme: (1) **cur flicker'da KORUNUR** (progress kaybolmaz), (2) flicker sayacı (10 üstü = kesin dur), (3) **120sn HARD DEADLINE** — ne olursa olsun durur, (4) **KARA LİSTE:** 2 doğrulama turunda da satılmayan eşya bir daha denenmez, **SATILAMAYANLAR isim+boyut listesiyle** raporlanır (hangi eşyaların takılı kaldığı GÖRÜNÜR — görev/kilitli eşya teşhisi), (5) bitince **dükkan OTOMATİK KAPANIR** (`net.SendShopEndPacket` — ShopScanner.py:566 kanıtı; 'kapatamıyorum' şikayeti kapandı).
 > **`dropall` v5.0 — '5 dk da bir atıyor durmuyo':** aynı kara liste (3 turda da düşmeyen bir daha denenmez) + 120sn hard limit + **ATILAMAYANLAR isim+boyut raporu**. ÖNEMLİ NOT: sunucu BURST paketlerini **yavaş işleyebilir** → eşyalar döngü bittikten SONRA dakikalar içinde tek tek düşer ('5 dk'da bir düşme' gözlemi sunucudan, döngüden değil) — tekrar `dropall` yazmaya gerek yok; kalanlar raporda listelenir.
-> **`autopot` OTOMATİK AÇILIR (kullanıcı isteği: 'hp yi sürekli getstatus ile takip edip envanterdeki can potuna basması gerekmiyor mu?'):** pylib yüklenirken **`C:\MaxExec\autopot.txt`** okunur — `hp 80` / `mp 50` satırları otomatik aktifleşir; dosya yoksa **varsayılan `hp 80` yazilir ve açılır** (artık komut yazmak gerekmez). Kapatmak için dosyaya `off` yaz veya `autopot 0`. Döngüyü DLL'in 150ms nabzı (`maxlib._tick`) sürer — **gerçek OS thread açmak oyunun Python'unda ana-thread ihlali olurdu** (crash riski); mevcut çift-nabız + zaman-kapılı desen sahadaki kanıtlı çalışan yaklaşım (live.txt örneği: `[11:08:41] AUTOPOT: kirmizi pot #1 (can %40 KRITIK, slot=57)`).
+> **v5.1 KALDIRMA NOTU:** oto-pot (hp/mp otomatik pot basma + oto-pot eşyası izlemesi) özelliği kullanıcı isteği üzerine paketten **TAMAMEN ÇIKARILDI** — komutlar, otomatik açılma dosyasının okuma/yazma davranışı ve tüm dokümantasyon kaldırıldı. DLL 150ms nabzı (`maxlib._tick`) yalnızca sell/drop/otp döngülerini sürer.
 >
 > **v2.5/v4.9 ÖZET — saha testi 15 (tümü kanıtlı):**
-> **150MS HIZLI NABIZ (`_tick`):** saha raporu '1 tane satıyor bidaha satmıyor / 1 atıyor 1-2dk bekliyor / pot basmıyor karakter ölüyor' — döngüler tek kalbe (ui penceresi `OnUpdate`) bağlıydı ve bu istemcide yavaş/nadir tetikleniyordu. **DLL artık her 150ms'de `maxlib._tick()` çağırır** (kuyruk taraması ~1.5sn'de kalır) — autopot/sell/drop/otp döngüleri **ÇİFT KALPLE** yürür (DLL timer + ui penceresi; hepsi zaman-kapılı olduğu için çift tetiklenme güvenli).
+> **150MS HIZLI NABIZ (`_tick`):** saha raporu '1 tane satıyor bidaha satmıyor / 1 atıyor 1-2dk bekliyor / pot basmıyor karakter ölüyor' — döngüler tek kalbe (ui penceresi `OnUpdate`) bağlıydı ve bu istemcide yavaş/nadir tetikleniyordu. **DLL artık her 150ms'de `maxlib._tick()` çağırır** (kuyruk taraması ~1.5sn'de kalır) — sell/drop/otp döngüleri **ÇİFT KALPLE** yürür (DLL timer + ui penceresi; hepsi zaman-kapılı olduğu için çift tetiklenme güvenli).
 > **sellall/selljunk BURST:** m2k Taubuyer/Inventorymanager bu sunucuda satış paketlerini **TEK KAREDE arka arkaya** gönderiyor (beklemesiz!) — v4.8'in 0.4sn aralığı gereksizdi ve tam da o aralıkta takılıyordu. Artık **45 slot tek nabızda** (90 slot ~0.3sn), sonra 2sn doğrulama + kalanlar için en fazla 2 BURST tekrarı.
 > **dropall BURST:** m2k DropAllItems kanıtı — 90 paket tek karede gider. Artık **45 slot/nabız** + tur sonu 2.5sn doğrulama + kalanlar için yeni BURST (4 tura dek). '1 atıyor 1-2dk bekliyor' bitti.
-> **autopot KRİTİK MOD + format-bug:** 'TypeError: not enough arguments' sabit; can/mana **%50 altında 0.15sn** arayla (normal 0.4sn) — karakter ölürken pot basmama şikayeti. Kalp atışı 30sn'de bir [LIVE]'da.
 > **otp2 YENİ — IŞINLANA-IŞINLANA + ADIM (kullanıcı tarifi):** her adımda `SetPixelPosition` sıçraması + `MoveToDestPosition` + **1-kare UP basışı** (darealfreakbot Debug() deseni) + `net.SendCharacterPositionPacket` → **sendcharacterstate tetiklenir, sunucu konumu takip eder, geri atma YOK**. Adım boyu `otpstep` (240px = 24m, 25m TP-kontrolü altı). v4.8'in sürekli-W yürüyüşü değiştirildi.
 > **otp ALT-KOMUTLAR:** `otp delay <ms>` / `otp step <px>` / `otp stop` artık çalışır (saha raporu: 'otp delay 1' ValueError yiyordu).
 >
 > **v2.4/v4.8 ÖZET — saha testi 14 (tümü kanıtlı):**
-> **`autopot` SÜREKLİ İZLEME:** saha raporu '1 kere bastı bir daha basmadı ve karakter öldü' — kök neden: döngü tek büyük `except`'in içindeydi, ilk exception'dan sonra SESSİZCE ölüyordu. Artık her blok ayrı try/except'te + **ilk 3 hata [LIVE]'a yazılır** + **30 saniyede bir kalp atısı** (`[LIVE] AUTOPOT: izleme AKTIF (basilan kirmizi=N mavi=M)`). Eşik altındayken **0.4sn'de bir** pot basar, eşik ÜSTÜNE çıkınca işaretir. Karakter ölüyken pot basmaz (uyarı yazar), pot yoksa 5sn'de bir hatırlatır.
 > **`otp2` SÜREKLİ BASILI:** saha raporu 'bas çek değil, konuma gidilene kadar sürekli basılı tutsun' — v4.7'deki adım-sıçramalar (SetPixelPosition) KALDIRILDI. Artık karakter her 100ms'de **hedefe döndürülür** (`chr.SetRotation` — darealfreakbot/pasha37-levelbot GetDegree kanıtı: S=0, B=90, K=180, D=270) ve **W+UP tuşu BASILI KALIR** (`SetSingleDIKKeyState` her tik yenilenir — game.py MoveUp DIK_UP kanıtı), varınca/`otpstop`'ta tuşlar MUTLAKA bırakılır. Uzaklık artarsa 'engel var olabilir' uyarısı verir. `otp1` aynen korundu (kanıtlanmış adım-adım).
 > **`slots` SAYIM DÜZELTMESI:** saha raporu '45 45 toplam 90 slot var' ama kod 168 diyordu — TOPLAM artık **sekme x sekme-boyu** (2x45=90); `INVENTORY_SLOT_COUNT` farklıysa bilgi satırı. Her sekme için **9 kolonlu slot HARİTASI** (`#`=esya, `.`=boş, `E`=efsunlu, `?`=okuma-hatasi) + okuma-hata sayacı + `GetElk`/`GetGold` yang yedeği — hangi slot boş görünüyor direkt görünür.
 > **`selljunk`/`sellall` YENİ AKIŞ:** saha raporu 'satmıyo' + 'kapatamıyom sürekli npc açıyo'. (1) **PAKET ÖNCELİĞİ DÜZELTİLDİ:** artık ÖNCE kanıtlı 1-arg `net.SendShopSellPacket(slot)` (m2k Inventorymanager + Taubuyer — NightTown'da ÇALIŞMIŞ bot kodu; v4.7 yanlışlıkla önce yeni 2-arg `SendShopSellPacketNew(slot,adet)` paketini yolluyordu ve bu sunucu onu işletmiyordu); (2) **SPAM YOK:** NPC'ye 1 tik + 8sn SESSIZ bekleme (eski 'NPC dukkani aciliyor' fırtınası bitti); dükkan açılmazsa en fazla 1 tekrar, sonra durur — sen NPC'ye KENDİN tıkla, **dükkan açılır açılmaz satma otomatik başlar** (bekleme sırasında `shop.IsOpen()` izlenir); (3) **DURDUR:** `selljunk 0` / `sellall 0` (veya `stop`).
@@ -29,8 +35,6 @@
 > **KALDIRILDI (kullanıcı isteği):** `speed`/`aspeed` (sunucu `chr.SetMoveSpeed/SetAttackSpeed` tanımıyordu) + `chchange`/`relogin` (karakteri değiştiriyordu — CH değil; sonra detaylı yeniden yapılacak).
 > **`warp` TAMAMEN YENİ — LEGENDY YOLU:** `warp <x> <y>` artık **sahneyi YENİDEN yükler** (kullanıcının anlattığı net.directenter tarzı). Kanıt: LegendySF-V2 `consolemodule.py` warp konsol komutu = `background.Destroy()` + `background.Initialize()` + **`background.WarpTest(x,y)`** (+ çevre/gölge kurulumu) — bu istemcinin background modülünde WarpTest VAR (canlı katalog). Koordinat = **pos/100** (örn pos 38421 39017 → `warp 384 390`; büyük yazarsan otomatik /100). Harita sınırı YOK — atlas koordinatıyla başka haritaya da geçer. Sonrasında karakter hedefe yerleştirilir + konum paketi gönderilir.
 > **`otp1`/`otp2` (OTP yöntem ayrımı):** mevcut kanıtlı yöntem = **`otp1`** (saldiri tuşu basılı). **`otp2` YENİ:** atak YERİNE **W TUŞU** basılı gider (`player.SetSingleDIKKeyState(app.DIK_W, 1)` — game.py DIK_W + Crap_Levelbot kanıtları; kullanıcının 'dik_key_w' tarifi). `otp` = `otp1` eş anlamlı.
-> **`autopot` YENİ DÜZEN (kullanıcı isteği):** `autopot hp 80` = can **%80 altına düşünce NORMAL kırmızı pot** (27001-3, oto-pot eşyası HARİÇ, sürekli basar) · `autopot mp 80` = mana %80 altında NORMAL mavi pot (27004-6) · `autopot` = durum raporu · `autopot 0` = hepsi kapalı.
-> **`autopot_item` YENİ:** `autopot_item hp` = **otomatik pot basan eşya** (72723-72726 + 76021-2 + 79012; kullanıcı örneği **72724**) **pasifse basar, aktifse dokunmaz** (gerek yok — metinSocket[0] aktiflik kontrolü, uiInventory.py kanıtı); eşya bitince yenisini 3sn içinde otomatik basar. `autopot_item mp` = mana tarafı (72727-30 + 76004-5 + 79013). `autopot_item 0` = izleme kapalı.
 > **ENVANTER YÖNETİMİ YENİ:** `slots` (kaç sekme/slot, dolu mu, kaç slot kaldı, **% kaç dolu**, yang) · `selljunk` (çöp eşyaları **yakındaki NPC'ye sat** — dükkan otomatik açılmaya çalışılır: yakın NPC'ye `net.SendOnClickPacket`; **efsunlu olanlar ASLA satılmaz**; çöp listesi = balıklar + `selljunk add <vnum>` / `selljunk name <isim>` ile genişletilir — junklist.txt'ye kalıcı kaydedilir) · `sellall [force]` (tüm envanteri sat; efsunlular korunur — `force` ile dahil, DİKKAT!) · `dropall` (tüm envanteri **tek tek yere at** — bazı sunucular toplu atmayı reddediyor; 3 tur doğrulama ile reddedilenler tekrar denenir). Kanıtlar: m2k Inventorymanager (shop.IsOpen + SendShopSellPacket) + uiShop.py:231 (SendShopSellPacketNew) + ItemUse.py (SendOnClickPacket).
 > **attackkeystate BUG DÜZELTİLDİ:** `otpstop` artık saldırı VE W tuşlarını **mutlaka bırakır** — saha raporu: 'fonksiyon kullanmasan bile attackkeystate aktif' — nedeni otp'nin yol ortasında durdurulunca tuşu BASILI bırakmasıydı. Tüm durdurma/hata yollarında tuş bırakma eklendi.
 > **KONSOL [LIVE] TEMİZLİĞİ:** DLL her açılışında konsol ESKİ oturumun [LIVE] balık satırlarını geri oynatıyordu (live.txt append modunda birikiyordu). Düzeltme: C++ izleyici açılışta dosyanın SONUNA atlar (sadece yeni satırlar akar) + pylib oturum başında live.txt'yi temizler.
@@ -38,7 +42,7 @@
 >
 > **v2.2/v4.6 ÖZET — saha testi 12 (tümü NightTown dump kanıtlı):**
 > **DÜZELTMELER:** (1) **`near` artık METİN TAŞLARINI bulur** — tip filtresi kaldırıldı; kagb-multihack kanıtı: **0=MOB, 2=METİN, 6=OYUNCU** (v4.5 filtresi tip-2'yi atıyordu!). (2) **`speed`/`aspeed` artık 0.5sn DÖNGÜ** — Crap_Levelbot kanıtı: sunucu hızı sürekli gerçek değere sıfırlar, tek atış etkisizdi; her döngü gerçek→hack hızı dansı. (3) **`antifly` saldırı tuşu artık varsayılan DEĞİL** — 1=animasyon kilidi, 2=+Güçlü Beden (AFFECT_CHEONGEON — zihinsel savaşçı devrilmeme efezgi), 3=orijinal (saldırılı). (4) **`chchange`/`relogin` karakter ekranında takılma bitti** — select ekranından oyunun KENDİ `stream.SetLoginPhase()` yolu (networkModule.py: Disconnect + faz takası). (5) **`attr` etiketleri** — efsun 1-5 + **6./7. BONUS** (rare) ayrımı (efsunbotu.py index kanıtı: 0-4 normal, 5-6 rare).
-> **YENİ KOMUTLAR:** `warp <x> <y>` (otp adımlama + **net.SendCharacterPositionPacket** — CG_POSITION 'konuma istek' paketi; kullanıcının tarif ettiği teknik) · `antistun 1` (sersemleme anında çözme döngüsü — AFFECT_STUN temizleme) · `antislow 1` (yavaşlatma çözme — AFFECT_SLOW+KWAESOK; speed ile birlikte kullan) · `autopot 1 [hp%] [sp%]` (**otomatik kırmızı/mavi pot**: 27001-3=Licoare Rosie, 27004-6=Licoare Albastra — New_Levelbot + itemscan kanıtı) · `combo <0-3>` (**sürekli vuruş** — chr.testSetComboType, 123klo-multihack kanıtı: 'render animasyonunu damage animasyonuyla değiştirme' tekniği) · `statdown <ht|iq|st|dx> [n]` (stat puanı GERİ AL — `/stat-`, uiCharacter minus kanıtı) · `skillupui <slot>` / `statupui <part>` (oyunun KENDİ UI fonksiyonları: OnPressedSlotButton / __OnClickStatusPlusButton — **başka py-paketi yok, oyunun kendisi de chat paketi kullanıyor** [uiCharacter.py:947 kanıtı]) · `efsun <slot>|all` (envanter+ekipman BONUS efsun raporu — attr'nin yeni adı).
+> **YENİ KOMUTLAR:** `warp <x> <y>` (otp adımlama + **net.SendCharacterPositionPacket** — CG_POSITION 'konuma istek' paketi; kullanıcının tarif ettiği teknik) · `antistun 1` (sersemleme anında çözme döngüsü — AFFECT_STUN temizleme) · `antislow 1` (yavaşlatma çözme — AFFECT_SLOW+KWAESOK; speed ile birlikte kullan) · `combo <0-3>` (**sürekli vuruş** — chr.testSetComboType, 123klo-multihack kanıtı: 'render animasyonunu damage animasyonuyla değiştirme' tekniği) · `statdown <ht|iq|st|dx> [n]` (stat puanı GERİ AL — `/stat-`, uiCharacter minus kanıtı) · `skillupui <slot>` / `statupui <part>` (oyunun KENDİ UI fonksiyonları: OnPressedSlotButton / __OnClickStatusPlusButton — **başka py-paketi yok, oyunun kendisi de chat paketi kullanıyor** [uiCharacter.py:947 kanıtı]) · `efsun <slot>|all` (envanter+ekipman BONUS efsun raporu — attr'nin yeni adı).
 > **MAPOlarak ışınlanma notu:** map-arası geçiş SUNUCU kontrolünde (harita kapıları/yüzük paketi sunucuda işler). `warp` aynı haritada garantilidir; map değiştirmek için `goto` ile harita kapısına yürü.
 >
 > **v2.1/v4.5 — saha testi 11 kök-neden onarımı:**
@@ -128,6 +132,14 @@
 
 > ⚠️ **Bu client'ta login'den ÖNCE server listesi ekranı var** (server isimleri + CH listbox + OK butonu).
 > O yüzden akış `selserver` ile başlar.
+>
+> 🌍 **UNIVERSAL NOT (v5.2):** Bu akış HER clientta çalışır — ama server tipine göre ekran farklı olabilir:
+> • Server listesi GÖRÜNMÜYORSA (tek-server/Marty tarzı) → `selserver 0 <ch> 0` dene (OK'a basmaz, CH butonunu seçer)
+> • Login ekranında 3. alan (PIN/ID/guard) VARSA → `uiprobe` ile alan adını öğren, `login <id> <pwd> <3.alan>` kullan
+> • Emin değilsen `uiprobe` yaz → önerilen komut sırasını raporlar
+>
+> ⚡ **HIZLI YOL (v5.2):** Bir kez `selserver`+`login` yaptıysan, sonraki yeniden girişler için tek komut:
+> `relogin` (login.dat'tan otomatik) veya `relogin quick 0` (oyundan çıkıp aynı karaktere döner)
 
 MaxExecutor konsolunda sırayla:
 
@@ -135,10 +147,14 @@ MaxExecutor konsolunda sırayla:
 status                                  (0) SCENE= ne diyor bak (LoginWindow+ServerList ise dogru ekrandasin)
                                         (1) load ARTIK YOK — v1.3 pylib.py'yi otomatik yükler
                                            (kanıt: results\last_pylib_load.txt, 2 sn içinde oluşur)
+uiprobe                                 (1b) v5.2: login ekrani taramasi - mimari + 3. alan + öneriler
+                                           (sonuç: results\last_uiprobe.txt; TEK-SERVER varsa buraya bak)
 selserver 0 0                           (2) listedeki 0. sunucu + 0. CH'yi seç, OK'a bas
-serverlist                              (*)  isimleri/listbox içeriğini görmek istersen
+                                            (OK yoksa/istiyorsan: selserver 0 0 0)
+serverlist                              (*)  isimleri/listbox içeriğini görmek istersen (v5.2: REGION_DICT + Marty CH butonlari)
 waitfor LoginWindow 15                  (3) login (id/şifre) ekranına düşünceye kadar
 login kullaniciadim sifrem              (4) id+şifre doldur + giriş
+                                            (3. alan isterse: login kullaniciadim sifrem pin)
 waitfor SelectCharacterWindow 30        (5) karakter seçme ekranı
 charlist                                (6) 5 slot tablosu
 enter 0                                 (7) 1. slotla oyuna gir (UI START yolu)
@@ -147,7 +163,18 @@ status                                  (9) son durum
 pyerr                                   (*)  Python hatası olduysa son 30 satırı konsola döker
 ```
 
-Sonuç dosyaları `C:\MaxExec\results\` altında: `py_probe.txt` (zincir kanıtı), `last_status.txt`, `last_server.txt`, `last_login.txt`, `last_charlist.txt`, `last_enter.txt`, `last_error.txt`, `last_pylib_load.txt`.
+**RELOGIN AKIŞI (v5.2 — oyundan çıkıp yeniden giriş, tek komut):**
+```
+relogin                                 login.dat kaydından TAM relogin:
+                                        /logout → char ekranı → net.Disconnect → login ekranı
+                                        → selserver + login (yeni oturum)
+relogin <id> <pwd> [srv] [ch]           kimliği elle vererek TAM relogin
+relogin quick 0                         HIZLI relogin: /logout → selchar 0 (bağlantı korunur,
+                                        sadece karaktere tekrar girer)
+```
+Takip: `results\last_relogin_step.txt` (adımlar) + `last_relogin.txt` (sonuç). Zaman aşımı olursa durur ve bulunduğu sahneyi raporlar.
+
+Sonuç dosyaları `C:\MaxExec\results\` altında: `py_probe.txt` (zincir kanıtı), `last_status.txt`, `last_server.txt`, `last_login.txt`, `last_uiprobe.txt` (v5.2), `last_charlist.txt`, `last_enter.txt`, `last_relogin.txt` + `last_relogin_step.txt` (v5.2), `last_error.txt`, `last_pylib_load.txt`.
 
 ### SAHA DOĞRULAMALI SENARYOLAR (v1.7, oturum 12 testi: HEPSİ ÇALIŞTI ✓)
 
@@ -406,19 +433,10 @@ otp delay <ms>               otp bekleme suresi (mod 1; orn: otp delay 1300)
 otp step <px>                adim boyu px (240 oneri = 24m, 25m kontrol alti)
 otp stop | otpstop           yuruyusu durdur (tuslar birakilir)
 
-autopot hp 80                can %80 ALTINDAYKEN kirmizi pot SUREKLI basilir
-                             (normal 0.4sn - KRITIK %50 alti 0.15sn; 30sn kalp atisi)
-                             v5.0: OTOMATIK ACILIR (C:\MaxExec\autopot.txt - varsayilan
-                             hp 80; kapatmak icin dosyaya 'off' yaz veya autopot 0)
-autopot mp 80                mana %80 altinda NORMAL mavi pot (ayni surekli mantik)
-autopot                      durum raporu (hata sayaci dahil)
-autopot 0                    hepsini kapat
-autopot_item hp              oto-pot ESYASI (72723-6..): pasifse bas, bitince yenile
-autopot_item mp              mana oto-pot esyasi (72727-30..)
-autopot_item 0               esya izlemesini kapat
+(v5.1: oto-pot hp/mp komutlari KALDIRILDI - bu pakette yer almaz)
 ```
 
-**Kaldırılanlar (kullanıcı isteği, v2.3):** `speed`/`aspeed` (sunucu tanımıyordu), `chchange`/`relogin` (karakteri değiştiriyordu — CH değil; detaylı versiyon sonra yapılacak).
+**Kaldırılanlar (kullanıcı isteği, v2.3):** `speed`/`aspeed` (sunucu tanımıyordu), `chchange` (karakteri değiştiriyordu — CH değil). **`relogin` v5.2'de UNIVERSAL DÖNDÜ** (yukarıdaki RELOGIN AKIŞI; artık karakteri değiştirmiyor, yeniden giriş yapıyor).
 
 **warp koordinat hesabı:** `pos` raporu pixel verir (örn 38421 39017) → warp değeri = **/100** (384 390). Her harita 256x256 birim; atlas koordinatı verilirse **harita sınırı yok** (GlobalPositionToMapInfo o haritayı yükler). warp sonrası `pos` ile kontrol et — sunucu senkronu için konum paketi otomatik gider.
 
@@ -470,7 +488,7 @@ eski Controller (win32apiMetin2Py / cppcmpr) zincirini kullanacaksan çalıştı
 | Python hatasını konsolda görmek | — | **`pyerr`** komutu — pyerr.log'un son 30 satırını döker. **v1.5: hata anında konsol da `!! PYTHON HATASI (dosya) — detay: pyerr` diye uyarır** + `results\last_pyfail.txt` + alive.txt'de `pyfail=` sayacı |
 | **Komutlar kuyruğa yazılıyor ama hiçbir sonuç dosyası oluşmuyor** (v1.1 saha bulgusu) | v1.1 drenajı yalnız WndProc subclass + PostMessage'a dayanıyordu; subclass etkisizse zincir ölür | **v1.2+ kullan** — SetTimer yolu WndProc'tan bağımsız. Test: `results\py_probe.txt` oluşmalı (30 sn bekle) |
 | `SCENE=?` dönüyor | mainStream frame-walk ile bulunamadı | `status` tekrar dene (frame yürüyüşü her çağrıda çalışır); oyunun intro ekranı değişmişse `raw` ile `import sys; print(sys.modules.keys())` incele |
-| `selserver` "serverList.SelectItem YOK" | Bu ekranda değil ya da attr adı farklı | Önce `serverlist` yaz — aday attr'ları raporlar |
+| `selserver` "serverList.SelectItem YOK" | Bu ekranda değil ya da attr adı farklı — VEYA tek-server client (Marty tarzı) | Önce `serverlist` yaz (v5.2: REGION_DICT + Marty CH butonlari de döker); listbox yoksa `selserver 0 <ch> 0` dene; `uiprobe` ile mimariyi teşhis et |
 | **Konsol açılıyor AMA hiç yazı yazmıyor** (v1.0 hatası) | GUI process'in CRT stdout'u geçersiz handle ile başlar; `AllocConsole` sonrası CRT konsola yeniden bağlanmamıştı | **v1.2'ye güncelle** (freopen CONIN$/CONOUT$ + unbuffered fix). Her adım ayrıca `maxexec.log`'a yazılır |
 | `VirtualAllocEx basarisiz: 8` (NOT_ENOUGH_MEMORY) | Oyun 32-bit adres alanı (2GB) pack dosyalarıyla dolu/parçalı | Oyunu ilk açtığın anda (login ekranı çıkınca hemen) inject et; cmd'yi Yönetici yap; olmazsa oyunu yeniden başlat |
 | Konsol penceresi görünmüyor | Oyun tam ekran, konsol arkada | v1.1+ konsolu TOPMOST yapar. Alt+Tab ile "MaxExecutor" penceresini ara |
@@ -482,6 +500,8 @@ eski Controller (win32apiMetin2Py / cppcmpr) zincirini kullanacaksan çalıştı
 | `oyun penceresi: BULUNAMADI` | Pencere henüz yok | DLL 20 sn yeniden dener |
 | `status` → "sonuc dosyasi yok" | pylib yüklü değil ya da hata yedi | `pyerr` komutuna bak; pylib.py dosyası yerinde mi? (v1.3 otomatik yükler) |
 | `login` sonrası hiçbir şey olmuyor | Hatalı ID/şifre veya serverlist ekranı atlanmış | Önce `selserver` yap; sonra `last_login.txt` + `pyerr.log` + oyun popup'ı (OnLoginFailure: NOID/WRONGPWD/ALREADY...) |
+| `login` çalışıyor ama server 3. alan istiyor (PIN/ID/guard) | Login ekranında 3. editline var (v5.2 bunu algılar) | `uiprobe` → 3. alan adını gör → `login <id> <pwd> <3.alan>` |
+| `relogin` "ZAMAN ASIMI" dedi | `/logout` komutu sunucuda kapalı ya da `net.Disconnect` yok | `last_relogin_step.txt`'de hangi adımda kaldığına bak; gerekirse manuel çıkış + `relogin` (login ekranında direkt login akışına düşer) |
 | NPC'ler gelmiyor | Eski script alışkanlığı: çift giriş | `enter` TEK SEFER; `waitfor GameWindow 60` ile bekle |
 | Oyunda lag/kasma | Çok sık komut | Drain 4 komut/mesaj sınırlı; `raw` spamı yapma |
 | GIL hatası hâlâ geliyor | Başka eski DLL enjekte (Kaynak.cpp v1/v2/pythonSenderv1) | O DLL'leri KALDIRIR — MaxExecutor tek başına yeterli |
