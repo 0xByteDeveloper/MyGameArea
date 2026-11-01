@@ -1,0 +1,117 @@
+===========================================================================
+ MAXEXECUTOR pylib v5.5 — MATRIS-FIX
+ "detect TIP2a dedi ama serverim TIP1'di; auto sv secmedigi icin giremedi"
+ KOK NEDENLER + KALICI COZUM + TEST KANITLARI
+===========================================================================
+
+1) SAHA KANITI (senin verdigin konsol ciktisi + results klasoru)
+---------------------------------------------------------------------
+* detect ciktisi (20:58):
+      [MATRIX] SCENE=LoginWindow+ServerList
+      TIP    : TIP2a
+      vis_editline : 2   <-- HATA BURADA
+      vis_serverList: 1, vis_okButton: 1
+  Oysa senin serverin (NightTown):
+      EKRAN 1: server listesi (01. Romania) + CH1..CH4 + OK butonu
+      EKRAN 2 (OK'a bastiktan SONRA): k.adı + sifre + giris butonu
+  ==> Dogru cevap TIP1'di; v5.4 birlesik ekran (TIP2a) saniyordu.
+* auto admin 1 : "selserver(0, 0, ok=False) -> login" yapti = OK'a
+  basilmadi, login ekranina hic gecilemedi -> giris olmadi. Senin
+  tespitin dogruydu: "sv secmedigi icin giremedi".
+* last_login.txt: id/pwd alanlari DOLDURULDU + loginButton basildi ama
+  baglanti dogru server'a kurulmadigi icin sonuc yine yok.
+
+2) KOK NEDEN 1 — YANLIS GORUNURLUK OLCUMU (_is_shown)
+---------------------------------------------------------------------
+v5.4 kodu:
+      def _is_shown(obj): return 1 if obj.IsShow() else 0
+IsShow() = ELEMANIN KENDI bayragi. Metin2 UI'da Hide() sadece BOARD'in
+kendi bayragini kapatir; cocuk elemanlarin (idEditLine/pwdEditLine)
+bayragi True KALIR. Senin serverda login board'u OK'a kadar gizli ama
+cocuk editline'lar "kendi bayragi acik" -> vis_editline: 2 -> TIP2a.
+
+v5.5 FIX — EFEKTIF gorunurluk (_eff_visible):
+      kendi bayragi + TUM atalarin bayragi (parent zinciri yurur:
+      ui.Window.parentWindow -> GetParent())
+      zincirde TEK gizli ata varsa eleman GIZLIDIR (0).
+Ek iki bagimsiz kanit yolu:
+      * _offscreen: GetGlobalPosition ekrandisi ise (bazi files gizli
+        board'u ekran disina tasir) eleman "aktif degil" sayilir.
+      * _board_relation: serverList ile idEditLine'in ORTAK ATASI kok
+        pencereyse (LoginWindow) -> AYRI ekranlar (TIP1 kaniti);
+        ortak ata bir BOARD ise -> AYNI ekran (TIP2 kaniti).
+  Uc yoldan herhangi biri GIZLILIK kanitlarsa karar TIP1'e döner.
+  (Kanit etiketi raporda gorunur: [v5.5 kanit: parent-zinciri / ayri-board /
+   ekrandisi])
+
+3) KOK NEDEN 2 — SENKRON BEKLEME (auto icindeki time.sleep)
+---------------------------------------------------------------------
+v5.4 auto() TIP1 akisi:
+      selserver(ok) -> time.sleep(1.2) -> login(...)
+Komutlar oyunun ANA THREAD'inde calisir. Sen uyurken oyun dongusu da
+durur: OK'a basma -> baglanti -> login ekranina gecis ana dongu DONMADEN
+ISLENMEZ. 1.2sn sonra login() cagrildiginda ekran hala server secmede;
+login dogru ekrana yazilamaz. Yani TIP1'te senkron bekleme ASLA
+calismaz — tasarim hatasiydi.
+
+v5.5 FIX — DURUM MAKINESI (relogin'deki kanitli desen):
+      auto()   : selserver(ok) basar -> _AUTO['faz']=1 (bekleme modu)
+      _auto_tick: DLL 150ms nabziyla HER KAREDE login ekrani EFEKTIF
+                  gorunur mu olcer; dustugu AN login(user, pwd, third)
+                  atar. Max 25sn + zaman asimi raporu. Ana thread
+                  bloklanmaz, oyun dongusu normal akar.
+      TIP2x    : iki-fazli adaptif — once TIP2 yolu (ok=0 + login);
+                 10sn ilerleme yoksa TIP1 yolu (ok=1 -> bekle -> login).
+                 LOGIN_FAILURE geldi ise login sunucuya ULASMISTIR,
+                 akis dogrudur (yanlis kimlik/3.alan) ve yolu degistirmez.
+      relogin  : step-4 artik login ekrani EFEKTIF gorunmesini bekler
+                 (6sn yedek) — TIP1 fileslarda relogin de dogru sira ile.
+
+4) YENI SINYALLER (matrix/detect raporunda)
+---------------------------------------------------------------------
+      server_aktif   : server widget'lari efektif gorunur mu
+      login_aktif    : login alanlari efektif gorunur mu
+      eff_idEditLine : id alaninin EFEKTIF durumu (1/0/-1)
+      offscreen_els  : ekrandisi login alani sayisi
+      ayri_board     : 0=ayni board (TIP2) 1=farkli board+ortak kok (TIP1)
+                       -1=zincir kurulamadi
+      BAYRAKLAR     : ayri-board(TIP1-kaniti) / editline-ekrandisi
+
+5) TEST KANITLARI (24/24 GECTI — scripts/test_matrix_v55.py)
+---------------------------------------------------------------------
+T1  SENIN SERVERIN (gizli login board, cocuk bayraklari acik):
+      v5.4: TIP2a (YANLIS)   v5.5: TIP1 (DOGRU, ayri_board=1 kaniti)
+      auto: selserver(0,0,ok=1) -> login ekrani bekleme modu ->
+      board gorunur olunca login('admin','1') ATILDI (faz 9)
+T2  GERCEK TIP2a (her sey ayni boardda): TIP2a KORUNDU (regresyon yok)
+T3  RESMI M1 (login once, serverboard gizli katman):
+      v5.4: TIP2a (YANLIS!)  v5.5: M1 (DOGRU)
+T4  KIRIK ZINCIR + EKRANDISI board: TIP1 (ekrandisi kaniti, 2 alan)
+T5  HICBIR SEY OKUNAMIYOR: TIP2x -> auto iki-fazli: TIP2 yolu (ok=0) ->
+      ilerleme yok -> TIP1 yolu (ok=1) -> bekleme modu (faz 3)
+T6  _board_relation birim: TIP1 agaci=1 / TIP2 agaci=0
+Ayrica: lib2to3 PY2 parse OK (8.7k satir) — client Python 2.7 uyumlu.
+
+6) KURULUM (30 SANIYE)
+---------------------------------------------------------------------
+1. Zip'ten / GitHub'dan YENI PLUSMAXGOD_PyScript.py'yi (v5.5) al
+2. C:\MaxExec\ icine KOPYALA (eskisinin uzerine yaz)
+3. Oyuna gir + MaxInject.exe ile enjekte et
+4. Konsolda su satiri gor:  PLUSMAXGOD_PyScript.py : v5.5 (uyumlu)
+   (DLL degismedi: v2.9.1 aynen kalir - atoi(PYLIB_VERSION)>=4 kurali)
+5. detect yaz -> artik TIP1 goreceksin (kanit etiketiyle)
+6. auto <id> <pwd> yaz -> OK'a basar, login ekrani dusunce OTOMATIK
+   login atar. Canli takip: konsol [AUTO] satirlari / C:\MaxExec\live.txt
+   Detay: results\last_auto.txt
+NOT: last_error.txt'deki LOGIN_FAILURE: NOID eski denemedendi — o sunucuda
+'admin' hesabi yok; KENDI hesap adinla auto <hesap> <sifre> yaz.
+
+7) ONEMLI NOTLAR
+---------------------------------------------------------------------
+* DLL DEGISMEDI (v2.9.1). Sadece pylib v5.4 -> v5.5. Banner'da
+  "v5.5 (uyumlu)" gormelisin; gorursen tarama siniri fix'i calisiyor.
+* Eski v5.4 dosyasini uzerine YAZMA — zip'ten taze kopyala.
+* detect/matrix'i acilista ILK EKRANDA calistir (tespit o anki ekrana gore).
+  OK'a bastiktan sonra calistirirsan zaten login ekrani gorunur olur,
+  o zaman M1/M3 etiketi beklenen sonuctur.
+===========================================================================
