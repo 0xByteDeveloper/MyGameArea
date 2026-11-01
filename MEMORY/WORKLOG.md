@@ -696,3 +696,21 @@ sahne adi notu dokumante edildi. Kod degisikligi YOK, rebuild YOK.
 **Dogrulama (scripts/verify_v50.py - SAHTE SAATLI deterministik test):** lib2to3 + exec simulasyonu (37 kritik sembol) + FONKSIYONEL: _item_cells [0,5,10]/6-hucre; **KULLANICININ GERCEK ENVANTERI ile slots testi (11 esya -> 13 hucre -> 32 BOS = oyunla AYNI)**; sell FLICKER tam yolu (kapan-2sn-acil: cur=45 KORUNDU, v4.9'da cur=0 olurdu) + kara liste erken bitis (6 paket/2 tur) + dukkan kapandi + SATILAMAYAN 'Kask+0 (2x2)'; 120sn deadline; drop kara liste (6 paket/3 tur) + ATILAMAYAN 'Kilic+9 (1x3)','Zirh+4 (2x3)'; autopot oto-acilis + oyun-disi sessizlik + KRITIK pot; _tick cift nabiz; dispatch 104 cagri; DLL ikili (v2.6/v5.0 + gomulu kod parcalari). ILK KOSUDA GERCEK BUG YAKALADI (grid 1-gecis IndexError) - iki-gecisli harita ile sabit. DLL 900KB PE32 i386 (zig, rc=0).
 
 **Sahada beklenecek:** slots oyunla ayni sayim (32 bos) + 'o' govde hucreleri; sellall force ~15sn'de biter + SATILAMAYAN isim listesi + dukkan kendiliginden kapanir; dropall bitince ATILAMAYAN listesi (dakikalar sonra tek tek dusenler SUNUCUDAN); autopot hic komut yazmadan aktif (autopot.txt); 5dk tekrarlari kaybolur (cur korunuyor + 120sn limit) - tekrar gorulurse [LIVE] BASLADI satirlarinin zamandamgasi teshis verir.
+
+---
+
+## Oturum (2026-11-01): Ozel/i4MSim v1.8 — python27.dll 12853-byte diff analizi + hook tarama
+
+- Girdi: i4msim_diff.rar (sim + canli dump, NightTownFullpack python27.dll, base=1E000000)
+- Bagimsiz yeniden analiz: 12.853/2.588.672 byte (%0,4965), 828 bolge — arac raporuyla birebir
+- BULGU: data0 (KOD/EXEC 1,7MB) = 0 fark, IAT/IMPORT = 0, BASERELOC = 0; 799/828 bolge HPTR-ASLR
+  (heap pointer, yapisal eslesemez); RVA 0x1F5 = data0.PointerToRawData (packer-kosmetik, hook DEGIL)
+- CEVAP: farklar ~%99 ASLR-heap + runtime sayac (Metin2'ye ozgu DEGIL), ~%1 init-tier sapmasi (<100 byte);
+  hook ararken bu gurultu false positive URETMEZ (EXEC-only + pointer-hedef taramasi)
+- i4MSim v1.8 (v1.0 tabanindan): KOMUT 4 (canli kendi-gurultusu), KOMUT 8 (hook tarama: EXEC-diff +
+  trampoline/pointer hedef-denetimi + modul-disi EXEC + modul listesi), KOMUT 3 semantik siniflandirma
+  (HPTR-ASLR/T2-STAT/CNT/PATH/PKS/VERI) + LOADER-YAPISAL verdict + PKS whitelist
+- Derleme: zig c++ 0.13.0 x86-windows-gnu statik -> i4MSim.exe PE32 480KB (rc=0)
+- Teslimat: Ozel/i4MSim_v1.8.zip (kaynak+exe+README), Ozel/analiz/i4msim_12853_byte_analizi.md,
+  Ozel/worklog/2026-11-01_i4MSim_v1.8_diff-analizi.md
+- NOT: GitHub PAT sohbette duz metin paylasildi -> revoke edilmeli
