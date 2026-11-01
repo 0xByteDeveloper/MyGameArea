@@ -1,0 +1,30 @@
+{
+ "diff_bytes": 12853,
+ "regions": 828,
+ "semantic": {
+  "CNT": {
+   "regions": 15,
+   "bytes": 88
+  },
+  "HPTR": {
+   "regions": 799,
+   "bytes": 19475
+  },
+  "VERI": {
+   "regions": 14,
+   "bytes": 219
+  }
+ },
+ "sections": {
+  "??": {
+   "regions": 1,
+   "bytes": 1
+  },
+  "data1": {
+   "regions": 827,
+   "bytes": 19781
+  }
+ },
+ "header_diffs": [],
+ "sptr_regions": []
+}
