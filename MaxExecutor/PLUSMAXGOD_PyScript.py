@@ -338,7 +338,7 @@ DUMP_DIR   = r'C:\MaxExec\dump'   # v4.0: py dump + PLUSQuest_live buraya
 # SURUM ISARETI - DLL v1.8 bunu okur (FIX-19). PLUSMAXGOD_PyScript.py
 # degistirmeden bu satiri silme/degistirme! Eski pylib (v3.x) major 3
 # oldugu icin DLL v1.8 acilista KOSKOCA uyar basar.
-PYLIB_VERSION = '5.2'
+PYLIB_VERSION = '5.3'
 
 RACE_TABLE = {
     0: ('Warrior', 'E'), 1: ('Ninja', 'K'), 2: ('Sura', 'E'), 3: ('Shaman', 'K'),
@@ -1225,10 +1225,212 @@ def uiprobe():
             lines.append('  selserver <srv> <ch>  ->  login <id> <pwd> [3.alan]')
         else:
             lines.append('  TEK-SERVER modu: selserver 0 <ch> ok=0 dene, sonra login <id> <pwd> [3.alan]')
-        lines.append('  gizemli alanlarda: uiprobe ciktisini sunucu degisince tekrar al')
+        lines.append('  TEK KOMUT: auto <id> <pwd> [3.alan] (matrisi algilar, dogru akisi uygular)')
+        lines.append('  ETIKET: matrix (M1-M5 siniflandirma raporu) | gizemli alanlarda: uiprobe ciktisini sunucu degisince tekrar al')
         _write('uiprobe', '\n'.join(lines) + '\n')
     except Exception, e:
         _write('uiprobe', 'HATA ' + _fmt_error(e) + '\n')
+
+# ---------------------------------------------------------------------------
+# 3b-2) MATRIX + AUTO (v5.3 YENI - kullanici istegi: "serverin hangi yapi
+#       matrisinde oldugunu algilayip soyleyebilir mi? hem algilayip hem ona
+#       gore komut gonderebilir mi?")
+#   matrix() : login ekranini M1..M5 etiketiyle siniflandirir + sinyal tablosu
+#              + onerilen komut akisi -> results\last_matrix.txt
+#   auto()   : matrisi algilar ve DOGRU akisi TEK KOMUTLA uygular
+#              (server secimi gerekiyorsa yapar, sonra login) -> last_auto.txt
+# Siniflandirma kurallari RESEARCH.md'deki 5 mimariyle birebir:
+#   M4 coklu-hesap  : autoLogin() metodu veya id_editline_s/pwd_editlines container
+#   M2 Marty        : serverList YOK + (channelButton dict VEYA pw.SetChannel)
+#   M1 resmi 2014   : serverList + (channelList VEYA OK butonu)
+#   M1v varyant     : serverList var, CH listesi/OK farkli
+#   M3 ozel/eski    : UI editline var ama listbox yok (paket yolu yedek)
+#   +M5 bayragi     : PIN 3. alan (her matrisle birlesebilir - proje-metin)
+# ---------------------------------------------------------------------------
+_MATRIX = {'code': '?', 'label': '', 'flags': [], 't': 0.0}
+
+def _detect_matrix(pw):
+    """Login ekranini 5 mimariye siniflandirir. Donen:
+    {'code', 'label', 'flags', 'sig'} - code: M1/M1v/M2/M3/M4/'?'."""
+    if pw is None:
+        return {'code': '?', 'label': 'LoginWindow yok (login ekraninda degilsin)',
+                'flags': ['sahne-yok'], 'sig': {}}
+    sn, sl, sy = _child_by_names(pw, _SERVERLIST_NAMES)
+    cn, cl, cy = _child_by_names(pw, _CHLIST_NAMES)
+    rn, rl, ry = _child_by_names(pw, _REGIONLIST_NAMES)
+    on_, ob, oy = _child_by_names(pw, _OKBTN_NAMES)
+    if ob is None:
+        try:
+            for a in dir(pw):
+                if 'elect' in a and 'utton' in a:
+                    v = getattr(pw, a, None)
+                    if v is not None and hasattr(v, 'CallEvent'):
+                        ob = v; on_ = a; oy = 'tarama'
+                        break
+        except:
+            pass
+    cb = getattr(pw, 'channelButton', None)
+    has_setch = hasattr(pw, 'SetChannel')
+    has_conn = hasattr(pw, 'Connect') and callable(getattr(pw, 'Connect'))
+    has_al = hasattr(pw, 'autoLogin') and callable(getattr(pw, 'autoLogin'))
+    # M4 coklu-hesap container'lari (reign2/merlis: id_editline_s list)
+    cont = 0
+    try:
+        for a in dir(pw):
+            la = a.lower()
+            if (la.startswith('id_editline') or la.startswith('pwd_editline')) \
+                    and la.endswith('s'):
+                v = getattr(pw, a, None)
+                if v is not None and hasattr(v, '__len__'):
+                    cont += 1
+    except:
+        pass
+    id_t, pwd_t, third_t, els = _classify_editlines(pw)
+    pin = 0; guard = 0
+    for a, v in third_t:
+        la = a.lower()
+        if 'pin' in la:
+            pin += 1
+        if 'guard' in la or 'otp' in la or la.endswith('code'):
+            guard += 1
+    sig = {'serverList': sl is not None, 'channelList': cl is not None,
+           'regionList': rl is not None, 'okButton': ob is not None,
+           'channelButton': cb is not None, 'SetChannel': has_setch,
+           'pw.Connect': has_conn, 'autoLogin': has_al,
+           'container': cont, 'editline': len(els), 'third': len(third_t)}
+    flags = []
+    if rl is not None:
+        rcnt = 0
+        try:
+            rcnt = int(rl.GetItemCount())
+        except:
+            pass
+        if rcnt > 1:
+            flags.append('coklu-bolge(%d)' % rcnt)
+    if pin:
+        flags.append('PIN-3.alan(+M5)')
+    if guard:
+        flags.append('guard-code-2FA')
+    if cont:
+        flags.append('coklu-hesap-container')
+    if has_al or cont:
+        code = 'M4'; label = 'COKLU-HESAP container (id_editline_s + autoLogin(index) - reign2/merlis tarzi)'
+    elif (cb is not None or has_setch) and sl is None:
+        code = 'M2'; label = 'Marty gomulu (server listesi YOK, CH butonlari, OK yok, login+CH birlesik)'
+    elif sl is not None and (cl is not None or ob is not None):
+        code = 'M1'; label = 'Resmi 2014 standart (serverList+channelList listbox + OK butonu)'
+    elif sl is not None:
+        code = 'M1v'; label = 'Resmi 2014 varyanti (serverList var, CH listesi/OK farkli)'
+    elif id_t is not None and pwd_t is not None:
+        code = 'M3'; label = 'Ozel/eski katman (UI editline var, listbox yok - login paket yolu yedekli)'
+    else:
+        code = '?'; label = 'Bilinmiyor - uiprobe ciktisini gonder'
+    return {'code': code, 'label': label, 'flags': flags, 'sig': sig}
+
+def matrix():
+    """Login ekraninin mimarisini M1-M5 etiketiyle raporlar (last_matrix.txt).
+    Sonuc _MATRIX'te de saklanir (auto bu etiketi raporlar)."""
+    try:
+        pw = _pw_by_type('LoginWindow')
+        lines = ['SCENE=%s' % _scene_name()]
+        if pw is None:
+            lines.append('MATRIS: ? - LoginWindow bulunamadi (login ekraninda degilsin)')
+            lines.append('Not: paket yolu login yine de denenebilir: login <id> <pwd>')
+            _write('matrix', '\n'.join(lines) + '\n')
+            return
+        d = _detect_matrix(pw)
+        _MATRIX['code'] = d['code']; _MATRIX['label'] = d['label']
+        _MATRIX['flags'] = list(d['flags']); _MATRIX['t'] = time.time()
+        lines.append('MATRIS: %s - %s' % (d['code'], d['label']))
+        if d['flags']:
+            lines.append('BAYRAKLAR: %s' % ', '.join(d['flags']))
+        lines.append('--- SINYALLER ---')
+        for k in sorted(d['sig'].keys()):
+            lines.append('  %-14s: %s' % (k, d['sig'][k]))
+        id_t, pwd_t, third_t, els = _classify_editlines(pw)
+        lines.append('--- ALANLAR ---')
+        if id_t:
+            lines.append('  ID    : %s' % id_t[0])
+        if pwd_t:
+            lines.append('  PWD   : %s' % pwd_t[0])
+        if third_t:
+            lines.append('  3.ALAN: %s  (login <id> <pwd> <3.alan>)' %
+                         ', '.join(t[0] for t in third_t[:3]))
+        lines.append('--- ONERILEN AKIS ---')
+        c = d['code']
+        if c in ('M1', 'M1v'):
+            lines.append('  selserver <srv> <ch>  ->  login <id> <pwd> [3.alan]')
+            lines.append('  (OK butonu yoksa: selserver <srv> <ch> 0)')
+        elif c == 'M2':
+            lines.append('  TEK KOMUT: login <id> <pwd> [3.alan]   (server gomulu - CH buton: selserver 0 <ch>)')
+        elif c == 'M3':
+            lines.append('  login <id> <pwd>   (UI + paket yolu otomatik siralanir)')
+        elif c == 'M4':
+            lines.append('  login <id> <pwd> [3.alan]  (client autoLogin(index) sunuyor olabilir)')
+        else:
+            lines.append('  auto <id> <pwd> - algila + uygula; detay: uiprobe')
+        lines.append('TEK KOMUT COZUM: auto <id> <pwd> [3.alan]')
+        _write('matrix', '\n'.join(lines) + '\n')
+    except Exception, e:
+        _write('matrix', 'HATA ' + _fmt_error(e) + '\n')
+
+def auto(user, pwd, third=None, srv=0, ch=0, ok=None):
+    """TEK KOMUT: matrisi algila -> dogru akisi uygula (last_auto.txt).
+    M1/M1v/M3: selserver(srv,ch) + login(user,pwd,third)
+    M2: login(user,pwd,third)  [CH istersen: auto id pwd pin 0 ch]
+    M4: login(user,pwd,third)  [client autoLogin(index) raporlanir]
+    ok=None: OK butonu varsa basilir, yoksa basilmaz (otomatik karar)."""
+    try:
+        user = str(user); pwd = str(pwd)
+        if third is not None:
+            third = str(third)
+        log = ['SCENE=%s' % _scene_name()]
+        pw = _pw_by_type('LoginWindow')
+        d = _detect_matrix(pw)
+        code = d['code']
+        _MATRIX['code'] = code; _MATRIX['label'] = d['label']
+        _MATRIX['flags'] = list(d['flags']); _MATRIX['t'] = time.time()
+        log.append('MATRIS: %s - %s' % (code, d['label']))
+        if d['flags']:
+            log.append('BAYRAKLAR: %s' % ', '.join(d['flags']))
+        # kimlik kaydi (login/relogin ayni login.dat'i kullanir)
+        _SAVE['id'] = user; _SAVE['pwd'] = pwd
+        if third is not None:
+            _SAVE['third'] = third
+        _save_login_file()
+        if code == '?':
+            log.append('MATRIS belirsiz - login() uyarlamali 3 yolunu deneyecek (UI/pw.Connect/paket)')
+        flg = ' '.join(d['flags'])
+        if (code in ('M4', 'M2') or 'PIN' in flg or 'guard' in flg) \
+                and (third is None or third == ''):
+            log.append('UYARI: bu matriste 3. alan isteniyor olabilir (PIN/guard/slot) -')
+            log.append('       auto <id> <pwd> <3.alan> ile ver; vermeden de denenir')
+        s = d['sig']
+        # --- ADIM 1: server/ch secimi (sadece listbox'li matrislerde)
+        if code in ('M1', 'M1v', 'M3') and s.get('serverList'):
+            ok_auto = ok
+            if ok_auto is None:
+                ok_auto = 1 if s.get('okButton') else 0
+            log.append('ADIM 1: selserver(%d, %d, ok=%s)' % (int(srv), int(ch), str(ok_auto)))
+            selserver(srv, ch, 1 if ok_auto else 0)
+            time.sleep(0.5)
+        elif code == 'M2' and int(ch) > 0:
+            log.append('ADIM 1: selserver(0, %d, ok=0) [Marty CH butonu]' % int(ch))
+            selserver(0, ch, 0)
+            time.sleep(0.5)
+        else:
+            log.append('ADIM 1: atlandi (%s - server secim listesi yok/gerekmiyor)' % code)
+        # --- ADIM 2: login (kendisi uyarlamali: UI -> pw.Connect -> paket)
+        if third is not None:
+            log.append('ADIM 2: login(user, pwd, third)')
+        else:
+            log.append('ADIM 2: login(user, pwd)')
+        login(user, pwd, third)
+        log.append('BITTI: detay -> last_login.txt | kontrol -> waitfor SelectCharacterWindow 30')
+        log.append('Karakter ekrani dusmezse: lasterr (LOGIN_FAILURE kodu yakalanir)')
+        _write('auto', '\n'.join(log) + '\n')
+    except Exception, e:
+        _write('auto', 'HATA ' + _fmt_error(e) + '\n')
 
 # ---------------------------------------------------------------------------
 # 3c) RELOGIN (v5.2 YENI - v4.6'daki komutun universal donusu)
@@ -7825,6 +8027,9 @@ except:
 
 _write('pylib_load',
        'PLUSMAXGOD_PyScript v%s yuklendi (ANA THREAD)' % PYLIB_VERSION + chr(10) +
+       'v5.3: MATRIX + AUTO - matris algilama ve tek-komut otomatik giris (kullanici istegi)' + chr(10) +
+       '  matrix                     : login ekranini M1-M5 etiketiyle raporlar (last_matrix.txt)' + chr(10) +
+       '  auto <id> <pwd> [3.alan]   : matrisi algila + dogru akisi TEK KOMUTTA uygula (last_auto.txt)' + chr(10) +
        'v5.2: UNIVERSAL LOGIN/SELSERVER - 28-client GitHub arastirmasi ile (RESEARCH.md)' + chr(10) +
        '  login <id> <pwd> [3.alan]  : 3-parametreli login (PIN/guard/slot) + pw.Connect yolu' + chr(10) +
        '  selserver <srv> <ch> [ok]  : listbox + Marty channelButton + coklu-bolge + ok=0 modu' + chr(10) +

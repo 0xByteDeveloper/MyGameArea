@@ -124,6 +124,13 @@
 //            basedir.txt ile tasinabilir (BASE_DIR\dump).
 //    FIX-35: SyncEmbeddedPylib yeni dosya adini yazar (PLUSMAXGOD_PyScript.py),
 //            eskisini PLUSMAXGOD_eski_v<surum>.py olarak yedekler.
+//  v2.8 (kullanici istegi: MATRIS ALGILAMA + TEK KOMUT OTO-GIRIS, pylib v5.3):
+//     (1) matrix - login ekranini M1..M5 etiketiyle siniflandirir
+//         (sinyal tablosu + onerilen akis -> last_matrix.txt)
+//     (2) auto <id> <pwd> [3.alan] - matrisi ALGILAR ve dogru akisi UYGULAR:
+//         M1/M1v/M3 listbox'liysa selserver(ok otomatik) -> login; M2 Marty
+//         tek komut login; M4 coklu-hesap uyarili; PIN/guard'da 3.alan uyarisi
+//         (sonuc: last_auto.txt). pylib v5.3 _detect_matrix/matrix/auto.
 //  v2.7 (kullanici istegi: EVRENSEL/UNIVERSAL login, pylib v5.2 cifti):
 //     28-client GitHub arastirmasi (RESEARCH.md) sonucu DLL tarafinda:
 //     (1) login <id> <pwd> [3.alan] - 3. parametre (PIN/guard/slot) verilebilir
@@ -592,7 +599,7 @@ static std::string BootImport(void)
          "        try:\n"
          "            import traceback\n"
          "            _f = open(r'" + std::string(RESULT_DIR) + "\\\\last_pylib_fail.txt', 'w')\n"
-         "            _f.write('PLUSMAXGOD_PyScript.py YUKLENEMEDI (DLL v2.7 / pylib v5.2) - TRACEBACK:\\n' + traceback.format_exc())\n"
+         "            _f.write('PLUSMAXGOD_PyScript.py YUKLENEMEDI (DLL v2.8 / pylib v5.3) - TRACEBACK:\\n' + traceback.format_exc())\n"
          "            _f.close()\n"
          "        except Exception:\n"
          "            pass\n"
@@ -609,7 +616,7 @@ static std::string BootImport(void)
          "    maxlib._MX_OLD_WARNED = True\n"
          "    try:\n"
          "        import sys\n"
-         "        sys.stderr.write('!!! PYLIB ESKI v' + str(getattr(maxlib, 'PYLIB_VERSION', '?')) + ' - DLL v2.7 PLUSMAXGOD v5.2 ister! "
+         "        sys.stderr.write('!!! PYLIB ESKI v' + str(getattr(maxlib, 'PYLIB_VERSION', '?')) + ' - DLL v2.8 PLUSMAXGOD v5.3 ister! "
          "C:\\\\MaxExec\\\\PLUSMAXGOD_PyScript.py dosyasini yenisiyle degistir (bundle zip / GitHub) !!!\\\\n')\n"
          "    except Exception:\n"
          "        pass\n";
@@ -714,6 +721,26 @@ static void CmdUiProbe(void)
 {
     // v2.7: login ekrani tam taramasi (pylib v5.2 uiprobe)
     QRaw(BootImport() + "maxlib.uiprobe()\n");
+}
+
+static void CmdMatrix(void)
+{
+    // v2.8: M1-M5 matris tespiti (pylib v5.3 - sonuc: last_matrix.txt)
+    QRaw(BootImport() + "maxlib.matrix()\n");
+}
+
+static void CmdAuto(const std::string& id, const std::string& pwd, const std::string& third)
+{
+    // v2.8: TEK KOMUT - matrisi algila + dogru akisi uygula (pylib v5.3 auto).
+    //   auto <id> <pwd> [3.alan] - listbox'liysa selserver(otomatik ok) -> login;
+    //   Marty ise direkt login; PIN/guard/slot isteyen serverlarda 3. parametre.
+    char call[768];
+    if (!third.empty())
+        _snprintf(call, sizeof(call), "maxlib.auto(r'%s', r'%s', r'%s')\n", id.c_str(), pwd.c_str(), third.c_str());
+    else
+        _snprintf(call, sizeof(call), "maxlib.auto(r'%s', r'%s')\n", id.c_str(), pwd.c_str());
+    call[sizeof(call)-1] = 0;
+    QRaw(BootImport() + call);
 }
 
 static void CmdRelogin(int nArg, const std::string* args)
@@ -1130,7 +1157,7 @@ static bool InitConsole(void)
         LogLine("CONOUT$ (stderr) yeniden acilamadi");
     setvbuf(stdout, NULL, _IONBF, 0);   // buffer'siz: crash olsa bile yazar
     setvbuf(stderr, NULL, _IONBF, 0);
-    SetConsoleTitleA("MaxExecutor v2.7 PLUSMAXGOD");
+    SetConsoleTitleA("MaxExecutor v2.8 PLUSMAXGOD");
     HWND cw = GetConsoleWindow();
     if (cw)
     {
@@ -1248,7 +1275,7 @@ static std::vector<std::string> SplitArgs(const std::string& line)
 
 static void PrintHelp(void)
 {
-    OutP("\n=== MaxExecutor v2.7 PLUSMAXGOD (UNIVERSAL login + GOD MOD pylib v5.2) ===\n");
+    OutP("\n=== MaxExecutor v2.8 PLUSMAXGOD (MATRIS+AUTO giris, UNIVERSAL login - pylib v5.3) ===\n");
     OutP("  help                        : bu yardim\n");
     OutP("  status                      : anlik sahne/baglanti snapshot\n");
     OutP("  -- giris akisi (menu) --\n");
@@ -1256,6 +1283,8 @@ static void PrintHelp(void)
     OutP("  selserver <srv> <ch> [ok]   : server+CH sec, OK'a bas (ok=0: OK yoksa/bazilmasin)\n");
     OutP("  login <id> <pwd> [3.alan]   : login ekraninda UI doldurur + giris (3.alan: PIN/guard/slot)\n");
     OutP("  uiprobe                     : login ekrani TAM taramasi (mimari + 3. alan raporu - v5.2)\n");
+    OutP("  matrix                      : M1-M5 matris etiketi + sinyaller + onerilen akis (v5.3)\n");
+    OutP("  auto <id> <pwd> [3.alan]    : MATRISI ALGILA + dogru akisi TEK KOMUTTA uygula (v5.3)\n");
     OutP("  relogin [id pwd [srv ch]]   : TAM relogin (logout->disconnect->login akisi - v5.2)\n");
     OutP("  relogin quick [slot]        : HIZI relogin (logout->selchar, baglanti korunur)\n");
     OutP("  charlist                    : 5 slot tablosunu doken rapor\n");
@@ -1446,8 +1475,8 @@ static DWORD WINAPI WorkerThread(LPVOID)
     const bool con = InitConsole();
 
     OutP("\n=============================================\n");
-    OutP("  MaxExecutor v2.7 PLUSMAXGOD - ana-thread executor\n");
-    OutP("  oyun-ici + kesif + GOD MOD v2 (pylib v5.2 cifti)\n");
+    OutP("  MaxExecutor v2.8 PLUSMAXGOD - ana-thread executor\n");
+    OutP("  oyun-ici + kesif + GOD MOD v2 (pylib v5.3 cifti: matrix + auto)\n");
     OutP("  canli cikti: C:\\MaxExec\\live.txt izlenir -> [LIVE] akar\n");
     OutP("=============================================\n");
     if (!con)
@@ -1509,12 +1538,12 @@ static DWORD WINAPI WorkerThread(LPVOID)
                 char rp[MAX_PATH];
                 _snprintf(rp, MAX_PATH, "%s\\last_warning.txt", RESULT_DIR); rp[MAX_PATH-1]=0;
                 WriteFileAll(rp, std::string("! PYLIB ESI SURUM: v") + vShow +
-                    "  (DLL v2.7 PLUSMAXGOD v5.2 ister)\n"
+                    "  (DLL v2.8 PLUSMAXGOD v5.3 ister)\n"
                     "Yeni PLUSMAXGOD_PyScript.py'yi " + std::string(BASE_DIR) + " icine kopyala (bundle zip / GitHub).\n"
                     "ESKI pylib ILE: stat/pos/inv/equip/skill/near/chat/goto/tp/pyfiles/pydumpall/plusquest CALISMAZ.\n");
-                LogLine("UYARI: pylib ESI v%s - PLUSMAXGOD v5.2 gerekli! (%s)", vShow, pylibPath);
+                LogLine("UYARI: pylib ESI v%s - PLUSMAXGOD v5.3 gerekli! (%s)", vShow, pylibPath);
                 OutP("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-                OutP("!! PYLIB ESI: diskteki PLUSMAXGOD_PyScript.py = v%s  (gereken: v5.2)\n", vShow);
+                OutP("!! PYLIB ESI: diskteki PLUSMAXGOD_PyScript.py = v%s  (gereken: v5.3)\n", vShow);
                 OutP("!! Yeni PLUSMAXGOD_PyScript.py'yi %s icine kopyala (bundle zip)\n", BASE_DIR);
                 OutP("!! Eski pylib ile v4.0 komutlari CALISMAZ (stat/inv/tp/pyfiles..)\n");
                 OutP("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
@@ -1579,6 +1608,18 @@ static DWORD WINAPI WorkerThread(LPVOID)
         {
             // v2.7: login ekrani tani komutu (sonuc: last_uiprobe.txt)
             CmdUiProbe();
+        }
+        else if (cmd == "matrix")
+        {
+            // v2.8: M1-M5 matris tespiti (sonuc: last_matrix.txt)
+            CmdMatrix();
+        }
+        else if (cmd == "auto")
+        {
+            // v2.8: algila + uygula (tek komutta selserver+login akisi)
+            if (a.size() >= 4) CmdAuto(a[1], a[2], a[3]);
+            else if (a.size() >= 3) CmdAuto(a[1], a[2], "");
+            else OutP("kullanim: auto <id> <sifre> [3.alan]   (matrisi algilar: listbox'liysa selserver, degilse direkt login - detay: last_auto.txt | sadece rapor: matrix | tam envanter: uiprobe)\n");
         }
         else if (cmd == "relogin")
         {

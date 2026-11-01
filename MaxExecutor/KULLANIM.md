@@ -2,7 +2,7 @@
 
 > Paket içeriği, kurulum, komutlar, giriş akışı, sorun giderme — hepsi bu dosyada.
 > Mimari gerekçe için: `reports/DEV_REAL_BINARY_TEST.md` (RC18/RC19) + `reports/DEV_GIL_ANALYSIS.md` (RC1-RC17).
-> Son güncelleme: **v5.2 — UNIVERSAL LOGIN/SELSERVER: 28-client GitHub araştırmasıyla (RESEARCH.md) login/selserver tüm sunucu tiplerine uyarlandı. YENI: `login <id> <pwd> [3.alan]` (3-parametreli login: PIN/guard/slot), `selserver <srv> <ch> [ok]` (ok=0: OK'suz clientlar), `uiprobe` (login ekranı tanı komutu), `relogin [id pwd [srv ch]]` + `relogin quick [slot]` (v2.3'te kaldırılan relogin'in universal dönüşü). Önceki: v5.1 — oto-pot (hp/mp otomatik pot) özelliği ve tüm komutları PAKETTEN TAMAMEN KALDIRILDI (kullanıcı isteği). Önceki: Oturum 21 — MaxExecutor v2.6 PLUSMAXGOD / pylib v5.0**
+> Son güncelleme: **v5.3 — MATRIX + AUTO: serverın hangi giriş mimarisinde olduğunu ALGILAYIP raporlar ve TEK KOMUTLA doğru akışı uygular. YENI: `matrix` (M1–M5 etiketli teşhis: sinyal tablosu + önerilen akış → last_matrix.txt), `auto <id> <pwd> [3.alan]` (algıla → listbox'lıysa selserver[OK otomatik] → login; Marty'se direkt login → last_auto.txt). Önceki: v5.2 — UNIVERSAL LOGIN/SELSERVER: 28-client GitHub araştırmasıyla (RESEARCH.md) login/selserver tüm sunucu tiplerine uyarlandı: `login <id> <pwd> [3.alan]` (3-parametreli login: PIN/guard/slot), `selserver <srv> <ch> [ok]` (ok=0: OK'suz clientlar), `uiprobe` (login ekranı tanı komutu), `relogin [id pwd [srv ch]]` + `relogin quick [slot]`. Önceki: v5.1 — oto-pot (hp/mp otomatik pot) özelliği ve tüm komutları PAKETTEN TAMAMEN KALDIRILDI (kullanıcı isteği). Önceki: Oturum 21 — MaxExecutor v2.6 PLUSMAXGOD / pylib v5.0**
 >
 > **v2.7/v5.2 UNIVERSAL ÖZET — 28 client dump araştırması (tam rapor: RESEARCH.md):**
 > **5 farklı login mimarisi tespit edildi ve HEPSİ desteklendi:** (M1) resmi 2014 akışı: `idEditLine`+`pwdEditLine`+`serverList`+`channelList`+`serverSelectButton` (28 dump'ın 14'ü — m2dev-client, Lead, Baseline, battal34 TR, TurkMMO-MS5.8 TR...); (M2) Marty 5.3 gömülü akış: server listesi YOK, CH butonları dict (`channelButton`), OK butonu YOK, login ekranı CH seçimiyle BİRLEŞİK; (M3) eski/kendi network katmanı (`authSocket.SetLoginInfo`, `info["channel"]` — N2Play); (M4) çoklu-hesap container UI (`id_editline_s`/`pwd_editlines` + `autoLogin(index)` — reign2); (M5) PIN 3. alanı (`pin_edit_line` — proyecto-metin).
@@ -11,6 +11,11 @@
 > **`uiprobe` YENI:** login ekranının TAM envanteri: class, TÜM editline'lar (hangi rolde), butonlar, listbox'lar + adet + seçili index, `channelButton` dict, `serverInfo.REGION_DICT` (bölge/server adları), LoginWindow metotları + **hangi argümanlarla login/selserver verileceği önerisi** → `results\last_uiprobe.txt`.
 > **`relogin` DÖNDÜ (universal):** v2.3'te kaldırılan komut iki modla geri geldi — **TAM mod** `relogin [id pwd [srv ch]]`: `/logout → char ekranı → net.Disconnect → login ekranı → selserver+login` (yeni oturum; parametre verilmezse login.dat kaydından) · **HIZLI mod** `relogin quick [slot]`: `/logout → selchar` (bağlantı korunur). State-machine DLL 150ms nabziyle sürer (ana thread bloklanmaz); adım raporları `results\last_relogin_step.txt`, sonuc `last_relogin.txt`.
 > **pylib_embedded.h v5.2 ile yeniden üretildi** (scripts/embed_pylib.py) — DLL açılışta diskteki pylib eksik/eski ise v5.2'yi otomatik yazar. DLL kaynak kodu v2.7: `login` 3. argüman, `selserver` ok argümanı, `uiprobe`, `relogin` komutları. **NOT: paketteki MaxExecutor.dll hâlen v2.6 derlemesidir — v2.7 kaynak kodunu derleyen kullanıcı 3. parametre/relogin komutlarını kazanır; pylib v5.2 eski DLL ile de 2-argümanlı login/selserver çalıştırır.**
+>
+> **v2.8/v5.3 MATRIX + AUTO (kullanıcı sorusu: "serverın hangi matriste olduğunu algılayıp söyleyebilir mi? hem algılayıp hem ona göre komut gönderebilir mi?"):**
+> • **`matrix`** — login ekranını 5 mimariye sınıflandırır ve etiketle raporlar: **M1** resmi 2014 listbox (`serverList+channelList+OK`), **M1v** varyant, **M2** Marty gömülü (server listesi YOK, CH butonları, OK yok), **M3** özel/eski katman, **M4** çoklu-hesap container (`id_editline_s` + `autoLogin(index)`), **+M5** PIN 3. alan bayrağı. Sinyal tablosu + önerilen komut akışı → `results\last_matrix.txt`
+> • **`auto <id> <pwd> [3.alan]`** — TEK KOMUT: matrisi algılar ve DOĞRU akışı uygular: M1/M1v/M3 listbox'lıysa `selserver(srv,ch)` (OK butonu varsa basar, yoksa basmaz — otomatik karar) → `login`; M2 Marty ise direkt `login` (server gömülü); M4/PIN/guard'da 3. alan uyarısı verir → `results\last_auto.txt`. Argümanlar: `auto <id> <pwd> [3.alan] [srv] [ch]`
+> • DLL kaynak kodu v2.8: `matrix` ve `auto` komutları dispatch+help'te. pylib_embedded.h v5.3 ile yeniden üretildi.
 >
 > **v2.6/v5.0 ÖZET — saha testi 16 (tümü kanıtlı):**
 > **`slots` ÇOK-HÜCRELİ EŞYA:** saha raporu 'bazı itemler 3 slot bazıları 2 slot yer kaplıyor, ilk envanterde 32 boş yer var' — v4.9 her eşyayı 1 slot sanıyordu (oyun 32 boş gösterirken biz 34 diyorduk). Artık `item.SelectItem(vnum)` + `item.GetItemSize()` ile **(w×h) boyutu okunur** (6 NightTown dosyasında çalışan desen: swich.py:905, EQChanger.py:99, pasha37:2238, efsunbotu.py:793, edithack.py:754, itemcreator.py:322) ve **kaplanan HÜCRE** sayılır — oyunun göstergesiyle AYNI (kullanıcının 32'siyle birebir eşleşir). Izgara **5 sütun × 9 satır**, slot = satır×5+sütun (edithack.py:751 'slot-5' kontrolü kanıtı: yüksekliği ≥2 olan eşya 5 slot alttaki hücreyi kapatır). Harita artık **5 slot/satır** (oyunun ızgarasıyla aynı yönelim): `#`=eşya-başı, `o`=eşya-devamı (çok-hücrelinin gövdesi), `.`=boş, `E`=efsunlu, `?`=hata. `inv` de her eşyaya `(1x3)`/`(2x3)` boyut etiketi ekler.
@@ -138,6 +143,10 @@
 > • Login ekranında 3. alan (PIN/ID/guard) VARSA → `uiprobe` ile alan adını öğren, `login <id> <pwd> <3.alan>` kullan
 > • Emin değilsen `uiprobe` yaz → önerilen komut sırasını raporlar
 >
+> 🤖 **TEK KOMUT YOLU (v5.3):** Hangi matriste olduğunu öğrenmek için `matrix` yaz (M1–M5 etiketi + sinyaller + önerilen akış).
+> Kimliği verip HER ŞEYİ kendisi yapsın istiyorsan: `auto kullaniciadim sifrem` — matrisi algılar (listbox'lıysa server+CH seçer, OK varsa basar; Marty ise direkt login) ve girişi yapar.
+> 3. alan (PIN/guard/slot) isteyen serverlarda: `auto kullaniciadim sifrem pinim`
+>
 > ⚡ **HIZLI YOL (v5.2):** Bir kez `selserver`+`login` yaptıysan, sonraki yeniden girişler için tek komut:
 > `relogin` (login.dat'tan otomatik) veya `relogin quick 0` (oyundan çıkıp aynı karaktere döner)
 
@@ -149,6 +158,8 @@ status                                  (0) SCENE= ne diyor bak (LoginWindow+Ser
                                            (kanıt: results\last_pylib_load.txt, 2 sn içinde oluşur)
 uiprobe                                 (1b) v5.2: login ekrani taramasi - mimari + 3. alan + öneriler
                                            (sonuç: results\last_uiprobe.txt; TEK-SERVER varsa buraya bak)
+matrix                                  (1c) v5.3: M1-M5 matris etiketi + sinyaller + önerilen akış
+                                           (sonuç: results\last_matrix.txt)
 selserver 0 0                           (2) listedeki 0. sunucu + 0. CH'yi seç, OK'a bas
                                             (OK yoksa/istiyorsan: selserver 0 0 0)
 serverlist                              (*)  isimleri/listbox içeriğini görmek istersen (v5.2: REGION_DICT + Marty CH butonlari)
@@ -163,6 +174,16 @@ status                                  (9) son durum
 pyerr                                   (*)  Python hatası olduysa son 30 satırı konsola döker
 ```
 
+**TEK KOMUT ALTERNATİFİ (v5.3 — yukarıdaki 2,3,4 adımlarını matrise göre kendisi yapar):**
+```
+auto kullaniciadim sifrem               matrisi algıla → doğru akışı uygula:
+                                        M1/M1v/M3: selserver(0,0,OK-otomatik) + login
+                                        M2 Marty: direkt login (server gömülü)
+                                        (sonuç: results\last_auto.txt)
+auto kullaniciadim sifrem pinim         3. alan (PIN/guard/slot) isteyen serverlarda
+auto kullaniciadim sifrem abc 1 2       server=1, ch=2 elle vererek
+```
+
 **RELOGIN AKIŞI (v5.2 — oyundan çıkıp yeniden giriş, tek komut):**
 ```
 relogin                                 login.dat kaydından TAM relogin:
@@ -174,7 +195,7 @@ relogin quick 0                         HIZLI relogin: /logout → selchar 0 (ba
 ```
 Takip: `results\last_relogin_step.txt` (adımlar) + `last_relogin.txt` (sonuç). Zaman aşımı olursa durur ve bulunduğu sahneyi raporlar.
 
-Sonuç dosyaları `C:\MaxExec\results\` altında: `py_probe.txt` (zincir kanıtı), `last_status.txt`, `last_server.txt`, `last_login.txt`, `last_uiprobe.txt` (v5.2), `last_charlist.txt`, `last_enter.txt`, `last_relogin.txt` + `last_relogin_step.txt` (v5.2), `last_error.txt`, `last_pylib_load.txt`.
+Sonuç dosyaları `C:\MaxExec\results\` altında: `py_probe.txt` (zincir kanıtı), `last_status.txt`, `last_server.txt`, `last_login.txt`, `last_uiprobe.txt` (v5.2), `last_matrix.txt` (v5.3), `last_auto.txt` (v5.3), `last_charlist.txt`, `last_enter.txt`, `last_relogin.txt` + `last_relogin_step.txt` (v5.2), `last_error.txt`, `last_pylib_load.txt`.
 
 ### SAHA DOĞRULAMALI SENARYOLAR (v1.7, oturum 12 testi: HEPSİ ÇALIŞTI ✓)
 
@@ -500,7 +521,8 @@ eski Controller (win32apiMetin2Py / cppcmpr) zincirini kullanacaksan çalıştı
 | `oyun penceresi: BULUNAMADI` | Pencere henüz yok | DLL 20 sn yeniden dener |
 | `status` → "sonuc dosyasi yok" | pylib yüklü değil ya da hata yedi | `pyerr` komutuna bak; pylib.py dosyası yerinde mi? (v1.3 otomatik yükler) |
 | `login` sonrası hiçbir şey olmuyor | Hatalı ID/şifre veya serverlist ekranı atlanmış | Önce `selserver` yap; sonra `last_login.txt` + `pyerr.log` + oyun popup'ı (OnLoginFailure: NOID/WRONGPWD/ALREADY...) |
-| `login` çalışıyor ama server 3. alan istiyor (PIN/ID/guard) | Login ekranında 3. editline var (v5.2 bunu algılar) | `uiprobe` → 3. alan adını gör → `login <id> <pwd> <3.alan>` |
+| `login` çalışıyor ama server 3. alan istiyor (PIN/ID/guard) | Login ekranında 3. editline var (v5.2 bunu algılar) | `uiprobe` → 3. alan adını gör → `login <id> <pwd> <3.alan>`; ya da v5.3 tek komut: `auto <id> <pwd> <3.alan>` |
+| Server hangi matriste, bilmiyorum | Her clientın giriş mimarisi farklı (M1–M5, RESEARCH.md) | `matrix` yaz → M1–M5 etiketi + sinyaller + önerilen akış (`last_matrix.txt`); otomatik uyması için `auto <id> <pwd>` (v5.3) |
 | `relogin` "ZAMAN ASIMI" dedi | `/logout` komutu sunucuda kapalı ya da `net.Disconnect` yok | `last_relogin_step.txt`'de hangi adımda kaldığına bak; gerekirse manuel çıkış + `relogin` (login ekranında direkt login akışına düşer) |
 | NPC'ler gelmiyor | Eski script alışkanlığı: çift giriş | `enter` TEK SEFER; `waitfor GameWindow 60` ile bekle |
 | Oyunda lag/kasma | Çok sık komut | Drain 4 komut/mesaj sınırlı; `raw` spamı yapma |

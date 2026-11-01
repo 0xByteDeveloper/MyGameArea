@@ -1,5 +1,7 @@
 # MaxExecutor — Ana-Thread Güvenli Python Executor (xgodmod4)
 
+> **v2.8 / pylib v5.3 — MATRIX + AUTO (kullanıcı istegi: "serverin hangi matriste olduğunu algılayıp söyleyebilir mi? hem algılayıp hem ona göre komut gönderebilir mi?"):** `matrix` — login ekranını M1–M5 etiketiyle sınıflandırır: sinyal tablosu (serverList/channelList/regionList/okButton/channelButton/SetChannel/pw.Connect/autoLogin/container/editline) + önerilen komut akışı → `results\last_matrix.txt` · `auto <id> <pwd> [3.alan] [srv] [ch]` — TEK KOMUT: matrisi algılar ve DOĞRU akışı uygular (M1/M1v/M3: selserver[OK varsa basar] → login; M2 Marty: direkt login; M4/PIN/guard: 3. alan uyarısı) → `results\last_auto.txt` · DLL v2.8: matrix + auto dispatch/help'te, pylib_embedded.h v5.3. **NOT: paketteki MaxExecutor.dll hâlen v2.6 derlemesi — v2.8 kaynak kodunu derleyen kullanıcı matrix/auto + v2.7'nin 3. parametre/relogin komutlarını kazanır (§3).**
+>
 > **v2.7 / pylib v5.2 — UNIVERSAL LOGIN/SELSERVER (28-client GitHub araştırması, tam rapor: RESEARCH.md):** `login <id> <pwd> [3.alan]` — 3-parametreli login (PIN/guard/slot; kalan editline otomatik bulunur+raporlanır, verilirse doldurulur) · `selserver <srv> <ch> [ok]` — ok=0 OK'suz clientlar için; bölge/server/CH listbox + Marty channelButton dict + pw.SetChannel zinciri · `uiprobe` — login ekranı TAM envanteri (mimari + 3. alan + argüman önerisi → last_uiprobe.txt) · `relogin [id pwd [srv ch]]` + `relogin quick [slot]` — v2.3'te kaldırılan relogin'in universal dönüşü (TAM: logout→disconnect→login akışı; HIZLI: logout→selchar; state-machine DLL 150ms nabziyle) · 5 mimari desteklenir: resmi 2014 (14/28 dump) + Marty 5.3 gömülü + authSocket eski katman + çoklu-hesap container + PIN'li · pylib_embedded.h v5.2 yeniden üretildi. **NOT: paketteki MaxExecutor.dll v2.6 derlemesi — 3. parametre/relogin için v2.7 kaynak kodu derlenmeli (§3).**
 >
 > **v2.6 / pylib v5.0** — saha testi 16: **`slots` ÇOK-HÜCRELİ EŞYA** (`item.GetItemSize` ile w×h — kaplanan HÜCRE sayılır, oyunun göstergesiyle AYNI; harita 5 slot/satır, `o`=eşya-devamı) · `sellall`/`selljunk` **v5.0**: IsOpen-flicker kök nedeni kapandı (cur korunur — v4.9'da sonsuz faz ping-pongu '5 dk sonra tekrar satmaya çalışıyor'ydu) + **KARA LİSTE** (2 turda satılmayan bir daha denenmez, SATILAMAYANLAR isim+boyut listesiyle rapor) + **120sn hard limit** + **dükkan otomatik kapanır** (`SendShopEndPacket`) · `dropall` **v5.0**: aynı kara liste (3 tur) + ATILAMAYANLAR isim listesi + 120sn (sunucu paketleri yavaş işlerse eşyalar sonra tek tek düşer — normal) · **v5.1:** oto-pot (hp/mp) komutları paketten **KALDIRILDI**. Detay: KULLANIM.md üst bölümü.
@@ -44,10 +46,10 @@ Metin2 client'ın yapısı bunu zorunlu kılar:
 
 | Dosya | Görev |
 |---|---|
-| `MaxExecutor.cpp` | DLL: konsol + pencere subclass + kuyruk dökücü (WndProc) — v2.7: login 3. argüman + selserver ok argümanı + uiprobe/relogin komutları |
-| `PLUSMAXGOD_PyScript.py` | Ana-thread komut kütüphanesi (`maxlib`) **v5.2 UNIVERSAL** — giris (login/selserver/serverlist/uiprobe/relogin) + oyun-ici (stat/inv/tp/chat/...) + kesif (pyfiles/pydumpall/plusquest) |
-| `RESEARCH.md` | **v5.2 araştırma raporu**: 28-client GitHub dump analizi — 5 login mimarisi, 3-parametre bulguları, files ailesi matrisi (kaynak linkli) |
-| `pylib_embedded.h` | DLL içine gömülü pylib v5.2 kopyası (scripts/embed_pylib.py üretir) |
+| `MaxExecutor.cpp` | DLL: konsol + pencere subclass + kuyruk dökücü (WndProc) — v2.8: matrix + auto komutları; v2.7: login 3. argüman + selserver ok argümanı + uiprobe/relogin komutları |
+| `PLUSMAXGOD_PyScript.py` | Ana-thread komut kütüphanesi (`maxlib`) **v5.3 MATRIX+AUTO** (matrix/auto/_detect_matrix) — altında v5.2 UNIVERSAL giris (login/selserver/serverlist/uiprobe/relogin) + oyun-ici (stat/inv/tp/chat/...) + kesif (pyfiles/pydumpall/plusquest) |
+| `RESEARCH.md` | **v5.2 araştırma raporu**: 28-client GitHub dump analizi — 5 login mimarisi, 3-parametre bulguları, files ailesi matrisi (kaynak linkli) — v5.3 matrix/auto sınıflandırması buna dayanır |
+| `pylib_embedded.h` | DLL içine gömülü pylib v5.3 kopyası (scripts/embed_pylib.py üretir) |
 | `pylib.py` | Eski v3.2 adı — YEDEK yol olarak kabul edilir (BootImport otomatik yükseltir) |
 | `MaximumPyScript_STABLE.py` | v17'nin cerrahi stabilize hali (geçiş dönemi için, SHM mimarisiyle — RC12/RC13/RC14 yamalı) |
 
@@ -76,6 +78,10 @@ DLL'i alışkanlık olduran loader'ınla (Kaynak.cpp v6 loader'ın veya mevcut l
 status                                   -> sahne/bağlantı snapshot (sonuc: results\last_status.txt)
                                             (pylib v4.1 otomatik yüklenir; load artık gerekmez)
 uiprobe                                  -> v5.2: login ekrani TAM taramasi (mimari + 3. alan raporu)
+matrix                                   -> v5.3: M1-M5 matris etiketi + sinyaller + önerilen akış
+                                            (sonuç: results\last_matrix.txt)
+auto <id> <pwd> [3.alan] [srv] [ch]      -> v5.3: MATRISI ALGILA + doğru akışı TEK KOMUTTA uygula
+                                            (listbox'lıysa selserver, Marty ise direkt login; last_auto.txt)
 selserver 0 0                            -> server+CH listbox + OK (resmi 2014 akisi)
                                             (ok=0: selserver 0 0 0 - OK yoksa/bazilmasin)
 login <id> <pwd> [3.alan]                -> UI yolu (editline+buton) -> pw.Connect -> paket yolu
