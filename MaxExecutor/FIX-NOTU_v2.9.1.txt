@@ -1,0 +1,136 @@
+===========================================================================
+ MAXEXECUTOR v2.9.1 — SAHA RAR ANALİZİ: "detect yazdım, kuyruğa yazıldı
+ dedi ama hiç çalışmadı" + her oturumda kopan SAHTE PYLIB ESI alarmı
+ KÖK NEDENLER VE KALICI ÇÖZÜM
+===========================================================================
+
+1) SAHA RAR'ININ KANITLARI (MaxExec_klasör_resultlar.rar)
+---------------------------------------------------------------------
+* Kuyrukta 2 adet detect komutu duruyordu:
+      queue\c_692628421_0003.cmd + c_692676421_0004.cmd
+  İçindekiler SAĞLAM: maxlib.matrix() çağrısı + pylib yükseltme sarmalayıcı.
+  AMA HİÇ ÇALIŞTIRILMAMIŞLAR — kanıt: DrainQueue her komutu çalıştırıp
+  SİLER; bu dosyalar hâlâ yerinde + results klasöründe last_matrix.txt YOK.
+* Konsol görüntüsünde: "oyun penceresi: BULUNAMADI (hwnd=00000000)".
+  maxexec.log'da aynı oturum: "oyun penceresi 20 sn icinde bulunamadi".
+  ==> KÖK NEDEN 1: DLL oyuna BAĞLANAMADAN komut yazıldı. Kuyruğa yazıldı,
+      ama pencere olmadığı için drenaj (kuyruk çalıştırıcı) hiç devreye
+      girmedi. Eski DLL 20 sn'de bulunamazsa PES EDİYORDU, sonradan
+      bulunan pencereyi hiçbir zaman takip etmiyordu.
+* Her oturumda (v2.7 19:29, v2.7 19:40, v2.9 22:47) aynı SAHTE alarm:
+      "UYARI: pylib ESI v2.x/3.x (isaret yok/eski)"
+  Oysa last_pylib_load.txt: "PLUSMAXGOD_PyScript v5.9 yuklendi" — pylib
+  YÜKLENİYORDU. Ölçtük: v5.4 dosyasında PYLIB_VERSION işareti 22628.
+  baytta; eski okuyucu SADECE İLK 16KB'ye bakıyordu.
+  ==> KÖK NEDEN 2: 16KB tarama sınırı = SAHTE ALARM makinesi. Kullanıcı
+      yüzünden pylib'i tekrar tekrar kopyaladı (v5.9'un üstüne v5.4
+      yazıldı) — alarm asla susmadı çünkü sebep pylib DEĞİLDİ.
+* maxexec.log'da karışık oturumlar: "MaxExecutor v2.5 / v2.7 / v2.8 /
+  v2.9 yuklendi". Ayrıca DllMain'deki log dizgisi bayattı (v2.5 yazıyordu).
+  ==> KÖK NEDEN 3: Hangi DLL'nin yüklendiği HİÇBİR YERDEN belli olmuyordu.
+* Kuyrukta bekleyen bayat komutlar, yeni oturumda pencere bulunur
+  bulunmaz CALIŞACAKTI (DrainQueue tüm *.cmd'yi işler).
+  ==> KÖK NEDEN 4: Günler önce bırakılmış bir "dropall/sellall" yeni
+      oturumda sürpriz yapabilirdi.
+
+2) SAHRA TEŞHİSİ — RAR ZATEN MATRİS CEVABINI İÇERİYOR
+---------------------------------------------------------------------
+detect çalışmasa da saha dosyaları sunucunun matrisini KESİN söylüyor:
+
+  last_serverlist.txt : "01. Romania" (1 server) + CH1..CH4 listbox
+                        + serverSelectButton (OK butonu VAR)
+  last_server.txt     : serverList.SelectItem(0) OK
+                        channelList.SelectItem(0) OK
+                        serverSelectButton.CallEvent() OK -> login ekranı
+  last_login.txt      : UI yolu OK (idEditLine+pwdEditLine+loginButton)
+  last_enter.txt      : SelectSlot(0) + StartGame() OK
+  last_stat.txt       : OYUN İÇİ — staple lv100, Ninja-E, Jinno (empire 3)
+  last_123klohp.txt   : pot %90 AKTİF, slot 4
+
+  ==> SUNUCUN: TIP1 (server seçme ekranı AYRI + OK butonu VAR, login
+      ekranı AYRI gelir) + M1 resmi 2014 mimarisi + BÖLGE bayrağı yok
+      (tek bölge) + M5 PIN yok. Kısacası en klasik ve EN KOLAY matris.
+  ==> DOĞRU AKIŞ: status -> serverlist -> selserver 0 0 -> login <id> <pwd>
+      -> charlist -> selchar 0 -> enter 0. (Ya da TEK KOMUT: auto <id> <pwd>)
+  ==> NOT: 19:40:15'teki "LOGIN_FAILURE: NOID (Boyle bir hesap yok)" —
+      login.dat'taki "admin" hesabı o sunucuda YOK. Doğru hesap adıyla
+      gir; hata MaxExecutor'dan değil, hesaptan.
+
+3) v2.9.1'DE NE YAPILDI (4 KALICI FIX)
+---------------------------------------------------------------------
+A) FIX-41a — SÜRÜM OKUYUCU TAM DOSYA TARAMASI:
+   ReadPylibVersion artık tüm dosyayı tarar (4MB sınır). "PYLIB ESI
+   (isaret yok/eski)" SAHTE alarmı KÖKTEN bitti. Doğru çıktı:
+       PLUSMAXGOD_PyScript.py : v5.4 (uyumlu) - otomatik yuklenecek
+   Alarm GERÇEKTEN doğruysa (pylib gerçekten eski/bozuksa) hâlâ basılır.
+
+B) FIX-41b — PENCERE SONRADAN BULUNURSA KURTARMA + BEKLEMEDE UYARISI:
+   * 20 sn'de pencere bulunamazsa DLL ARTİK PES ETMEZ: arka plan
+     thread'i 30 dakikaya kadar her 2 sn'de yeniden dener. Bulununca:
+       "[MAXEXEC] oyun penceresi SONRADAN bulundu (hwnd=...) - kuyruk
+        artik akar, bekleyen komutlar calisir"
+     ve timer kurulur + kuyruk otomatik tetiklenir.
+   * hwnd=0 iken komut yazarsan konsol artık dürüst konuşur:
+       "!! UYARI: oyun penceresi HENIZ YOK (hwnd=0) - komut kuyrukta
+        BEKLEMEDE, simdi CALISMAZ."
+     (Senin detect vakasının birebir ilacı.)
+
+C) FIX-41c — BAYAT KUYRUK KARANTİNASI:
+   Boot'ta önceki oturumdan kalan queue\*.cmd dosyaları queue\eski\
+   klasörüne TAŞINIR (silinmez). Böylece eski bir dropall/sellall yeni
+   oturumda kendiliğinden ÇALIŞMAZ. Log'a ve konsola yazılır.
+
+D) FIX-41d — DLL KİMLİĞİ:
+   Açılışta DLL kendi TAM YOLUNU yazar (konsol + log):
+       DLL yolu     : C:\MaxExec\MaxExecutor.dll
+   Klasöründe karışık eski binary'ler vardı (log v2.5/v2.7/v2.8/v2.9
+   oturumları gösteriyordu). Artık hangisi yüklüyse yolu orada; bayat
+   "v2.5" log dizgisi de v2.9.1 yapıldı.
+
+4) KURULUM (SIRA ÖNEMLİ)
+---------------------------------------------------------------------
+1. Oyunu TAMAMEN KAPAT.
+2. Bu paketteki 2 dosyayı C:\MaxExec içine kopyala (üstüne yaz):
+      MaxExecutor.dll          (v2.9.1)
+      MaxInject.exe            (v2.9.1)
+   (PLUSMAXGOD_PyScript.py DEĞİŞMEDİ — v5.4 diskteki kopya geçerli.
+    Klasörde ESKI kopyalar varsa sil: MaxExecutor_eski*.dll,
+    v2.5/v2.7/v2.8 era kopyaları — hangi klasörde ne kaldıysa
+    FIX-41d "DLL yolu" satırı artık gerçeği söyleyecek.)
+3. Oyunu aç, login ekranına kadar gel, MaxInject.exe'yi çalıştır.
+4. BANNER KONTROLÜ:
+      Baslik : "MaxExecutor v2.9.1 PLUSMAXGOD"
+      Satir  : "DLL yolu     : C:\MaxExec\MaxExecutor.dll"
+      Satir  : "PLUSMAXGOD_PyScript.py : v5.4 (uyumlu) - otomatik yuklenecek"
+      (SAHTE "PYLIB ESI" alarmı ARTIK GÖRÜNMEZ; görürsen yüklenen
+       binary eskidir — "DLL yolu" satırına bak.)
+5. Sıra ile:
+      status          -> bağlantı + sahne kanıtı
+      detect          -> TIP1/TIP2 + M1-M5 + TÜM olasılık tablosu
+                         (çıktı: results\last_matrix.txt + konsol)
+      auto <id> <pwd> -> istersen TEK KOMUT tam giriş akışı
+   detect'i oyun AÇIKKEN ve DLL bağlanınca yaz (banner'da "SUBCLASS
+   EDILDI" veya "SONRADAN bulundu" gördükten sonra).
+
+5) BEKLENEN DAVRANIŞ (TEST FORMÜLÜ)
+---------------------------------------------------------------------
+* Oyun kapalıyken komut yazarsan: "kuyrukta BEKLEMEDE" uyarısı
+  görürsün (eskiden sessizce yutuluyordu).
+* Oyunu açtığında DLL bağlanır bağlanmaz: "oyun penceresi SONRADAN
+  bulundu" satırı + bekleyen komutlar akar.
+* detect yazınca konsola [MATRIX] bloğu düşer + results\last_matrix.txt
+  güncellenir. Romania sunucusunda beklenen etiket:
+      TIP: TIP1 | MATRIS: M1 (resmi 2014)
+* Eski detect komutların queue\eski\ klasörüne taşındı — tekrar yaz.
+
+6) DERLEME NOTU (kaynaktan)
+---------------------------------------------------------------------
+   Araç    : llvm-mingw 20250114 (clang 19.1.7, i686-w64-mingw32)
+   DLL     : i686-w64-mingw32-g++ -O2 -std=c++17 -shared -lmsvcrt-os
+             -static-libstdc++ -static-libgcc shim_ucrt.o
+             -o MaxExecutor.dll MaxExecutor.cpp
+   EXE     : i686-w64-mingw32-g++ -O2 -std=c++17 -lmsvcrt-os shim_ucrt.o
+             -o MaxInject.exe MaxInject.cpp
+   Strip   : i686-w64-mingw32-strip MaxExecutor.dll MaxInject.exe
+   Bağımlılık değişmedi: msvcrt.dll + kernel32 + user32 (Win7 uyumlu).
+   pylib   : v5.4 — DEĞİŞMEDİ (saha testi bu sürümle yapıldı, kanıtlı).

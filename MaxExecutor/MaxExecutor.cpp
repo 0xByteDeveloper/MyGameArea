@@ -253,6 +253,26 @@
 //
 //  Python tarafini bir kez yukleyin:
 //    load C:\MaxExec\pylib.py
+//
+//  v2.9.1 (oturum 25 - saha RAR analizi: "detect kuyruga yazildi ama hic
+//          calismadi" + her oturumda kopan sahte PYLIB ESI alarmlari):
+//    FIX-41a: ReadPylibVersion artik TAM DOSYAYI tarar. Eski okuyucu sadece
+//         ilk 16KB'ye bakiyordu; v5.4 dosyasinda PYLIB_VERSION isareti
+//         22628. bayttaydi -> DLL kendi dogru pylib'ine "isaret yok/eski"
+//         diyip KOSKOCA yanlis alarm basiyordu (saha kaniti: her oturumda
+//         UYARI + last_warning.txt). Kokten bitti.
+//    FIX-41b: Oyun penceresi 20 sn'de bulunamazsa ARTIK PES EDILMEZ:
+//         arka plan thread'i 30 dk'ye kadar her 2 sn'de bir yeniden dener;
+//         bulununca timer kurulur + kuyruk akar + konsola/loga net satir
+//         duser. Ayrica hwnd=0 iken komut yazilarsa konsol "komut
+//         kuyrukta BEKLEMEDE" uyarisi basar (kullanicinin detect vakasi).
+//    FIX-41c: Boot'ta onceki oturumdan kalan kuyruk dosyalari queue\eski\
+//         klasorune tasinir (bayat "dropall/sellall" surprizi engellenir;
+//         dosyalar silinmez, arsivlenir + log'a yazilir).
+//    FIX-41d: DLL acilista KENDI tam yolunu loglar + konsola yazar (kullanicinin
+//         klasorunde v2.5/v2.7/v2.8/v2.9 karisik eski binary'ler vardi; log
+//         satirindaki bayat "v2.5" dizgisi de v2.9.1 yapildi - hangi
+//         binary'nin yuklendigi artik her yerden belli).
 // ============================================================================
 
 #define WIN32_LEAN_AND_MEAN
@@ -313,6 +333,7 @@ typedef int  (*PFN_PyIsInitialized)(void);
 static PFN_PyRun_SimpleString  pfn_PyRun_SimpleString = 0;
 static PFN_PyIsInitialized     pfn_PyIsInitialized    = 0;
 static HMODULE                 hPython27              = 0;
+static HMODULE                 g_hSelfMod             = 0;   // FIX-41d: bu DLL'nin kendi modulu
 
 static bool ResolvePython(void)
 {
@@ -581,9 +602,72 @@ static bool HookGameWindow(void)
 static void QRaw(const std::string& code)
 {
     std::string f;
-    if (EnqueueCommand(code, f)) OutP("[MAXEXEC] kuyruga yazildi: %s\n", f.c_str());
+    if (EnqueueCommand(code, f))
+    {
+        OutP("[MAXEXEC] kuyruga yazildi: %s\n", f.c_str());
+        // FIX-41b (v2.9.1): saha vakasi - kullanici oyun penceresi yokken
+        // detect yazdi, "kuyruga yazildi" dedi, komut HIC calismadi. Artik
+        // pencere yoksa komut yazan kisi derhal uyariyor.
+        if (!g_hGameWnd)
+            OutP("[MAXEXEC] !! UYARI: oyun penceresi HENIZ YOK (hwnd=0) - komut kuyrukta BEKLEMEDE, simdi CALISMAZ.\n"
+                 "            Oyun acik degilse once oyunu ac; aciksa DLL dogru prosese enjekte olmadi olabilir.\n"
+                 "            FIX-41b: pencere bulunur bulunmaz kuyruk otomatik akar (elle bir sey yapmana gerek yok).\n");
+    }
     else OutP("[MAXEXEC] HATA: kuyruga yazilamadi\n");
     if (g_hGameWnd) PostMessage(g_hGameWnd, WM_APP_MAXEXEC, 0, 0);
+}
+
+// ---------------------------------------------------------------------------
+// FIX-41c (v2.9.1): bayat kuyruk karantinasi. Onceki oturumdan kalan *.cmd
+// dosyalari queue\eski\ klasorune tasinir (SILINMEZ - arsiv). Neden: gunler
+// once birakilmis bir "dropall/sellall" yeni oturumda pencere bulunur
+// bulunmaz calisip surpriz yapabilir. Donus: tasinan dosya sayisi.
+// ---------------------------------------------------------------------------
+static int QuarantineStaleQueue(void)
+{
+    WIN32_FIND_DATAA fd;
+    char pattern[MAX_PATH], eskiDir[MAX_PATH];
+    sprintf(pattern, "%s\\*.cmd", QUEUE_DIR);
+    sprintf(eskiDir, "%s\\eski", QUEUE_DIR);
+    MkDirp(eskiDir);
+    HANDLE h = FindFirstFileA(pattern, &fd);
+    if (h == INVALID_HANDLE_VALUE) return 0;
+    int n = 0;
+    do
+    {
+        char src[MAX_PATH], dst[MAX_PATH];
+        _snprintf(src, MAX_PATH, "%s\\%s", QUEUE_DIR, fd.cFileName); src[MAX_PATH-1] = 0;
+        _snprintf(dst, MAX_PATH, "%s\\%s", eskiDir, fd.cFileName); dst[MAX_PATH-1] = 0;
+        DeleteFileA(dst);
+        if (MoveFileA(src, dst)) ++n;
+    } while (FindNextFileA(h, &fd));
+    FindClose(h);
+    return n;
+}
+
+// ---------------------------------------------------------------------------
+// FIX-41b (v2.9.1): gec kurtarma. Oyun penceresi 20 sn icinde bulunamazsa
+// worker pes etmek yerine bu thread'i baslatir: 30 dk'ye kadar her 2 sn'de
+// bir yeniden dener. Bulununca timer kurulur, kuyruk tetiklenir, konsola
+// ve log'a net satir duser.
+// ---------------------------------------------------------------------------
+static DWORD WINAPI LateHookThread(LPVOID)
+{
+    for (int i = 0; i < 900 && !g_hGameWnd; ++i)
+    {
+        Sleep(2000);
+        if (HookGameWindow())
+        {
+            LogLine("FIX-41b: oyun penceresi SONRADAN bulundu (hwnd=%p) - kuyruk/donguler artik akar",
+                    (void*)g_hGameWnd);
+            OutP("[MAXEXEC] oyun penceresi SONRADAN bulundu (hwnd=%p) - kuyruk artik akar, bekleyen komutlar calisir\n",
+                   (void*)g_hGameWnd);
+            InstallTimer();
+            PostMessage(g_hGameWnd, WM_APP_MAXEXEC, 0, 0);
+            break;
+        }
+    }
+    return 0;
 }
 
 // ---------------------------------------------------------------------------
@@ -1177,7 +1261,7 @@ static bool InitConsole(void)
         LogLine("CONOUT$ (stderr) yeniden acilamadi");
     setvbuf(stdout, NULL, _IONBF, 0);   // buffer'siz: crash olsa bile yazar
     setvbuf(stderr, NULL, _IONBF, 0);
-    SetConsoleTitleA("MaxExecutor v2.9 PLUSMAXGOD");
+    SetConsoleTitleA("MaxExecutor v2.9.1 PLUSMAXGOD");
     HWND cw = GetConsoleWindow();
     if (cw)
     {
@@ -1295,7 +1379,7 @@ static std::vector<std::string> SplitArgs(const std::string& line)
 
 static void PrintHelp(void)
 {
-    OutP("\n=== MaxExecutor v2.9 PLUSMAXGOD (TIP1/TIP2 matris + AUTO giris - pylib v5.4) ===\n");
+    OutP("\n=== MaxExecutor v2.9.1 PLUSMAXGOD (TIP1/TIP2 matris + AUTO giris - pylib v5.4) ===\n");
     OutP("  help                        : bu yardim\n");
     OutP("  status                      : anlik sahne/baglanti snapshot\n");
     OutP("  -- giris akisi (menu) --\n");
@@ -1414,14 +1498,24 @@ static bool ReadPylibVersion(const char* path, char outVer[32])
     outVer[0] = 0;
     FILE* f = fopen(path, "rb");
     if (!f) return false;
-    char buf[16384];
-    size_t n = fread(buf, 1, sizeof(buf) - 1, f);
+    // FIX-41a (v2.9.1): TAM DOSYA tarama. Eski kod ilk 16KB'yi okuyordu;
+    // v5.4 pylib'de isaret 22628. baytta kaldigi icin surum HIC
+    // okunamiyor ve DLL surekli "PYLIB ESI (isaret yok/eski)" sahte
+    // alarmini basiyordu. Tum dosya taranir (4MB emniyet siniri).
+    fseek(f, 0, SEEK_END);
+    long fsz = ftell(f);
+    fseek(f, 0, SEEK_SET);
+    if (fsz < 1) { fclose(f); return false; }
+    if (fsz > 4 * 1024 * 1024) fsz = 4 * 1024 * 1024;
+    char* buf = (char*)malloc((size_t)fsz + 1);
+    if (!buf) { fclose(f); return false; }
+    size_t n = fread(buf, 1, (size_t)fsz, f);
     fclose(f);
     buf[n] = 0;
     const char* p = strstr(buf, "PYLIB_VERSION");
-    if (!p) return false;
+    if (!p) { free(buf); return false; }   // FIX-41a: sizinti yok
     p = strstr(p, "=");
-    if (!p) return false;
+    if (!p) { free(buf); return false; }   // FIX-41a: sizinti yok
     ++p;
     while (*p == ' ' || *p == '\t') ++p;
     if (*p == '\'' || *p == '"')
@@ -1437,6 +1531,7 @@ static bool ReadPylibVersion(const char* path, char outVer[32])
         while (((*p >= '0' && *p <= '9') || *p == '.') && i < 30) outVer[i++] = *p++;
         outVer[i] = 0;
     }
+    free(buf);   // FIX-41a: tum-dosya tamponu serbest
     return outVer[0] != 0;
 }
 
@@ -1453,10 +1548,28 @@ static DWORD WINAPI WorkerThread(LPVOID)
     InitPaths();                                  // FIX-12: basedir.txt (D:\ destegi)
     LogLine("worker thread basladi (base=%s)", BASE_DIR);
     EnsureDirs();
+    // FIX-41c (v2.9.1): bayat kuyruk karantinasi - probe/komutlardan ONCE
+    int nStale = QuarantineStaleQueue();
+    if (nStale > 0)
+    {
+        LogLine("FIX-41c: onceki oturumdan kalan %d kuyruk komutu queue\\eski\\ klasorune tasindi (bayat komutlar otomatik calistirilmaz)", nStale);
+        OutP("[MAXEXEC] onceki oturumdan kalan %d komut queue\\eski\\ ye tasindi (bayat komutlar otomatik CALISTIRILMAZ)\n", nStale);
+    }
+    // FIX-41d (v2.9.1): hangi DLL'nin yuklendigini herkes gorebilsin
+    if (g_hSelfMod)
+    {
+        char selfPath[MAX_PATH]; selfPath[0] = 0;
+        if (GetModuleFileNameA(g_hSelfMod, selfPath, MAX_PATH))
+        {
+            selfPath[MAX_PATH-1] = 0;
+            LogLine("DLL yolu: %s (v2.9.1)", selfPath);
+            OutP("DLL yolu     : %s\n", selfPath);
+        }
+    }
     const bool con = InitConsole();
 
     OutP("\n=============================================\n");
-    OutP("  MaxExecutor v2.9 PLUSMAXGOD - ana-thread executor\n");
+    OutP("  MaxExecutor v2.9.1 PLUSMAXGOD - ana-thread executor\n");
     OutP("  oyun-ici + kesif + GOD MOD v2 (pylib v5.4 cifti: TIP matris + auto)\n");
     OutP("  canli cikti: C:\\MaxExec\\live.txt izlenir -> [LIVE] akar\n");
     OutP("=============================================\n");
@@ -1517,7 +1630,7 @@ static DWORD WINAPI WorkerThread(LPVOID)
                 char rp[MAX_PATH];
                 _snprintf(rp, MAX_PATH, "%s\\last_warning.txt", RESULT_DIR); rp[MAX_PATH-1]=0;
                 WriteFileAll(rp, std::string("! PYLIB ESI SURUM: v") + vShow +
-                    "  (DLL v2.9 PLUSMAXGOD v5.4 ister)\n"
+                    "  (DLL v2.9.1 PLUSMAXGOD v5.4 ister)\n"
                     "Yeni PLUSMAXGOD_PyScript.py'yi " + std::string(BASE_DIR) + " icine kopyala (bundle zip / GitHub).\n"
                     "ESKI pylib ILE: stat/pos/inv/equip/skill/near/chat/goto/tp/pyfiles/pydumpall/plusquest CALISMAZ.\n");
                 LogLine("UYARI: pylib ESI v%s - PLUSMAXGOD v5.4 gerekli! (%s)", vShow, pylibPath);
@@ -1542,7 +1655,13 @@ static DWORD WINAPI WorkerThread(LPVOID)
         }
     }
     for (int i = 0; i < 40 && !HookGameWindow(); ++i) Sleep(500);
-    if (!g_hGameWnd) LogLine("oyun penceresi 20 sn icinde bulunamadi");
+    if (!g_hGameWnd)
+    {
+        LogLine("oyun penceresi 20 sn icinde bulunamadi - FIX-41b: arka planda aramaya devam edecek (30 dk)");
+        OutP("[MAXEXEC] oyun penceresi 20 sn'de bulunamadi - arka planda aramaya DEVAM edecek (FIX-41b).\n");
+        OutP("            Oyun acilinca/gorunur olunca otomatik baglanir; bekleyen komutlar o zaman calisir.\n");
+        CreateThread(NULL, 0, LateHookThread, NULL, 0, NULL);
+    }
     OutP("oyun penceresi: %s (hwnd=%p)\n", g_hGameWnd ? "SUBCLASS EDILDI" : "BULUNAMADI",
            (void*)g_hGameWnd);
     OutP("kuyruk: %s | sonuc: %s\n", QUEUE_DIR, RESULT_DIR);
@@ -2009,9 +2128,10 @@ BOOL APIENTRY DllMain(HMODULE hMod, DWORD reason, LPVOID)
     {
         // Loader-lock guvenli minimal init: konsol kurulumu worker'a tasindi (FIX-3)
         DisableThreadLibraryCalls(hMod);
+        g_hSelfMod = hMod;   // FIX-41d: DLL kimligi (kendi yolu loglanacak)
         EnsureDirs();
         CreateThread(NULL, 0, WorkerThread, NULL, 0, NULL);
-        LogLine("MaxExecutor v2.5 PLUSMAXGOD yuklendi (pid=%lu) — worker baslatiliyor",
+        LogLine("MaxExecutor v2.9.1 PLUSMAXGOD yuklendi (pid=%lu) — worker baslatiliyor",
                 GetCurrentProcessId());
     }
     return TRUE;
