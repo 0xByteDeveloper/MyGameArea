@@ -1,0 +1,103 @@
+=====================================================================
+ MaxExecutor v2.9.1 + pylib v5.8  -  AUTO GIRIS SAHA-FIX (oturum 27c)
+ "auto admin 1 dedim server secti ama giris yapmadi" + t+128 zamanasimi
+=====================================================================
+
+>> SAHA VAKASI (kullanici ciktisi, buyuk alt-veri kaybi YOK - tanisizdi)
+---------------------------------------------------------------------
+1) auto admin 1  ->  TIP1/TIP1-A dogru algilandi (YUKSEK)
+   selserver: serverList.SelectItem(0) + channelList.SelectItem(0) +
+   serverSelectButton.CallEvent() -> "server board onaylandi"
+2) ADIM 2: login ekrani bekleniyor (max 25sn) ...
+   -> [AUTO] ZAMAN ASIMI (faz 1) ... t+128.0 - auto DURDURULDU
+   (UYARI: sozde 25sn, gercekte 128sn!)
+3) Ikinci auto admin 1  ->  bu kez login board AKTIF gorundu
+   (KANIT: serverBoard=0 | connectBoard=1, loginBoard=1) -> login atildi
+   -> [STATUS] CONN=0 ... sonrasi HICBIR RAPOR YOK (giris yapti mi, red mi?)
+
+>> KOK NEDEN (kor-yama degil, kanitli 3 katman)
+---------------------------------------------------------------------
+K1) OK basildi, board'lar GERCEKTEN dondu (2. calistirmada connectBoard=1
+    loginBoard=1 kaniti) - yani selserver dogru calisti.
+K2) Ama donus YAVASTI: OK -> auth-server baglantisi ana-thread'i uzun sure
+    mesgul etti (DLL 150ms nabzi ~100sn isleyemedi). Tick ilk firsatta
+    t+128'de calisti, deadline (25sn) coktan asmisti -> ZAMAN ASIMI.
+    25sn'lik faz-1 penceresi bu client'in auth suresine gore KISAYDI.
+K3) Tanim yoktu: zaman-asimi satiri HANGI sinyalin bekledigini soylemiyordu
+    (board bayraklari + CONN yazilmiyordu); login basildiktan sonraki
+    faz-9'da LOGIN_FAILURE (sifre reddi) kodu hic raporlanmiyordu.
+K4) selserver "server board onaylandi" diyordu ama CallEvent sonrasi
+    gecisin gercekten islenip islenmedigini dogrulamiyordu.
+
+>> v5.8 ONARIMLARI (davranis yalnizca pylib'de - DLL ikili DEGISmedi)
+---------------------------------------------------------------------
+O1) FAZ-1 BEKLEME 25sn -> 60sn (auth baglantisi yavas olabilir).
+    Ayni sekilde: TIP2x-2.faz 45sn, M1 serverboard bekleme 45sn,
+    login-sonucu (faz-9) 45sn.
+O2) OK-ETKI IZLEME: faz-1 boyunca server board'un 1->0 gecisi yakalanir
+    -> "OK isledi: server board KAPANDI - auth baglantisi / login
+    ekrani bekleniyor" (artik akisin nerede oldugunu gorursun).
+O3) HER BEKLEME SATIRI + ZAMAN-ASIMI SATIRI SON BOARD DURUMU TASIR:
+    "board:server=serverBoard login=- CONN=0". Zaman asiminda server
+    board hala aciksa ek tani: "OK etkisiz olabilir veya auth
+    baglantisi kurulamadi".
+O4) LOGIN REDDI RAPORU: login atildiktan sonra OnLoginFailure kanitlari
+    yakalanirsa "LOGIN HATA: LOGIN_FAILURE: <kod>" yazip durur - 45sn
+    sessiz bekleme yerine SEBEBI görürsün (yanlis sifre / 3.alan eksik).
+O5) SELSERVER DOGRULAMA: OK basilir basilmaz +1.0sn'de board durumu
+    okunur; server board hala aciksa "[SERVER] UYARI: OK sonrasi server
+    board HALA ACIK", login board acildiysa "OK: login board acildi -
+    gecis tamam" yazar. Saha vakasinin en erken tanisi.
+O6) Sifir-surpriz: mevcut TIP/ALT-TIP/MATRIS/GUVEN/KANIT mantigi ve
+    token'lar AYNEN korundu (auto/relogin %100 uyumlu; v5.7'nin
+    TIP1-A/B/S/X ve detect ciktisi birebir ayni).
+
+>> DOGRULAMA (scripts/)
+---------------------------------------------------------------------
+- check_py2.py     : lib2to3 PY2 parse + PY3 transpile OK (v5.8 8 isaret)
+- test_matrix_v58.py: 22/22 GECTI
+  * F1-F4 SAHA VAKASI SIMULASYONU: 40sn tick-durgunlugu -> erken zaman
+    asimi YOK (eski kod 25sn'de olurdu) -> board'lar dondugunde login
+    ATILDI (128sn beklemek yerine)
+  * F5 faz-9 BASARILI raporu | F6 LOGIN HATA: WRONGPWD raporu
+  * F7 zaman-asimi board+CONN tanisi + "server board HALA ACIK"
+  * F8 "OK isledi: server board KAPANDI" gecis raporu
+  * F9 selserver OK dogrulamasi (pozitif: gecis tamam / negatif: UYARI)
+  * F10 TIP1/TIP1-A/param=2 regresyonu (v5.7 mantigi degismedi)
+- test_matrix_v56.py 18/18 GECTI (v5.6 regresyonu)
+- test_matrix_v57.py (v5.7 ALT-TIP paketi) TAMAM
+
+>> KURULUM (30 saniye)
+---------------------------------------------------------------------
+1) C:\MaxExec\PLUSMAXGOD_PyScript.py dosyasini bu paketteki ile DEGISTIR
+   (veya oyun klasorundeki kopyayi - DLL diskten yukler).
+2) Oyunu kapat-ac GEREKMEZ: eski pylib yukluyse `load PLUSMAXGOD_PyScript.py`
+   yeterli; en temizi oyunu yeniden acmak.
+3) DLL v2.9.1 ikili ayni kalir (major-5 kontrolu v5.8'i "uyumlu" okur).
+
+>> SAHA TEST FORMULU (ayni senaryo)
+---------------------------------------------------------------------
+  status
+  detect                      -> TIP1 + ALT-TIP TIP1-A + GUVEN YUKSEK (beklenen)
+  auto <id> <pwd>
+  Canli: [AUTO] satirlari (live.txt)
+  Beklenen yeni akis:
+    OK: ... serverSelectButton.CallEvent() -> server board onaylandi
+    UYARI/OK satiri: OK sonrasi board durumu (1.0sn'de)          <- O5
+    [AUTO] OK isledi: server board KAPANDI ...                   <- O2
+    [AUTO] login ekrani acildi (...) + login-yapisi kesinlestirme
+    [AUTO] login atildi ...
+    [AUTO] BASARILI: SelectCharacterWindow (auto tamam)          <- yolu tamamlar
+    ...veya [AUTO] LOGIN HATA: LOGIN_FAILURE: <kod>              <- O4 (sebep!)
+  Beklenmedik donma olursa: her 2.5sn'de
+    [AUTO] login ekrani bekleniyor (... | board:server=... login=... CONN=n)
+  satiri NEDEN beklendigini gosterir; 60sn sonunda da tani yazilir.
+
+>> NOT - "giris yapmadi"nin diger adaylari (v5.8 ile ayrisir)
+---------------------------------------------------------------------
+- auto #2 gercekten loginButton.CallEvent() basti; CONN=0 anlik goruntudur
+  (login basilir basilmaz baglanti daha kurulmamis olur). V5.8 ile faz-9
+  izlemesi sonucu raporlar: BASARILI / LOGIN HATA <kod> / CONN durumlu bekleme.
+- admin/1 test kimligiyse WRONGPWD beklenen sonuctur - v5.8 bunu SEBEP
+  olarak yazar; kimligi auto <id> <pwd> ile tekrar dene.
+- Auth sunucusu kapaliysa O3 tanisi "auth baglantisi kurulamadi" ipucu verir.

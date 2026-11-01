@@ -416,7 +416,7 @@ DUMP_DIR   = r'C:\MaxExec\dump'   # v4.0: py dump + PLUSQuest_live buraya
 # SURUM ISARETI - DLL v1.8 bunu okur (FIX-19). PLUSMAXGOD_PyScript.py
 # degistirmeden bu satiri silme/degistirme! Eski pylib (v3.x) major 3
 # oldugu icin DLL v1.8 acilista KOSKOCA uyar basar.
-PYLIB_VERSION = '5.7'
+PYLIB_VERSION = '5.8'
 
 RACE_TABLE = {
     0: ('Warrior', 'E'), 1: ('Ninja', 'K'), 2: ('Sura', 'E'), 3: ('Shaman', 'K'),
@@ -1709,6 +1709,23 @@ def selserver(srv, ch, ok=1):
                     btn.CallEvent()
                     ok_pressed = True
                     log.append('OK: %s.CallEvent() [%s] -> server board onaylandi' % (str(on_), by))
+                    # v5.8: OK etkisi ilk-kontrol (1.0sn sonra board durumu -
+                    # saha: CallEvent sonrasi gecis islenmediyse auto kuru bekliyordu)
+                    try:
+                        time.sleep(1.0)
+                        pw3 = _pw_by_type('LoginWindow')
+                        b3 = _scan_boards(pw3) if pw3 is not None else {}
+                        s3 = [a for a, f in (b3.get('server') or []) if f == 1]
+                        l3 = [a for a, f in (b3.get('login') or []) if f == 1]
+                        if s3:
+                            log.append('UYARI: OK sonrasi server board HALA ACIK (%s)' % ','.join(s3))
+                            log.append('       gecis islenmedi veya auth baglantisi hala suruyor (auto 60sn izler)')
+                        elif l3:
+                            log.append('OK: login board acildi (%s) - gecis tamam' % ','.join(l3))
+                        else:
+                            log.append('BILGI: OK sonrasi board bayragi okunamadi (auto yine de izler)')
+                    except:
+                        pass
                 except Exception, e5:
                     log.append('UYARI: OK butonu basilamadi (%s)' % _fmt_error(e5))
             else:
@@ -2433,6 +2450,10 @@ def matrix():
         lines.append('v5.7: ALT-TIP harfi login parametre yapisini tasir: TIP1-A=2-param')
         lines.append('      (k.adı+sifre), TIP1-B=3-param (+PIN/PID/guard), TIP1-S=tek-alan,')
         lines.append('      TIP1-X=belirsiz (login ekrani acilinca auto KESINLESTIRIR).')
+        lines.append('v5.8: auto saha-fix (128sn zaman-asimi vakasi): faz-1 bekleme 60sn')
+        lines.append('      (auth baglantisi yavas olabilir), OK sonrasi server-board gecisi')
+        lines.append('      izlenir (OK isledi/etkisiz), zaman asiminda son board+CONN durumu')
+        lines.append('      yazilir, login sonrasi LOGIN_FAILURE kodu raporlanir (giris reddi).')
         _write('matrix', '\n'.join(lines) + '\n')
     except Exception, e:
         _write('matrix', 'HATA ' + _fmt_error(e) + '\n')
@@ -2462,6 +2483,25 @@ def _auto_flush():
         _write('auto', chr(10).join(_AUTO['log']) + chr(10))
     except:
         pass
+
+def _auto_board_snapshot():
+    """v5.8: bekleme/zaman-asimi tanisi icin tek-satir ekran goruntusu.
+    Saha kaniti: auto faz-1 128sn zaman asiminda HANGI sinyalin bekledigi
+    soylenemiyordu (board bayraklari + CONN gorunmezdi). Artik her bekleme
+    ve zaman-asimi satiri son board durumunu tasiyir."""
+    try:
+        pw = _pw_by_type('LoginWindow')
+        b = _scan_boards(pw) if pw is not None else {}
+        s_on = ','.join(a for a, f in (b.get('server') or []) if f == 1) or '-'
+        l_on = ','.join(a for a, f in (b.get('login') or []) if f == 1) or '-'
+    except:
+        s_on = '?'; l_on = '?'
+    try:
+        import net
+        conn = 1 if net.IsConnect() else 0
+    except:
+        conn = -1
+    return 'board:server=%s login=%s CONN=%d' % (s_on, l_on, conn)
 
 def _auto_login_board_visible():
     """Login ekrani AKTIF mi? (v5.6: ONCE BOARD BAYRAGI - KATMAN A)
@@ -2545,9 +2585,13 @@ def _auto_tick():
                 except Exception, e3:
                     _auto_live('selserver hatasi: %s' % _fmt_error(e3))
                 _AUTO['faz'] = 3
-                _AUTO['deadline'] = now + 20.0
+                _AUTO['deadline'] = now + 45.0
                 return
-            _auto_live('ZAMAN ASIMI (faz %d, sahne=%s) - auto DURDURULDU' % (_AUTO['faz'], sc))
+            _snap = _auto_board_snapshot()
+            _auto_live('ZAMAN ASIMI (faz %d, sahne=%s) [%s] - auto DURDURULDU' %
+                       (_AUTO['faz'], sc, _snap))
+            if 'server=-' not in _snap and 'server=?' not in _snap:
+                _auto_live('tani: server board HALA ACIK -> OK etkisiz olabilir veya auth baglantisi kurulamadi')
             _auto_live('kontrol: lasterr | status | manuel: selserver 0 0 -> login <id> <pwd>')
             _auto_flush()
             _AUTO['on'] = 0
@@ -2578,7 +2622,7 @@ def _auto_tick():
                 except Exception, e1:
                     _auto_live('login hatasi: %s' % _fmt_error(e1))
                 _AUTO['faz'] = 9
-                _AUTO['deadline'] = now + 30.0
+                _AUTO['deadline'] = now + 45.0
             elif st == 2:
                 # v5.6 KAPAK-DESENI: board'lar gizlenmiyor (ust uste biniyor);
                 # OK sonrasi 8sn yedek: login atilir (SetText/CallEvent guvenli)
@@ -2593,21 +2637,38 @@ def _auto_tick():
                     except Exception, e5:
                         _auto_live('login hatasi: %s' % _fmt_error(e5))
                     _AUTO['faz'] = 9
-                    _AUTO['deadline'] = now + 30.0
+                    _AUTO['deadline'] = now + 45.0
             elif _LOGIN_FAIL_T['t'] > _AUTO['t0'] and faz == 3:
                 _auto_live('LOGIN_FAILURE (%s) - login sunucuya ulasti, akis tamam sayilir' %
                            _LOGIN_FAIL_T['code'])
                 _auto_flush()
                 _AUTO['on'] = 0
             else:
+                # v5.8: OK etkisi izleme - server board 1->0 gecisi ilerleme kanitidir
+                try:
+                    _pw2 = _pw_by_type('LoginWindow')
+                    _b2 = _scan_boards(_pw2) if _pw2 is not None else {}
+                    _s2 = any(f == 1 for _a, f in (_b2.get('server') or []))
+                    if _AUTO.get('srv_on0') is None:
+                        _AUTO['srv_on0'] = _s2
+                    elif _AUTO['srv_on0'] and not _s2 and not _AUTO.get('srv_kapandi'):
+                        _AUTO['srv_kapandi'] = 1
+                        _auto_live('OK isledi: server board KAPANDI - auth baglantisi / login ekrani bekleniyor')
+                except:
+                    pass
+                if _LOGIN_FAIL_T['t'] > _AUTO['t0'] and not _AUTO.get('lf_rapor'):
+                    _AUTO['lf_rapor'] = 1
+                    _auto_live('LOGIN_FAILURE isareti (%s) - giris denemesi sunucuya ulasti' %
+                               _LOGIN_FAIL_T['code'])
                 if int((now - _AUTO['t0']) * 2) % 5 == 0:   # ~2.5sn'de bir durum
-                    _auto_live('login ekrani bekleniyor (sahne=%s, %s)' % (sc, det))
+                    _auto_live('login ekrani bekleniyor (sahne=%s, %s | %s)' %
+                               (sc, det, _auto_board_snapshot()))
         elif faz == 2:
             # TIP2x: ilerleme kontrolu (sahne degisimi = ilerleme)
             if sc not in ('?', 'LoginWindow', 'LoginWindow+ServerList'):
                 _auto_live('ilerleme: sahne=%s (TIP2 yolu calisti) - sonuc bekleniyor' % sc)
                 _AUTO['faz'] = 9
-                _AUTO['deadline'] = now + 25.0
+                _AUTO['deadline'] = now + 45.0
         elif faz == 4:
             # M1: login sonrasi serverboard acildi mi? (v5.6: board bayragi once)
             try:
@@ -2628,13 +2689,24 @@ def _auto_tick():
                 except Exception, e2:
                     _auto_live('selserver hatasi: %s' % _fmt_error(e2))
                 _AUTO['faz'] = 9
-                _AUTO['deadline'] = now + 25.0
+                _AUTO['deadline'] = now + 45.0
         elif faz == 9:
             if sc in ('SelectCharacterWindow', 'CreateCharacterWindow',
                       'SelectEmpireWindow', 'LoadingWindow', 'GameWindow'):
                 _auto_live('BASARILI: %s (auto tamam)' % sc)
                 _auto_flush()
                 _AUTO['on'] = 0
+            # v5.8: login reddi RAPORU - sessiz 45sn bekleme yerine sebep yaz
+            elif _LOGIN_FAIL_T['t'] > _AUTO['t0'] and not _AUTO.get('lf9'):
+                _AUTO['lf9'] = 1
+                _auto_live('LOGIN HATA: %s - kimlik/3.alan hatali olabilir;' % _LOGIN_FAIL_T['code'])
+                _auto_live('       auto <id> <pwd> <3.alan> ile dene | popup metni: oyun ekraninda')
+                _auto_flush()
+                _AUTO['on'] = 0
+            else:
+                if int((now - _AUTO['t0']) * 2) % 8 == 0:
+                    _auto_live('login sonucu bekleniyor (sahne=%s, %s)' %
+                               (sc, _auto_board_snapshot()))
     except Exception, e:
         try:
             _auto_live('tick hatasi: %s - auto durduruldu' % _fmt_error(e))
@@ -2663,7 +2735,8 @@ def auto(user, pwd, third=None, srv=0, ch=0, ok=None):
         _AUTO.update({'on': 0, 'tip': '', 'user': user, 'pwd': pwd, 'third': third,
                       'srv': int(srv), 'ch': int(ch), 'ok': ok,
                       't0': time.time(), 't_faz': 0.0, 'deadline': 0.0,
-                      'faz': 0, 'log': [], 'kapak_t0': 0.0})
+                      'faz': 0, 'log': [], 'kapak_t0': 0.0,
+                      'srv_on0': None, 'srv_kapandi': 0, 'lf_rapor': 0, 'lf9': 0})
         log = ['SCENE=%s' % _scene_name()]
         pw = _pw_by_type('LoginWindow')
         d = _detect_matrix(pw)
@@ -2710,8 +2783,9 @@ def auto(user, pwd, third=None, srv=0, ch=0, ok=None):
             _AUTO['tip'] = tip
             _AUTO['faz'] = 1
             _AUTO['t_faz'] = time.time()
-            _AUTO['deadline'] = time.time() + 25.0
-            log.append('ADIM 2: login ekrani BEKLENIYOR (DLL 150ms nabzi, max 25sn)')
+            _AUTO['deadline'] = time.time() + 60.0
+            log.append('ADIM 2: login ekrani BEKLENIYOR (DLL 150ms nabzi, max 60sn -')
+            log.append('        auth baglantisi yavas/tikanik olabilir; her 2.5sn board+CONN durumu)')
             log.append('        ekrana dustugunde OTOMATIK: %s' % lstep2)
             log.append('        canli takip: [AUTO] satirlari (live.txt)')
         elif tip in ('TIP2a', 'TIP2b'):
@@ -2748,7 +2822,7 @@ def auto(user, pwd, third=None, srv=0, ch=0, ok=None):
             _AUTO['tip'] = 'M1'
             _AUTO['faz'] = 4
             _AUTO['t_faz'] = time.time()
-            _AUTO['deadline'] = time.time() + 25.0
+            _AUTO['deadline'] = time.time() + 45.0
             log.append('ADIM 2: serverboard acilirsa selserver(%d, %d) [DLL nabziyla takip]' %
                        (int(srv), int(ch)))
         elif tip == 'M2':
@@ -9394,6 +9468,7 @@ except:
 
 _write('pylib_load',
        'PLUSMAXGOD_PyScript v%s yuklendi (ANA THREAD)' % PYLIB_VERSION + chr(10) +
+       'v5.8: auto saha-fix - faz-1 60sn + OK-etki izleme + timeout tani + LOGIN_FAILURE raporu' + chr(10) +
        'v5.7: ALT-TIP - login parametre yapisinin harfi (kullanici talebi)' + chr(10) +
        '  TIP1-A=2-param (k.adı+sifre) | TIP1-B=3-param (+PIN/PID/guard) |' + chr(10) +
        '  TIP1-S=tek-alan (sadece id) | TIP1-X=belirsiz -> login ekrani' + chr(10) +

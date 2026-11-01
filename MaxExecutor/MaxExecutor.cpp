@@ -124,6 +124,15 @@
 //            basedir.txt ile tasinabilir (BASE_DIR\dump).
 //    FIX-35: SyncEmbeddedPylib yeni dosya adini yazar (PLUSMAXGOD_PyScript.py),
 //            eskisini PLUSMAXGOD_eski_v<surum>.py olarak yedekler.
+//  v2.9.1 matris v6.2 (oturum 27 - saha: "auto server secti ama giris yapmadi",
+//        pylib v5.8 saha-fix):
+//     Saha kaniti: auto faz-1'de OK basildi, auth baglantisi yavas/tikandi,
+//     DLL nabzi ~100sn calisamadi, tick t+128'de ZAMAN ASIMI yazdi (board
+//     bayraklari arada login'e donmustu). DLL kodu AYNI (ikili degismedi);
+//     tum davranis pylib v5.8'de: faz-1 bekleme 60sn, OK-etki izleme
+//     (server board 1->0 raporu), timeout'ta board+CONN tanisi, login
+//     sonrasi LOGIN_FAILURE kodu raporu, selserver OK sonrasi board
+//     dogrulamasi. Yardim dizgileri v5.8'e cekildi.
 //  v2.9 (oturum 24 - kullanici istegi: TIP1/TIP2 matrisi + "pylib_embedded.h
 //        yi kaldir - gereksiz yere klasore eski py pushlanmasin", pylib v5.4):
 //     (1) GOMULU PYLIB MEKANIZMASI KALDIRILDI: pylib_embedded.h include'u,
@@ -702,7 +711,7 @@ static std::string BootImport(void)
          "        try:\n"
          "            import traceback\n"
          "            _f = open(r'" + std::string(RESULT_DIR) + "\\\\last_pylib_fail.txt', 'w')\n"
-         "            _f.write('PLUSMAXGOD_PyScript.py YUKLENEMEDI (DLL v2.9 / pylib v5.7) - TRACEBACK:\\n' + traceback.format_exc())\n"
+         "            _f.write('PLUSMAXGOD_PyScript.py YUKLENEMEDI (DLL v2.9 / pylib v5.8) - TRACEBACK:\\n' + traceback.format_exc())\n"
          "            _f.close()\n"
          "        except Exception:\n"
          "            pass\n"
@@ -719,7 +728,7 @@ static std::string BootImport(void)
          "    maxlib._MX_OLD_WARNED = True\n"
          "    try:\n"
          "        import sys\n"
-         "        sys.stderr.write('!!! PYLIB ESKI v' + str(getattr(maxlib, 'PYLIB_VERSION', '?')) + ' - DLL v2.9 PLUSMAXGOD v5.7 ister! "
+         "        sys.stderr.write('!!! PYLIB ESKI v' + str(getattr(maxlib, 'PYLIB_VERSION', '?')) + ' - DLL v2.9 PLUSMAXGOD v5.8 ister! "
          "C:\\\\MaxExec\\\\PLUSMAXGOD_PyScript.py dosyasini yenisiyle degistir (bundle zip / GitHub) !!!\\\\n')\n"
          "    except Exception:\n"
          "        pass\n";
@@ -1379,7 +1388,7 @@ static std::vector<std::string> SplitArgs(const std::string& line)
 
 static void PrintHelp(void)
 {
-    OutP("\n=== MaxExecutor v2.9.1 PLUSMAXGOD (TIP1/TIP2 matris + AUTO giris - pylib v5.7) ===\n");
+    OutP("\n=== MaxExecutor v2.9.1 PLUSMAXGOD (TIP1/TIP2 matris + AUTO giris - pylib v5.8) ===\n");
     OutP("  help                        : bu yardim\n");
     OutP("  status                      : anlik sahne/baglanti snapshot\n");
     OutP("  -- giris akisi (menu) --\n");
@@ -1392,6 +1401,9 @@ static void PrintHelp(void)
     OutP("  auto <id> <pwd> [3.alan]    : MATRISI ALGILA + TIP'e gore sirali akisi uygula (v5.7)\n");
     OutP("  (v5.7) ALT-TIP harfi login yapisini tasir: TIP1-A=2-param(k.adı+sifre),\n");
     OutP("         TIP1-B=3-param(+PIN/PID/guard), TIP1-S=tek-alan, TIP1-X=belirsiz\n");
+    OutP("  (v5.8) auto saha-fix: login-ekrani beklemesi 60sn (auth yavas olabilir),\n");
+    OutP("         OK sonrasi gecis izlenir, zaman asiminda board+CONN tanisi,\n");
+    OutP("         login reddi LOGIN_FAILURE kodu ile raporlanir\n");
     OutP("  (v5.6) TIP2a yalnizca UIScript ayni-board kanitiyla; kanitsiz -> guvenli TIP2x\n");
     OutP("  relogin [id pwd [srv ch]]   : TAM relogin (logout->disconnect->login akisi - v5.2)\n");
     OutP("  relogin quick [slot]        : HIZI relogin (logout->selchar, baglanti korunur)\n");
