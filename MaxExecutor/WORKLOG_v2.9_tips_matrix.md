@@ -93,7 +93,8 @@ auto hesabim sifrem               -> TIP1: sec+OK -> login | TIP2: sec(ok=0) -> 
 auto hesabim sifrem pinim         -> 3. alanli (TIP2b/+M5)
 ```
 - Sonuç dosyaları: `last_matrix.txt` (TIP + olasılık tablosu), `last_auto.txt` (sıralı adımlar), `last_login.txt`, `lasterr`
-- Eski DLL (v2.6 binary) ile: `detect`/`matrix`/`auto` DLL komutları YOK — v2.9 kaynak derlenmeli; pylib v5.4 diskteyken `raw maxlib.detect()` / `exec` ile de çağrılabilir
+- **MaxExecutor.dll v2.9 derlemesi BUNDLE'DA HAZIR** (PE32 i386, zig cc ile derlendi) — `MaxInject.exe` de dahil; derleme gerekmez: DLL'i `C:\MaxExec\` içine kopyala + `MaxInject.exe` ile enjekte et. Kendi Visual Studio'nla derlemek istersen §3 (artık SADECE MaxExecutor.cpp — header yok!)
+- Eski DLL (v2.6 binary) kullanıyorsan: `detect`/`matrix`/`auto` DLL komutları YOK — bundle'daki v2.9 DLL'i kullan
 - **KRİTİK kurulum notu:** pylib_embedded.h kaldırıldığı için v2.9 DLL derleyen kullanıcının `C:\MaxExec\PLUSMAXGOD_PyScript.py` dosyasını elle kopyalaması ZORUNLU (bundle'da var)
 
 ## 6. BU COMMITTE DEĞİŞEN DOSYALAR
@@ -106,15 +107,29 @@ MaxExecutor/
   pylib.py                      <- SILINDI (git rm — eski v3.2 yedek kopya)
   KULLANIM.md                   <- v5.4: TIP1/TIP2 bölümü + detect + kurulum zorunluluğu
   README.md                     <- v2.9 üst özet + DOSYALAR (~~pylib_embedded.h~~) + detect
-  MaxExecutor_bundle_v2.9_universal.zip  <- 7 dosya (header'sız)
+  MaxExecutor_bundle_v2.9_universal.zip  <- 9 dosya (header'sız + MaxExecutor.dll + MaxInject.exe)
   WORKLOG_v2.9_tips_matrix.md   <- BU dosya
 ```
 
-NOT: MaxExecutor.dll binary'si hâlen v2.6 derlemesi (kullanıcı v2.9 kaynağını Visual Studio Release/x86 derleyecek; pylib_embedded.h artık projeye EKLENMEZ — sadece MaxExecutor.cpp).
+NOT: MaxExecutor.dll v2.9 DERLENDI ve bundle'a kondu (PE32 i386, 589824 byte; MaxInject.exe 222208 byte ile birlikte) — kullanici Visual Studio derlemesi OZELLIKLE istege bagli; pylib_embedded.h artık projeye EKLENMEZ — sadece MaxExecutor.cpp.
+
+## 6.5 DERLEME (oturum 24 tamamlayıcı istek: ".exe ve dll i de derle zipin içine at")
+
+```
+zig c++ -target x86-windows-gnu -shared -O2 -std=c++14 \
+      -o MaxExecutor.dll MaxExecutor.cpp -luser32 -lkernel32 -lgdi32
+   -> PE32 executable for MS Windows 6.00 (DLL), Intel i386, 12 sections, 589824 byte
+zig c++ -target x86-windows-gnu -O2 -std=c++14 \
+      -o MaxInject.exe MaxInject.cpp -luser32 -lkernel32 -ladvapi32
+   -> PE32 executable for MS Windows 6.00 (console), Intel i386, 6 sections, 222208 byte
+```
+- Binary string kanıtı: 'MaxExecutor v2.9 PLUSMAXGOD' + 'TIP1/TIP2 matris' + 9× v5.4 referansı; eski 'v2.8' banner KALMADI (0)
+- MaxInject.exe 222208 byte = önceki v2.6 dönemi derlemeyle BİREBİR aynı boyut (kaynak değişmedi — tutarlılık kanıtı)
+- Bundle v2.9 9 dosyaya genişletildi: 7 kaynak/dok + MaxExecutor.dll + MaxInject.exe
 
 ## 7. SONRAKİ ADIMLAR
 
-1. **DLL v2.9 derlemesi** (kullanıcı): Visual Studio → Release/x86 → SADECE MaxExecutor.cpp (header yok!)
+1. ~~DLL v2.9 derlemesi~~ TAMAM — bundle'da HAZIR derlenmiş binary var (MaxExecutor.dll + MaxInject.exe); Visual Studio derlemesi isteyen için §3 (SADECE MaxExecutor.cpp — header yok!)
 2. `C:\MaxExec\PLUSMAXGOD_PyScript.py`'yi bundle'dan güncelle (v5.4)
 3. **Saha testi 18**: 2-3 farklı sunucuda `detect` çıktısını paylaş (TIP etiketi + [X] tablosu) — sınıflandırma oranını ölçelim
 4. TIP2x çıkan serverlarda: board görünürken `detect`'i tekrar çalıştır (teyit)
