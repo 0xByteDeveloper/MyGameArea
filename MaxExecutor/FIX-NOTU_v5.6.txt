@@ -1,0 +1,76 @@
+=============================================================================
+ MaxExecutor pylib v5.6 - MATRIS v6 KANIT-TABANLI TAMIR
+ (2. saha raporu icin: "ayni ekranda degil malesef" - v5.5 de TIP2a dedi)
+=============================================================================
+
+NE OLDU? (kok neden - kör yama degil, kanitli teshis)
+---------------------------------------------------------------------------
+v5.5'in uc kanit yolu da client C++ API'sine bagliydi ve SENIN client'inda
+o API'ler yok:
+  1) parentWindow/GetParent zinciri KURULAMADI  -> ayri_board: -1
+  2) GetGlobalPosition YOK                      -> offscreen_ols olculemedi
+  3) zincir kurulamazsa v5.5 YANLISLIKLA 1 (gorunur) donduruyordu
+     -> editline'lar "gorunur" sanildi -> YINE TIP2a
+EK GERCEK: Metin2 wndMgr'de Hide() cocuklara yayilmaz - login board'u gizli
+olsa bile editline'larin KENDI bayragi 1 kalir (vis_editline:2 nin sebebi).
+
+v5.6 COZUMU (C++ API'siz ground truth once)
+---------------------------------------------------------------------------
+KATMAN A - BOARD BAYRAGI: dir(pw) icindeki board attr'larinin KENDI ham
+  IsShow bayragi okunur. serverBoard=1 + connectBoard=0 -> TIP1 kesin kanit.
+  (parent zinciri GEREKMEZ - senin client'inda da calisir)
+KATMAN B - KAYNAK KANITI: client'in KENDI scriptleri pack'ten okunur:
+  - root/intrologin.py -> def Open() taranir: server-board mu login-board mu
+    ilk aciliyor (soğuk baslangic dali)
+  - UIScript/LoginWindow.py -> dict eval -> editline ile serverList AYNI
+    board'da mi FARKLI board'da mi (AYNI=TIP2 kaniti, FARKLI=TIP1/M1 kaniti)
+KATMAN C - eski efektif gorunurluk (yalnizca yardimci; kurulamazsa -1)
+
+YENI KURAL (saha hatasi kapandi):
+  TIP2a/b  YALNIZCA UIScript ayni-board kanitiyla yazilir.
+  TIP1/n   board bayragi veya kaynak Open() kanitiyla.
+  Kanit yoksa -> TIP2x (iki-fazli adaptif auto - guvenli belirsizlik).
+  "ikisi de gorunuyor" artik ASLA kesin TIP2a demez.
+detect ciktisina GUVEN (YUKSEK/ORTA/DUSUK) + KANIT satirlari geldi;
+auto da OK'a basip login ekranini BOARD BAYRAGIYLA bekler (kapak-deseni
+görürse 8 sn yedekten sonra yine de login atar).
+
+KURULUM (30 saniye)
+---------------------------------------------------------------------------
+1) MaxExecutor.dll / MaxInject.exe / oyun: DOKUNMA (v2.9.1 aynen kalir)
+2) PLUSMAXGOD_PyScript.py (v5.6) -> C:\MaxExec\ klasorune kopyala
+   (eski dosyanin uzerine yaz)
+3) Oyunu ac -> server secme ekraninda BEKLE
+
+SAHA TEST FORMULU
+---------------------------------------------------------------------------
+maxexec> detect
+  BEKLENEN:
+    TIP    : TIP1
+    GUVEN  : YUKSEK
+    --- KANIT (v5.6 katmanlari) ---
+      KATMAN A board-bayragi: ekran=server [server: serverBoard=1 | login: ...=0]
+      KATMAN B kaynak: root/intrologin.py (...) -> Open() ilk-ekran=server
+      KATMAN B topoloji: UIScript/... -> farkli-board (login-board=... server-board=...)
+
+maxexec> auto admin 1
+  BEKLENEN:
+    ADIM 1: selserver(0, 0, ok=True)  [TIP1: once server secme ekrani]
+    [AUTO] login ekrani acildi (login board ACIK + server board KAPALI)
+    [AUTO] login atildi
+  -> OK'a BASILARAK sunucuya baglanilir, SONRA login ekraninda giris atilir
+     (senin sunucunun gercek akisi tam olarak bu)
+
+RAPOR
+---------------------------------------------------------------------------
+Sonuc ne olursa olsun su 2 dosyayi gonder:
+  C:\MaxExec\results\last_matrix.txt   (detect kanitlari)
+  C:\MaxExec\results\last_auto.txt     (auto akis gunlugu)
+KANIT satirlari bir sonraki iyilestirmenin girdisi.
+
+DEGISMEYENLER
+---------------------------------------------------------------------------
+- MaxExecutor.dll v2.9.1: pylib major-5 kontrolu v5.6'yi "uyumlu" okur,
+  dosyayi C:\MaxExec'ten yukler (banner'daki "v5.6" yalnizca yardim metnidir).
+- Tum diger komutlar (stat, inv, selljunk, fish, near, ...) aynen korundu.
+=============================================================================

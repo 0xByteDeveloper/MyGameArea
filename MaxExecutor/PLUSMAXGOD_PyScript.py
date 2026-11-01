@@ -1,47 +1,59 @@
 # -*- coding: utf-8 -*-
 """
 ===========================================================================
- PLUSMAXGOD_PyScript.py - MaxExecutor Ana-Thread Komut Kutuphanesi (v5.5)
- v5.5 DEGISIKLIKLER (MATRIS-FIX - saha kaniti: 20:58 detect TIP2a dedi,
- gercek ekran TIP1'di: once server+CH+OK, SONRA login ekrani):
-   * KOK NEDEN 1 - YANLIS GORUNURLUK: _is_shown sadece obj.IsShow() (KENDI
-     bayragi) okuyordu; gizli login board'unun cocuk editline'lari kendi
-     bayragi True kaldigi icin 'gorunur' saniyordu -> vis_editline:2 ->
-     TIP2a. ARTIK _eff_visible: parent zincirini yurur (parentWindow /
-     GetParent), zincirde TEK gizli ata varsa eleman GIZLIDIR.
-   * KOK NEDEN 2 - BOARD UYELIGI YOK: iki widget ayni ekranda mi AYRI
-     ekranda mi belli degildi. ARTIK _parent_chain + LCA analizi: serverList
-     ve idEditLine'in ortak atasi KOK pencereyse (LoginWindow) AYRI
-     ekranlar (TIP1), ortak atasi bir BOARD ise AYNI ekran (TIP2).
-   * auto() TIP1'te ARTIK DURUM MAKINESI (v5.4'teki time.sleep bekleme
-     YANLISTI: ana thread uyurken ekran gecisi ISLENMEZ - OK sonrasi login
-     ekrani hicbir zaman senkron bekleme ile gorunmezdi):
-       ADIM 1: selserver(ok) -> DLL 150ms nabziyla _auto_tick surer
-       ADIM 2: login ekrani EFEKTIF gorunur olunca login(u,p,3) atilir
-       15sn zaman asimi + canli rapor (last_auto.txt + [AUTO] live)
-   * TIP2x belirsizligi icin iki-fazli adaptif akis: once TIP2 yolu
-       (ok=0 + login), ilerleme yoksa TIP1 yolu (ok=1 -> bekle -> login).
-   * relogin step-4 ARTIK login ekrani gorunmesini bekler (TIP1 uyumlu).
-   * _offscreen: GetGlobalPosition ekrandisi ise eleman 'aktif degil'
-     sayilir (bazi files gizli board'lari ekran disina tasir).
+ PLUSMAXGOD_PyScript.py - MaxExecutor Ana-Thread Komut Kutuphanesi (v5.6)
+ v5.6 DEGISIKLIKLER (MATRIS v6 KANIT-TABANLI - saha kaniti 2. rapor:
+ v5.5 detect YINE TIP2a dedi, gercek ekran TIP1'di. Kanit sinyalleri:
+   ayri_board=-1 | eff_idEditLine=1 | offscreen_els=0 | vis_editline=2):
+   * KOK NEDEN (v5.5'in yamasi da client C++ API'sine bagliydi):
+       a) _parent_of zinciri (parentWindow/GetParent) KULLANICI CLIENT'INDA
+          YOK -> ayri_board=-1, LCA kaniti hic kurulamadi.
+       b) GetGlobalPosition YOK -> offscreen olcumu hic calismadi.
+       c) _eff_visible zincir kuramazsa YANLISLIKLA 1 (gorunur) donduruyordu
+          -> editline'lar yine 'gorunur' -> YINE TIP2a.
+     EK GERCEK: wndMgr Hide() COCUKLARA YAYILMAZ - editline'in kendi bayragi,
+     board'u gizliyken bile 1 kalir (v5.4'un vis_editline=2 okumasinin sebebi).
+   * YENI KATMAN A - BOARD BAYRAGI (_scan_boards/_board_verdict): dir(pw)
+     icindeki board-vari attr'larin KENDI ham IsShow bayragi okunur
+     (serverBoard=1, connectBoard=0 -> TIP1 kesin kaniti; parent zinciri
+     GEREKMEZ). 'main/save/pin' icerenler notr, 'server*' server-, 'login/
+     connect*' login-board sayilir.
+   * YENI KATMAN B - KAYNAK KANITI (_source_evidence): client'in KENDI
+     scriptleri pack'ten okunur (_pack_read kanitli yol):
+       - root/intrologin.py -> def Open() govdesi taranir: server-acici mi
+         login-acici mi ilk calisiyor (if/else'te COLD START = else dali)
+       - __LoadScript adi -> UIScript dict'i eval edilir -> editline ve
+         serverList'in EN YAKIN BOARD ATASI karsilastirilir:
+         AYNI board = TIP2 kesin kaniti | FARKLI = TIP1/M1 kesin kaniti
+       - eval basarisizsa metin-taramasi ZAYIF kaniti (600sn cache)
+   * YENI KARAR AGACI (kanit-tabanli, saha hatasi kapandi):
+       TIP2a/b YALNIZCA UIScript ayni-board kanitiyla yazilir.
+       TIP1/TIP1n/M1: board bayragi veya kaynak Open() kanitiyla.
+       HICBIR kanit yoksa TIP2x (iki-fazli adaptif auto - guvenli belirsizlik).
+       'ikisi de gorunuyor' artik ASLA kesin TIP2a demez.
+   * detect ciktisina GUVEN (YUKSEK/ORTA/DUSUK) + KANIT satirlari eklendi
+     (hangi katman ne dedi); auto/last_auto.txt'a da ayni kanit yazilir.
+   * _auto_tick/_relogin st4: login-ekrani bekleme ARTIK board bayragiyle
+     (st=1 kesin acik / st=0 kesin kapali / st=2 kapak-deseni -> 8sn yedek
+     login / st=-1 bilinmiyor -> eski eff yolu).
+ v5.5 DEGISIKLIKLER (MATRIS-FIX 1):
+   * _eff_visible (parent zinciri) + _offscreen + LCA _board_relation
+     eklendi (v5.6'da KATMAN C yardimci kanit olarak kalir).
+   * auto() TIP1'te DURUM MAKINESI (time.sleep yerine DLL 150ms nabzi):
+       ADIM 1: selserver(ok) -> _auto_tick her nabizda ekran olcer
+       ADIM 2: login ekrani acilinca login(u,p,3) otomatik atilir
+   * TIP2x icin iki-fazli adaptif akis: once TIP2 yolu (ok=0 + login),
+     ilerleme yoksa TIP1 yolu (ok=1 -> bekle -> login).
  v5.4 DEGISIKLIKLER (oturum 24 - kullanici tanimli TIP matrisi):
    * Kullanici iki temel tip tanimladi:
        TIP1 : server secme ekrani AYRI bir ekran + OK butonu VAR
               (k.adı/sifre login ekrani ayri gelir)
        TIP2 : server secme + k.adı + sifre AYNI ekranda (TIP2a, 2 alan)
               veya + id (TIP2b, 3 alan)
-   * _detect_matrix artik GORUNURLUK de olcer (ui.Window.IsShow):
-       - editline gorunur + serverList gorunur  -> TIP2a/TIP2b (birlesik)
-       - serverList gorunur, editline gizli/yok -> TIP1 (OK var) / TIP1n (OK yok)
-       - editline gorunur, serverList gizli katman -> M1 resmi (login ONCE)
-   * matrix() raporuna 'MATRIS OLASILIKLARI' tablosu eklendi: TUM ihtimaller
-     (TIP1/TIP1n/TIP2a/TIP2b/M1/M2/M3/M4/+M5/BOLGE) listelenir, bu serverda
-     eslesen [X] ile isaretlenir.
-   * auto() akisi tipe gore siralanir:
-       TIP1/TIP1n : selserver(ok) -> bekle -> login
-       TIP2x      : selserver(ok=0, sadece sec) -> login (connect butonu)
-       M1 resmi   : login -> bekle (board acilir) -> selserver(ok)
-   * detect = matrix takma adi (DLL 'detect' komutu da ayni isi yapar).
+   * _detect_matrix gorunurluk + board kanitlariyla siniflandirir; matrix()
+     raporunda 'MATRIS OLASILIKLARI' tablosu (TIP1/TIP1n/TIP2a/TIP2b/M1/M2/
+     M3/M4/+M5/BOLGE) [X] isaretli listelenir.
+   * auto() akisi tipe gore siralanir; detect = matrix takma adi.
  v5.1 DEGISIKLIKLER:
    * oto-pot (hp/mp otomatik iksir basma + oto-pot esyasi izlemesi)
      ozelligi ve ilgili tum komutlar TAMAMEN KALDIRILDI (kullanici istegi).
@@ -378,7 +390,7 @@ DUMP_DIR   = r'C:\MaxExec\dump'   # v4.0: py dump + PLUSQuest_live buraya
 # SURUM ISARETI - DLL v1.8 bunu okur (FIX-19). PLUSMAXGOD_PyScript.py
 # degistirmeden bu satiri silme/degistirme! Eski pylib (v3.x) major 3
 # oldugu icin DLL v1.8 acilista KOSKOCA uyar basar.
-PYLIB_VERSION = '5.5'
+PYLIB_VERSION = '5.6'
 
 RACE_TABLE = {
     0: ('Warrior', 'E'), 1: ('Ninja', 'K'), 2: ('Sura', 'E'), 3: ('Shaman', 'K'),
@@ -807,7 +819,8 @@ _SERVERLIST_NAMES = ('serverList', 'ServerList', 'serverListBox')
 _CHLIST_NAMES = ('channelList', 'ChannelList', 'channelListBox')
 _REGIONLIST_NAMES = ('regionList', 'RegionList', 'regionListBox')
 _OKBTN_NAMES = ('serverSelectButton', 'ServerSelectButton', 'serverInitButton',
-                'serverOKButton', 'serverGoButton', 'selectConnectButton')
+                'serverOKButton', 'serverGoButton', 'selectConnectButton',
+                'okButton')
 
 def _child_by_names(pw, names):
     """attr yolu -> GetChild yolu -> dir() gevsek tarama. Donduren:
@@ -882,13 +895,16 @@ def _parent_of(obj):
     return p
 
 def _eff_visible(obj, depth=0):
-    """EFEKTIF gorunurluk (v5.5 MATRIS-FIX): obj'nin kendi bayragi + TUM
-    atalarinin bayragi. Saha kok-nedeni: gizli login board'unun cocuk
+    """EFEKTIF gorunurluk (v5.6 MATRIS-FIX 2): obj'nin kendi bayragi + TUM
+    atalarinin bayragi. Saha kok-nedeni 1: gizli login board'unun cocuk
     editline'lari kendi bayragini True tutar -> v5.4 bunlari 'gorunur'
     saniyor ve TIP2a diyordu; gercekte ekran TIP1'di.
-      1 = gorunur (zincirin TAMAMI acik)
-      0 = gizli   (kendi VEYA herhangi bir atasi kapali)
-     -1 = bilinmiyor (bayrak okunamadi / ata zinciri kurulamadi)"""
+    Saha kok-nedeni 2 (v5.5'in hatasi): zincir kurulamazsa YANLISLIKLA 1
+    donduruluyordu - kullanici client'inda parentWindow/GetParent olmadigi
+    icin TUM editline'lar 'gorunur' cikiyordu -> YINE TIP2a. ARTIK:
+      1 = gorunur (zincirin TAMAMI acik - kesin)
+      0 = gizli   (kendi VEYA herhangi bir atasi kapali - kesin)
+     -1 = bilinmiyor (zincir kurulamadi/asla 'gorunur' SANILMAZ)"""
     if obj is None:
         return -1
     if depth > 12:
@@ -900,7 +916,9 @@ def _eff_visible(obj, depth=0):
         return -1
     p = _parent_of(obj)
     if p is None:
-        return 1   # atasi yok (kok pencere) veya atalar okunamadi
+        # v5.6-FIX: atasi yoksa 'kok pencere' mi yoksa zincir mi kurulamadi
+        # AYIRT EDILEMEZ -> BILINMIYOR doner (v5.5 burada 1 veriyordu - hata!)
+        return -1
     pv = _eff_visible(p, depth + 1)
     if pv == 0:
         return 0
@@ -987,6 +1005,437 @@ def _board_relation(sl, el):
             return lca, 1
         return lca, -1
     return lca, -1
+
+# ---------------------------------------------------------------------------
+# v5.6 KANIT KATMANLARI (MATRIS v6 - saha kaniti 2. rapor)
+# ---------------------------------------------------------------------------
+# SAHA KANITI (NightTown, 2. test): v5.5 detect YINE TIP2a dedi, gercek TIP1.
+#   ayri_board=-1 | eff_idEditLine=1 | offscreen_els=0
+# KOK NEDEN: v5.5'in uc kanit yolu da client C++ API'sine bagliydi ve
+#   kullanici clientinda YOK:
+#     a) _parent_of -> parentWindow/GetParent ZINCIRI KURULAMADI -> ayri_board=-1
+#     b) GetGlobalPosition YOK -> offscreen olcumu hic calismadi
+#     c) _eff_visible zincir kuramazsa YANLISLIKLA 1 (gorunur) donduruyordu
+#   -> editline'lar yine 'gorunur' sayildi -> TIP2a.
+# EK GERCEK: board Hide() COCUKLARA YAYILMAZ (wndMgr bayragi per-node);
+#   editline'in KENDI bayragi, board'u gizliyken bile 1 kalir. Metin2 UI'da
+#   dogru yer: BOARD seviyesindeki attr'larin HAM bayragi (serverBoard=1,
+#   connectBoard=0 -> TIP1 kaniti) + client'in KENDI script kaynaklari.
+# v5.6 KANIT SIRASI (C++ API'siz ground truth once):
+#   KATMAN A: _scan_boards/_board_verdict  - board attr'lari HAM bayragi
+#   KATMAN B: _source_evidence             - pack'ten intrologin.py Open()
+#                                            + UIScript board topolojisi
+#   KATMAN C: eski eff gorunurluk (yalnizca YARDIMCI kanit)
+# KURAL: TIP2a/b YALNIZCA AYNI-BOARD KANITIYLA. Kanit yoksa TIP2x (iki-fazli
+#   adaptif auto) - yanlis kesin karar yerine guvenli belirsizlik.
+_BOARD_SERVER_KEYS = ('server', 'serv')
+_BOARD_NEUTRAL_KEYS = ('main', 'save', 'regist', 'pin', 'guard', 'intro',
+                       'bg', 'dialog', 'popup', 'question', 'key', 'loading')
+
+def _scan_boards(pw):
+    """LoginWindow instance'indaki board-vari attr'lar + HAM (kendi) bayragi.
+    v5.6 KATMAN A: Hide() cocuklara yayilmadigi icin editline bayragi yerine
+    BOARD'in kendi bayragi okunur - parent zinciri GEREKMEZ.
+    Donus: {'server': [(ad, flag)], 'login': [(ad, flag)], 'diger': [(ad, flag)]}
+    flag: 1=acik, 0=KAPALI (TIP1/M1 kaniti), -1=okunamadi."""
+    res = {'server': [], 'login': [], 'diger': []}
+    if pw is None:
+        return res
+    try:
+        names = dir(pw)
+    except:
+        return res
+    for a in names:
+        la = a.lower()
+        if 'board' not in la and not la.endswith('panel'):
+            continue
+        if len(la) > 40:
+            continue
+        try:
+            v = getattr(pw, a, None)
+        except:
+            continue
+        if v is None:
+            continue
+        # pencere-vari olmali (int hWnd degil)
+        if not (hasattr(v, 'IsShow') or hasattr(v, 'IsShowing')):
+            continue
+        try:
+            fl = _is_shown_raw(v)
+        except:
+            fl = -1
+        if _BOARD_NEUTRAL_KEYS and any(k in la for k in _BOARD_NEUTRAL_KEYS):
+            res['diger'].append((a, fl))
+        elif any(k in la for k in _BOARD_SERVER_KEYS):
+            res['server'].append((a, fl))
+        elif 'login' in la or 'connect' in la or 'conn' in la:
+            res['login'].append((a, fl))
+        else:
+            res['diger'].append((a, fl))
+    return res
+
+def _board_verdict(boards):
+    """KATMAN A karari: board bayraklarindan ekran kimde?
+      'server' : server board ACIK + login board KAPALI  (TIP1/TIP1n kaniti)
+      'login'  : login board ACIK + server board KAPALI  (M1/M3 kaniti)
+      'l-off'  : login board KAPALI (server taraf okunamadi) -> server ekran
+      's-off'  : server board KAPALI (login taraf okunamadi) -> login ekran
+      'both'   : IKISI DE ACIK (katmanli kapak deseni -> kaynak kaniti gerek)
+      'none'   : ikisi de kapali (ara ekran/transition)
+      '?'      : bayrak okunamadi / board attr yok"""
+    s = boards.get('server', []) or []
+    l = boards.get('login', []) or []
+    if not s and not l:
+        return '?'
+    s_on = any(f == 1 for _a, f in s)
+    l_on = any(f == 1 for _a, f in l)
+    s_kn = any(f != -1 for _a, f in s)
+    l_kn = any(f != -1 for _a, f in l)
+    if s_kn and l_kn:
+        if s_on and not l_on:
+            return 'server'
+        if l_on and not s_on:
+            return 'login'
+        if s_on and l_on:
+            return 'both'
+        return 'none'
+    if s_kn:
+        return 'server' if s_on else 'l-off'
+    if l_kn:
+        return 'login' if l_on else 's-off'
+    return '?'
+
+# --- KATMAN B: KAYNAK KANITI (pack'ten client'in KENDI scriptleri) ---
+_INTROLOGIN_CANDS = ('root/intrologin.py', 'root/introLogin.py',
+                     'root/intrologin2.py', 'intrologin.py', 'introLogin.py',
+                     'locale/ro/ui/intrologin.py', 'locale_ro/ui/intrologin.py',
+                     'locale/tr/ui/intrologin.py', 'locale/ae/ui/intrologin.py',
+                     'package/intrologin.py', 'script/intrologin.py',
+                     'script/introLogin.py')
+_SRC_EVID = {'t': 0.0, 'd': None}
+
+def _py_literals(src):
+    """Kaynak metindeki 'xxx.py' string literalleri (regex YOK - py2 guvenli)."""
+    out = []
+    if not src:
+        return out
+    i = 0
+    n = len(src)
+    while i < n and len(out) < 32:
+        c = src[i]
+        if c == '"' or c == "'":
+            j = src.find(c, i + 1)
+            if j < 0:
+                break
+            lit = src[i + 1:j]
+            if 0 < len(lit) < 120 and lit.endswith('.py'):
+                out.append(lit)
+            i = j + 1
+        else:
+            i += 1
+    return out
+
+def _def_block(src, start, maxlines=500):
+    """'def ...' satiri + govdesi (ayni girinti seviyesine kadar). py2 guvenli."""
+    if start < 0:
+        return ''
+    ls = src.rfind(chr(10), 0, start) + 1
+    ind = 0
+    while ls + ind < len(src) and src[ls + ind] in (' ', chr(9)):
+        ind += 1
+    le0 = src.find(chr(10), ls)
+    if le0 < 0:
+        le0 = len(src)
+    out = [src[ls:le0]]
+    i = le0 + 1
+    cnt = 0
+    while i < len(src) and cnt < maxlines:
+        le = src.find(chr(10), i)
+        if le < 0:
+            le = len(src)
+        ln = src[i:le]
+        s = ln.strip()
+        if s and not s.startswith('#'):
+            li = 0
+            while li < len(ln) and ln[li] in (' ', chr(9)):
+                li += 1
+            if li <= ind:
+                break
+        out.append(ln)
+        i = le + 1
+        cnt += 1
+    return chr(10).join(out)
+
+def _src_first_screen(src):
+    """KATMAN B-1: intrologin kaynak metninden ILK EKRAN kaniti.
+    TUM 'def Open(' bloklari taranir (bir filesta baska siniflarin Open'i
+    once gelebilir - MS5.8 saha kalibrasyonunda yakalandi); acici iceren
+    blok kullanilir. if/else (connectingIP) deseni varsa COLD START = ELSE
+    dali bakilir: normal acilis connectingIP'siz baslar (else -> server).
+    Donus: {'open': 'server'|'login'|'both'|'?',
+            'server_acici': [...], 'login_acici': [...]}"""
+    r = {'open': '?', 'server_acici': [], 'login_acici': []}
+    if not src:
+        return r
+    SB = ('__OpenServerBoard', '__OpenServerList', '__OpenServer',
+          'serverBoard.Show', 'ServerBoard.Show', 'serverBoard2.Show',
+          'ServerListBoard.Show', 'serverListBoard.Show',
+          'serverSelectBoard.Show', 'ServerSelectBoard.Show')
+    LB = ('__OpenLoginBoard', '__OpenConnectBoard', '__OpenLogin',
+          'connectBoard.Show', 'ConnectBoard.Show', 'loginBoard.Show',
+          'LoginBoard.Show', 'loginMainBoard.Show', 'LoginMainBoard.Show')
+    i = src.find('def Open(')
+    while i >= 0:
+        govde = _def_block(src, i)
+        i = src.find('def Open(', i + 1)
+        if not govde:
+            continue
+        has_s = [k for k in SB if govde.find(k) >= 0]
+        has_l = [k for k in LB if govde.find(k) >= 0]
+        if not has_s and not has_l:
+            continue
+        r['server_acici'] = has_s
+        r['login_acici'] = has_l
+        if has_s and has_l:
+            # iki acici de var: COLD START belirlemek icin SON aciciye bak.
+            # (MS5.8 kalibrasyonu: connectingIP ozel-dali once yazilir, normal/
+            # soguk baslangic dali govdede SONRA gelir -> SON acici dogru dal.
+            # rfind: SON gecis yeri - find ILK gecisi verirdi, USE_OPENID gibi
+            # erken ikinci cagrilar sonucu ters ceviriyordu - saha kalibrasyonu)
+            ps = max(govde.rfind(k) for k in has_s)
+            pl = max(govde.rfind(k) for k in has_l)
+            r['open'] = 'server' if ps > pl else 'login'
+        elif has_s:
+            r['open'] = 'server'
+        else:
+            r['open'] = 'login'
+        break
+    return r
+
+def _eval_uiscript(txt):
+    """UIScript dict literal'ini py2 eval ile coz. Tanimsiz sabitler (SCREEN_WIDTH
+    vb.) NameError verir -> 1024 degeriyle tekrar dener (5 kez).
+    Basarisizsa None (cagiran metin-taramasi yedegini kullanir)."""
+    if not txt or len(txt) > 400000:
+        return None
+    ns = {}
+    for _i in range(6):
+        try:
+            v = eval(txt, ns)
+        except NameError, ne:
+            try:
+                nm = str(ne).split("'")[1]
+            except:
+                return None
+            if not nm or nm in ns:
+                return None
+            ns[nm] = 1024
+        except SyntaxError:
+            return None
+        except Exception:
+            return None
+        else:
+            if isinstance(v, (dict, list, tuple)):
+                return v
+            return None
+    return None
+
+def _tree_nodes(node, parent, out, depth=0):
+    """UIScript agacini (name, parent-name) dugumlerine duzlestir."""
+    if depth > 24 or len(out) > 2000:
+        return
+    if isinstance(node, dict):
+        nm = node.get('name')
+        if nm is not None:
+            try:
+                nm = str(nm)
+            except:
+                nm = None
+        if nm:
+            out.append((nm, parent))
+            parent = nm
+        ch = node.get('children', None)
+        if ch:
+            _tree_nodes(ch, parent, out, depth + 1)
+    elif isinstance(node, (list, tuple)):
+        for it in node:
+            _tree_nodes(it, parent, out, depth + 1)
+
+def _topo_from_tree(root):
+    """Agactan board-uyelik topolojisi: editline ve listbox'larin EN YAKIN
+    board atasi. AYNI board -> TIP2 kaniti; FARKLI -> TIP1/M1 kaniti."""
+    nodes = []
+    try:
+        _tree_nodes(root, None, nodes)
+    except:
+        return None
+    if len(nodes) < 4:
+        return None
+    par = {}
+    for nm, p in nodes:
+        if nm.lower() not in par:
+            par[nm.lower()] = p
+
+    def nearest_board(nm):
+        cur = par.get(nm.lower())
+        d = 0
+        while cur is not None and d < 24:
+            lc = str(cur).lower()
+            if 'board' in lc or lc.endswith('panel'):
+                return str(cur)
+            cur = par.get(lc)
+            d += 1
+        return None
+
+    idn = pwdn = srvn = chn = None
+    for nm, _p in nodes:
+        ln = nm.lower()
+        if idn is None and 'editline' in ln and ('id' in ln or 'user' in ln):
+            idn = nm
+        elif pwdn is None and 'editline' in ln and ('pwd' in ln or 'pass' in ln):
+            pwdn = nm
+        if srvn is None and ('serverlist' in ln or 'serverlistbox' in ln):
+            srvn = nm
+        if chn is None and 'channellist' in ln:
+            chn = nm
+    if (idn is None and pwdn is None) or (srvn is None and chn is None):
+        return None
+    lb = nearest_board(idn or pwdn)
+    sb = nearest_board(srvn or chn)
+    if lb is None or sb is None:
+        return {'ok': 1, 'same': -1, 'lboard': lb, 'sboard': sb,
+                'not': 'board atasi bulunamadi (agac kuruldu)'}
+    same = 1 if lb.lower() == sb.lower() else 0
+    return {'ok': 1, 'same': same, 'lboard': lb, 'sboard': sb,
+            'not': 'UIScript agaci (eval)'}
+
+def _topo_from_text(txt):
+    """eval basarisizsa ZAYIF kanit: metinde en/yak board adi karsilastirmasi.
+    FARKLI adlar -> 'farkli-board' (kanit 0); AYNI ad -> belirsiz (-1)."""
+    if not txt:
+        return None
+
+    def once(nm):
+        i = txt.find('"' + nm + '"')
+        if i < 0:
+            i = txt.find("'" + nm + "'")
+        return i
+
+    idp = -1
+    for cand in ('idEditLine', 'ID_EditLine', 'id_editline', 'EditLine_ID'):
+        idp = once(cand)
+        if idp >= 0:
+            break
+    if idp < 0:
+        for cand in ('pwdEditLine', 'PwdEditLine', 'pwd_editline'):
+            idp = once(cand)
+            if idp >= 0:
+                break
+    srvp = -1
+    for cand in ('ServerList', 'serverList', 'serverListBox', 'channelList'):
+        srvp = once(cand)
+        if srvp >= 0:
+            break
+    if idp < 0 or srvp < 0:
+        return None
+
+    def near_board(pos):
+        """pos'tan geriye dogru "name" : "X" ciftlerini gez; degerinde
+        board/panel gecen ILK (en yakin) dugum adi. (v5.6-fix: eski rfind
+        tirnak-mantigi ':' gibi cop donduruyordu)"""
+        j = txt.rfind('"name"', 0, pos)
+        gez = 0
+        while j >= 0 and gez < 14:
+            gez += 1
+            # "name" kapanis tirnagi (j+5'te) -> sonraki tirnak cifti deger
+            v1 = txt.find('"', j + 6)
+            if v1 < 0:
+                return None
+            v2 = txt.find('"', v1 + 1)
+            if v2 < 0:
+                return None
+            nm = txt[v1 + 1:v2].strip()
+            ln = nm.lower()
+            if nm and ('board' in ln or ln.endswith('panel')):
+                return nm
+            j = txt.rfind('"name"', 0, j)
+        return None
+
+    lb = near_board(idp)
+    sb = near_board(srvp)
+    if lb is None or sb is None:
+        return None
+    return {'ok': 1, 'same': (0 if lb != sb else -1), 'lboard': lb,
+            'sboard': sb, 'not': 'metin taramasi (ZAYIF kanit)'}
+
+def _uiscript_topology(lits):
+    """KATMAN B-2: UIScript dosyasini pack'ten oku + topolojiyi kur."""
+    if not lits:
+        return {'ok': 0, 'same': -1, 'not': 'uiscript adi bulunamadi'}
+    for lit in lits[:8]:
+        lows = [lit, lit.lower(), lit[0].lower() + lit[1:] if lit else lit]
+        seen = {}
+        for pre in ('', 'root/', 'root/UIScript/', 'UIScript/', 'uiscript/',
+                    'locale/ro/ui/', 'locale_ro/ui/', 'locale/tr/ui/'):
+            for v in lows:
+                c = pre + v
+                if c in seen:
+                    continue
+                seen[c] = 1
+                try:
+                    meth, txt = _pack_read(c)
+                except:
+                    continue
+                if not txt:
+                    continue
+                topo = None
+                d = _eval_uiscript(txt)
+                if d is not None:
+                    topo = _topo_from_tree(d)
+                if topo is None:
+                    topo = _topo_from_text(txt)
+                if topo is not None:
+                    topo['yol'] = '%s (%s)' % (c, str(meth))
+                    return topo
+    return {'ok': 0, 'same': -1, 'not': 'uiscript okunamadi/eval edilemedi'}
+
+def _source_evidence(force=False):
+    """KATMAN B (cache'li - pack okumasi agir, 600sn'de bir tazelenir).
+    Donus: {'open','same','lboard','sboard','kaynak','yol','not'}"""
+    now = time.time()
+    if not force and _SRC_EVID['d'] is not None and now - _SRC_EVID['t'] < 600.0:
+        return _SRC_EVID['d']
+    d = {'open': '?', 'same': -1, 'lboard': None, 'sboard': None,
+         'kaynak': None, 'yol': None, 'not': ''}
+    src = None
+    syol = None
+    for c in _INTROLOGIN_CANDS:
+        try:
+            meth, txt = _pack_read(c)
+        except:
+            continue
+        if txt:
+            src = txt
+            syol = '%s (%s)' % (c, str(meth))
+            break
+    if src:
+        fs = _src_first_screen(src)
+        d['open'] = fs['open']
+        d['kaynak'] = syol
+        d['not'] = 'acici=%s' % (','.join(fs['server_acici'] + fs['login_acici']) or '-')
+        lits = _py_literals(src)
+        lits.sort(key=lambda s: 0 if 'window' in s.lower() else 1)
+        topo = _uiscript_topology(lits)
+        if topo and topo.get('ok'):
+            d['same'] = topo.get('same', -1)
+            d['lboard'] = topo.get('lboard')
+            d['sboard'] = topo.get('sboard')
+            d['yol'] = topo.get('yol')
+    else:
+        d['not'] = "intrologin kaynagi pack'ten okunamadi"
+    _SRC_EVID['t'] = now
+    _SRC_EVID['d'] = d
+    return d
 
 def _is_shown(obj):
     """GERIYE-UYUMLU (v5.5): artik EFEKTIF gorunurluk doner.
@@ -1480,7 +1929,10 @@ def _auto_board_followup(log, srv, ch, ok):
 
 def _detect_matrix(pw):
     """Login/server ekranini TIP (kullanici tanimi) + M kodu (teknik katman)
-    ile siniflandirir. Donen: {'tip', 'code', 'label', 'flags', 'sig'}.
+    ile siniflandirir. Donen: {'tip', 'code', 'label', 'flags', 'sig',
+    'kanit', 'guven'}.
+    v5.6 KANIT-TABANLI: TIP2a/b YALNIZCA UIScript ayni-board kanitiyla;
+    TIP1/M1 board bayragi veya kaynak Open() kanitiyla; kanit yoksa TIP2x.
     TIP tanimlari (kullanici istegi, oturum 24):
       TIP1  : server secme ekrani AYRI + OK butonu VAR (login ekrani ayri gelir)
       TIP1n : server secme ekrani AYRI, OK butonu YOK (otomatik gecis)
@@ -1533,7 +1985,7 @@ def _detect_matrix(pw):
             pin += 1
         if 'guard' in la or 'otp' in la or la.endswith('code'):
             guard += 1
-    # --- v5.5: EFEKTIF gorunurluk + BOARD ILISKISI (MATRIS-FIX)
+    # --- KATMAN C: EFEKTIF gorunurluk (yardimci kanit - v5.6'da -1=belirsiz)
     # v5.4 burada yalnizca obj.IsShow() (KENDI bayragi) okuyordu: gizli login
     # board'unun cocuklari 'gorunur' saniyor ve TIP2a diye cikiyordu.
     v_sl = _is_shown(sl) if sl is not None else 0
@@ -1561,7 +2013,7 @@ def _detect_matrix(pw):
             el_eff = _eff_visible(els[0][1])
         except:
             el_eff = -1
-    # BOARD ILISKISI: serverList ile id editline ayni agacta mi? (v5.5)
+    # BOARD ILISKISI: serverList ile id editline ayni agacta mi? (KATMAN C)
     ayri = -1
     if sl is not None and els:
         try:
@@ -1581,6 +2033,20 @@ def _detect_matrix(pw):
     server_aktif = vis_list
     unk_vis = (not vis_list) and ((sl is not None and v_sl == -1) or
                                   (rl is not None and v_rl == -1))
+    # --- KATMAN A: BOARD BAYRAKLARI (v5.6 - Hide cocuklara yayilmaz; BOARD'in
+    # KENDI bayragi dogru yertutucu, parent zinciri GEREKMEZ)
+    try:
+        boards = _scan_boards(pw)
+        verdict = _board_verdict(boards)
+    except:
+        boards = {'server': [], 'login': [], 'diger': []}
+        verdict = '?'
+    # --- KATMAN B: KAYNAK KANITI (client'in KENDI intrologin/UIScript'i)
+    try:
+        se = _source_evidence()
+    except:
+        se = {'open': '?', 'same': -1, 'lboard': None, 'sboard': None,
+              'kaynak': None, 'yol': None, 'not': 'kaynak okuma hatasi'}
     sig = {'serverList': sl is not None, 'channelList': cl is not None,
            'regionList': rl is not None, 'okButton': ob is not None,
            'channelButton': cb is not None, 'SetChannel': has_setch,
@@ -1592,7 +2058,12 @@ def _detect_matrix(pw):
            'server_aktif': 1 if server_aktif else 0,
            'login_aktif': 1 if vis_els else 0,
            'eff_idEditLine': el_eff, 'offscreen_els': n_els_off,
-           'ayri_board': ayri}
+           'ayri_board': ayri,
+           'board_server': ', '.join('%s=%s' % (a, f) for a, f in boards.get('server', [])),
+           'board_login': ', '.join('%s=%s' % (a, f) for a, f in boards.get('login', [])),
+           'ekran_bayragi': verdict,
+           'kaynak_open': se.get('open', '?'),
+           'topoloji': {1: 'ayni-board', 0: 'farkli-board'}.get(se.get('same', -1), 'belirsiz')}
     flags = []
     if rl is not None:
         rcnt = 0
@@ -1614,6 +2085,35 @@ def _detect_matrix(pw):
         flags.append('ayri-board(TIP1-kaniti)')
     if n_els_off > 0:
         flags.append('editline-ekrandisi')
+    if verdict == 'server':
+        flags.append('kanit:server-board-acik')
+    elif verdict == 'login':
+        flags.append('kanit:login-board-acik')
+    elif verdict == 'both':
+        flags.append('kanit:katmanli-board-deseni')
+    if se.get('same') == 1:
+        flags.append('kanit:UIScript-ayni-board')
+    elif se.get('same') == 0:
+        flags.append('kanit:UIScript-farkli-board')
+    # --- KANIT raporu (detect ciktisinda gosterilir)
+    kanit = []
+    if verdict != '?':
+        kanit.append('KATMAN A board-bayragi: ekran=%s [server: %s | login: %s]' %
+                     (verdict, sig['board_server'] or '-', sig['board_login'] or '-'))
+    if se.get('kaynak'):
+        kanit.append('KATMAN B kaynak: %s -> Open() ilk-ekran=%s (%s)' %
+                     (se['kaynak'], se.get('open'), se.get('not', '')))
+    if se.get('yol'):
+        kanit.append('KATMAN B topoloji: %s -> %s (login-board=%s, server-board=%s)' %
+                     (se['yol'], sig['topoloji'], se.get('lboard'), se.get('sboard')))
+    if not kanit:
+        kanit.append('KANIT YOK: board bayragi + kaynak okunamadi -> guvenli TIP2x')
+    if se.get('same') in (0, 1) or verdict in ('server', 'login'):
+        guven = 'YUKSEK'
+    elif se.get('open') in ('server', 'login') or verdict in ('both', 'l-off', 's-off'):
+        guven = 'ORTA'
+    else:
+        guven = 'DUSUK'
     # --- TEKNIK M kodu (RESEARCH.md 5 mimarisi - eski auto uyumlulugu)
     if has_al or cont:
         code = 'M4'
@@ -1627,73 +2127,103 @@ def _detect_matrix(pw):
         code = 'M3'
     else:
         code = '?'
-    # --- TIP kodu (kullanici katmani - v5.5: EFEKTIF gorunurluk + board kaniti)
-    # KURAL: EKRANDA NE AKTIFSE O EKRANDIR.
-    #   server widget'lari EFEKTIF gorunur + login alanlari da gorunur -> TIP2
-    #   server widget'lari EFEKTIF gorunur + login alanlari GIZLI kanitli -> TIP1
-    #   login alanlari gorunur + server widget'lari gizli -> M1 (login once)
-    #   hicbiri kanitlanamadi -> TIP2x (auto iki-fazli adaptif yolu)
+    # --- TIP kodu (v5.6 KANIT-TABANLI KARAR AGACI)
+    # v5.4/v5.5 SAHA HATASI: kanit yokken 'ikisi de gorunuyor' -> TIP2a denirdi.
+    # v5.6 KURALI:
+    #   1) UIScript topolojisi AYNI board diyorsa -> TIP2a/b (kesin kanit)
+    #   2) UIScript FARKLI board diyorsa -> SIRALI ekranlar; sirayi board
+    #      bayragi / kaynak Open() belirler -> TIP1/TIP1n veya M1
+    #   3) Topoloji yoksa board bayragi karar verir ('both' -> kaynak)
+    #   4) Hicbir kanit yoksa TIP2x (iki-fazli adaptif auto - GUVENLI)
+    #      Kesin TIP2a/BILINMEDEN asla yazilmaz (saha hatasi bir daha yasamaz)
+    same_topo = se.get('same', -1)
+    ok_on = (ob is not None) and (v_ok != 0)
+    tip = None
+    label = ''
     if code == 'M4':
         tip = 'M4'
         label = 'COKLU-HESAP container (id_editline_s + autoLogin(index) - reign2/merlis tarzi)'
     elif code == 'M2':
         tip = 'M2'
         label = 'Marty gomulu (server listesi YOK, CH butonlari, OK yok, login+CH birlesik)'
-    elif server_aktif and vis_els:
-        # iki grup da EFEKTIF gorunuyor -> GERCEK birlesik ekran (TIP2)
-        if third_t or len(els) >= 3:
-            tip = 'TIP2b'
-            label = 'BIRLESIK ekran: server secme + k.adı + sifre + id (3 alan, ayni ekranda)'
+    elif same_topo == 1:
+        # KESIN KANIT: listbox + login alanlari AYNI board'da -> birlesik ekran
+        tip = 'TIP2b' if (third_t or len(els) >= 3) else 'TIP2a'
+        label = 'BIRLESIK ekran (KANIT: UIScript ayni-board: %s)' % \
+                (se.get('sboard') or se.get('lboard') or '?')
+    elif same_topo == 0:
+        # KESIN KANIT: FARKLI boardlar -> SIRALI ekranlar; sirayi belirle
+        ekran = None
+        if verdict in ('server', 'l-off'):
+            ekran = 'server'
+        elif verdict in ('login', 's-off'):
+            ekran = 'login'
+        elif se.get('open') == 'server':
+            ekran = 'server'
+        elif se.get('open') == 'login':
+            ekran = 'login'
+        if ekran == 'server':
+            tip = 'TIP1' if ok_on else 'TIP1n'
+            label = 'Server secme ekrani AYRI + %s (KANIT: farkli boardlar %s/%s + %s)' % \
+                    ('OK VAR' if ok_on else 'OK YOK', se.get('lboard'), se.get('sboard'),
+                     ('board bayragi=%s' % verdict) if verdict != '?' else
+                     ('kaynak Open()=%s' % se.get('open')))
         else:
-            tip = 'TIP2a'
-            label = 'BIRLESIK ekran: server secme + k.adı + sifre (2 alan, ayni ekranda)'
-    elif server_aktif and (el_gizli or len(els) == 0):
-        # server ekrani AKTIF ama login alanlari GIZLI (kanitli) veya hic yok
-        # -> AYRI ekranlar: once server sec + OK, login ekrani SONRA gelir
-        if ob is not None and v_ok != 0:
-            tip = 'TIP1'
-            label = 'Server secme ekrani AYRI + OK VAR (login ekrani OK sonrasi gelir) [v5.5 kanit: %s]' % \
-                    ('parent-zinciri' if el_eff == 0 else
-                     ('ayri-board' if ayri == 1 else 'ekrandisi/agacta-yok'))
-        else:
-            tip = 'TIP1n'
-            label = 'Server secme ekrani AYRI, OK YOK (otomatik gecis / CH butonlari)'
-    elif server_aktif and el_belirsiz:
-        # server ekrani aktif, login alanlarinin durumu kanitlanamadi
-        if ayri == 0:
-            if third_t or len(els) >= 3:
-                tip = 'TIP2b'
-                label = 'BIRLESIK ekran (ayni-board kaniti) - 3 alan'
-            else:
-                tip = 'TIP2a'
-                label = 'BIRLESIK ekran (ayni-board kaniti) - 2 alan'
-        elif ayri == 1:
-            if ob is not None and v_ok != 0:
-                tip = 'TIP1'
-                label = 'Server secme ekrani AYRI + OK VAR (ayri-board kaniti)'
-            else:
-                tip = 'TIP1n'
-                label = 'Server secme ekrani AYRI, OK YOK (ayri-board kaniti)'
+            tip = 'M1' if server_var else 'M3'
+            label = 'Login ONCE akisi (KANIT: farkli boardlar %s/%s, login board aktif)' % \
+                    (se.get('lboard'), se.get('sboard'))
+    elif verdict == 'server' or verdict == 'l-off':
+        # BOARD BAYRAGI: server board ACIK (login board kapali/okunamadi)
+        tip = 'TIP1' if ok_on else 'TIP1n'
+        label = 'Server secme ekrani AYRI + %s (KANIT: board bayragi=%s; server=%s)' % \
+                ('OK VAR' if ok_on else 'OK YOK', verdict, sig['board_server'] or '-')
+    elif verdict == 'login' or verdict == 's-off':
+        tip = 'M1' if server_var else 'M3'
+        label = 'Login ekrani AKTIF (KANIT: board bayragi=%s; login=%s)' % \
+                (verdict, sig['board_login'] or '-')
+    elif verdict == 'both':
+        # KATMANLI KAPAK DESENI: iki board da acik - kaynak karari beklenir
+        if se.get('open') == 'server':
+            tip = 'TIP1' if ok_on else 'TIP1n'
+            label = 'Server ONCE (KANIT: kaynak Open()=server + katmanli board deseni)'
+        elif se.get('open') == 'login':
+            tip = 'M1'
+            label = 'Login ONCE (KANIT: kaynak Open()=login + katmanli board deseni)'
         else:
             tip = 'TIP2x'
-            label = 'Belirsiz: auto iki-fazli deneyecek (once TIP2 yolu, ilerleme yoksa TIP1 yolu)'
-    elif vis_els and server_var:
-        # login ekrani AKTIF, server widget'lari gizli -> resmi akis (login once)
-        tip = 'M1'
-        label = 'Resmi 2014 standart (login ONCE; serverboard baglantidan SONRA acilir - gizli katman)'
-    elif vis_els:
-        tip = 'M3'
-        label = 'Ozel/eski katman (UI editline var, listbox yok - login paket yolu yedekli)'
-    elif server_var and len(els) == 0:
-        tip = 'TIP1n'
-        label = 'Server ekrani var, login alanlari agacta YOK (OK/baglanti sonrasi olusur)'
-    elif server_var:
-        tip = 'TIP2x'
-        label = 'Belirsiz (gorunurluk olunamadi): auto iki-fazli deneyecek - teyit: uiprobe'
+            label = 'Belirsiz (boardlar katmanli, kaynak okunamadi) - iki-fazli adaptif auto'
     else:
-        tip = '?'
-        label = 'Bilinmiyor - uiprobe ciktisini gonder'
-    return {'tip': tip, 'code': code, 'label': label, 'flags': flags, 'sig': sig}
+        # HICBIR YENI KANIT YOK -> ESKI KANITLAR (yalnizca GIZLI-kanit TIP1 der;
+        # 'ikisi de gorunuyor' ASLA kesin TIP2a demez -> TIP2x guvenli yol)
+        if server_aktif and el_gizli:
+            tip = 'TIP1' if ok_on else 'TIP1n'
+            label = 'Server ekrani aktif, login alanlari GIZLI-kanitli (%s)' % \
+                    ('parent-zinciri' if el_eff == 0 else
+                     ('ayri-board' if ayri == 1 else 'ekrandisi/agacta-yok'))
+        elif server_aktif and vis_els:
+            tip = 'TIP2x'
+            label = 'Belirsiz: iki grup da gorunor AMA topoloji/bayrak kaniti YOK - ' \
+                    'iki-fazli auto (TIP2a KESIN DEGIL - v5.4/v5.5 saha hatasi kapanmistir)'
+        elif vis_els and server_var:
+            tip = 'M1'
+            label = 'Login ekrani aktif, server widget gizli (resmi 2014 akisi)'
+        elif vis_els:
+            tip = 'M3'
+            label = 'Ozel/eski katman (UI editline var, listbox yok - login paket yolu yedekli)'
+        elif server_var and len(els) == 0:
+            tip = 'TIP1n'
+            label = 'Server ekrani var, login alanlari agacta YOK (OK/baglanti sonrasi olusur)'
+        elif server_var:
+            tip = 'TIP2x'
+            label = 'Belirsiz (gorunurluk olunamadi): iki-fazli adaptif auto - teyit: uiprobe'
+        else:
+            tip = '?'
+            label = 'Bilinmiyor - uiprobe ciktisini gonder'
+    if tip is None:
+        tip = 'TIP2x'
+        label = 'Belirsiz (karar agaci bos) - iki-fazli adaptif auto'
+    return {'tip': tip, 'code': code, 'label': label, 'flags': flags, 'sig': sig,
+            'kanit': kanit, 'guven': guven}
 
 def matrix():
     """Login/server ekraninin mimarisini TIP + M etiketiyle raporlar
@@ -1713,8 +2243,12 @@ def matrix():
         _MATRIX['t'] = time.time()
         lines.append('TIP    : %s' % d['tip'])
         lines.append('MATRIS : %s - %s' % (d['code'], d['label']))
+        lines.append('GUVEN  : %s (v5.6 kanit-tabanli: TIP2a yalnizca ayni-board kanitiyla)' % d.get('guven', '?'))
         if d['flags']:
             lines.append('BAYRAKLAR: %s' % ', '.join(d['flags']))
+        lines.append('--- KANIT (v5.6 katmanlari) ---')
+        for k in d.get('kanit', []):
+            lines.append('  %s' % k)
         lines.append('--- SINYALLER (varlik + gorunurluk) ---')
         for k in sorted(d['sig'].keys()):
             lines.append('  %-16s: %s' % (k, d['sig'][k]))
@@ -1775,8 +2309,10 @@ def matrix():
             lines.append('  auto <id> <pwd> - algila + uygula; detay: uiprobe')
         lines.append('TEK KOMUT COZUM: auto <id> <pwd> [3.alan]')
         lines.append('NOT: tespit SU ANKI ekrana gore - matrix komutunu acilista ILK ekranda calistir')
-        lines.append('v5.5: gorunurluk EFEKTIF olculur (parent zinciri) + board iliskisi -')
-        lines.append('      gizli login board’u artik TIP2 sanilMAZ (saha hatasi duzeltildi)')
+        lines.append('v5.6: TIP2a artik YALNIZCA UIScript ayni-board kanitiyla yazilir -')
+        lines.append('      board bayragi + kaynak Open() kanitsizsa guvenli TIP2x (iki-fazli auto).')
+        lines.append('      v5.5 kok-nedeni: parent-zinciri kurulamayan clientta gorunurluk')
+        lines.append('      1 (gorunur) donuyordu; artik -1 (bilinmiyor) + KATMAN A/B kanitlari.')
         _write('matrix', '\n'.join(lines) + '\n')
     except Exception, e:
         _write('matrix', 'HATA ' + _fmt_error(e) + '\n')
@@ -1808,11 +2344,37 @@ def _auto_flush():
         pass
 
 def _auto_login_board_visible():
-    """Login ekrani AKTIF mi? (EFEKTIF gorunurluk - v5.5)
-    Donus: (durum, n_vis, detay) - durum: 1=aktif 0=aktif-degil -1=bilinmiyor"""
+    """Login ekrani AKTIF mi? (v5.6: ONCE BOARD BAYRAGI - KATMAN A)
+    Hide() cocuklara yayilmadigi icin editline gorunurlugu YALNIS bilgi verir;
+    login-board'un KENDI bayragi dogru yertutucudur (parent zinciri gerekmez).
+    Donus: (durum, n, detay)
+      durum: 1=aktif  0=aktif-degil  -1=bilinmiyor  2=kapak-deseni(ikisi de acik)
+    durum 2 (katmanli kapak): board'lar gizlenmeden ust uste bindirilen
+    fileslarda gorulur - tick 8sn yedek bekleyip yine de login atar."""
     pw = _pw_by_type('LoginWindow')
     if pw is None:
         return 0, 0, 'LoginWindow yok (sahne=%s)' % _scene_name()
+    try:
+        boards = _scan_boards(pw)
+    except:
+        boards = {'server': [], 'login': [], 'diger': []}
+    l = boards.get('login', []) or []
+    s = boards.get('server', []) or []
+    l_kn = any(f != -1 for _a, f in l)
+    l_on = any(f == 1 for _a, f in l)
+    s_kn = any(f != -1 for _a, f in s)
+    s_on = any(f == 1 for _a, f in s)
+    if l_kn and s_kn:
+        if l_on and not s_on:
+            return 1, -1, 'login board ACIK + server board KAPALI (ham bayrak)'
+        if l_on and s_on:
+            return 2, -1, 'kapak-deseni: iki board da ACIK (8sn yedek beklenecek)'
+        return 0, 0, 'login board KAPALI (ham bayrak)'
+    if l_kn:
+        if l_on:
+            return 1, -1, 'login board ACIK (ham bayrak)'
+        return 0, 0, 'login board KAPALI (ham bayrak)'
+    # board bayragi yok -> eski yol: efektif gorunurluk (yalnizca kesin 1 sayilir)
     try:
         id_t, pwd_t, third_t, els = _classify_editlines(pw)
     except:
@@ -1872,7 +2434,7 @@ def _auto_tick():
             return
         faz = _AUTO['faz']
         if faz in (1, 3):
-            # TIP1: login ekrani AKTIF olunca login at (EFEKTIF gorunurluk)
+            # TIP1: login ekrani AKTIF olunca login at (v5.6: ONCE board bayragi)
             st, n, det = _auto_login_board_visible()
             if st == 1:
                 if faz == 3:
@@ -1886,6 +2448,21 @@ def _auto_tick():
                     _auto_live('login hatasi: %s' % _fmt_error(e1))
                 _AUTO['faz'] = 9
                 _AUTO['deadline'] = now + 30.0
+            elif st == 2:
+                # v5.6 KAPAK-DESENI: board'lar gizlenmiyor (ust uste biniyor);
+                # OK sonrasi 8sn yedek: login atilir (SetText/CallEvent guvenli)
+                if not _AUTO.get('kapak_t0'):
+                    _AUTO['kapak_t0'] = now
+                    _auto_live('kapak-deseni algilandi (%s) - 8sn yedek bekleniyor' % det)
+                if now - _AUTO['kapak_t0'] >= 8.0:
+                    _auto_live('YEDEK login atiliyor (kapak-deseni: OK basildi, alanlar arkada)')
+                    try:
+                        login(_AUTO['user'], _AUTO['pwd'], _AUTO['third'] or None)
+                        _auto_live('login atildi (yedek) - sonuc: waitfor SelectCharacterWindow 30')
+                    except Exception, e5:
+                        _auto_live('login hatasi: %s' % _fmt_error(e5))
+                    _AUTO['faz'] = 9
+                    _AUTO['deadline'] = now + 30.0
             elif _LOGIN_FAIL_T['t'] > _AUTO['t0'] and faz == 3:
                 _auto_live('LOGIN_FAILURE (%s) - login sunucuya ulasti, akis tamam sayilir' %
                            _LOGIN_FAIL_T['code'])
@@ -1901,14 +2478,15 @@ def _auto_tick():
                 _AUTO['faz'] = 9
                 _AUTO['deadline'] = now + 25.0
         elif faz == 4:
-            # M1: login sonrasi serverboard acildi mi?
+            # M1: login sonrasi serverboard acildi mi? (v5.6: board bayragi once)
             try:
                 pw = _pw_by_type('LoginWindow')
                 d2 = _detect_matrix(pw)
             except:
                 d2 = {'tip': '?', 'sig': {}}
             s2 = d2.get('sig', {})
-            if s2.get('vis_serverList') == 1 or d2.get('tip') in ('TIP1', 'TIP1n'):
+            if s2.get('ekran_bayragi') == 'server' or s2.get('vis_serverList') == 1 or \
+                    d2.get('tip') in ('TIP1', 'TIP1n'):
                 ok_auto = _AUTO['ok']
                 if ok_auto is None:
                     ok_auto = 1 if s2.get('okButton') else 0
@@ -1954,7 +2532,7 @@ def auto(user, pwd, third=None, srv=0, ch=0, ok=None):
         _AUTO.update({'on': 0, 'tip': '', 'user': user, 'pwd': pwd, 'third': third,
                       'srv': int(srv), 'ch': int(ch), 'ok': ok,
                       't0': time.time(), 't_faz': 0.0, 'deadline': 0.0,
-                      'faz': 0, 'log': []})
+                      'faz': 0, 'log': [], 'kapak_t0': 0.0})
         log = ['SCENE=%s' % _scene_name()]
         pw = _pw_by_type('LoginWindow')
         d = _detect_matrix(pw)
@@ -1962,6 +2540,7 @@ def auto(user, pwd, third=None, srv=0, ch=0, ok=None):
         _MATRIX['tip'] = tip; _MATRIX['code'] = code; _MATRIX['label'] = d['label']
         _MATRIX['flags'] = list(d['flags']); _MATRIX['t'] = time.time()
         log.append('TIP: %s | MATRIS: %s - %s' % (tip, code, d['label']))
+        log.append('GUVEN: %s | KANIT: %s' % (d.get('guven', '?'), '; '.join(d.get('kanit', []))))
         if d['flags']:
             log.append('BAYRAKLAR: %s' % ', '.join(d['flags']))
         # kimlik kaydi (login/relogin ayni login.dat'i kullanir)
@@ -2208,27 +2787,18 @@ def _relogin_tick():
                     _relog_live('selserver hatasi: %s' % _fmt_error(e3))
                 _RELOGIN['step'] = 4
                 _RELOGIN['deadline'] = now + 20.0
-        elif st == 4:  # login uygula (v5.5: TIP1'de login ekrani gorunur olmali)
+        elif st == 4:  # login uygula (v5.6: board bayragi + ef gorunurluk)
             # TIP1 fileslarda OK sonrasi login ekranina gecis gerekir;
             # ana thread dongusu donene kadar ekran gecisi ISLENMEZ -> burada
-            # her nabizde EFEKTIF gorunurluk olculur, dustugu an login atilir.
-            _pw4 = _pw_by_type('LoginWindow')
-            _nvis4 = -1
-            if _pw4 is not None:
-                try:
-                    _i4, _p4, _t4, _els4 = _classify_editlines(_pw4)
-                    _nvis4 = 0
-                    for _a4, _v4 in _els4:
-                        if _eff_visible(_v4) == 1:
-                            _nvis4 += 1
-                except:
-                    _nvis4 = -1
-            if _nvis4 == 0:
-                # login ekrani henuz dussmedi - 6sn yedek bekle (zincir
-                # kurulamayan clientlarda sonsuza kadar takilmamak icin)
+            # her nabizde _auto_login_board_visible olculur (KATMAN A board
+            # bayragi once - v5.6), dustugu an login atilir.
+            _st4v, _n4, _d4 = _auto_login_board_visible()
+            if _st4v in (0, 2):
+                # login ekrani henuz dussmedi (0) veya kapak-deseni (2) -
+                # 6sn yedek bekle (zincir kurulamayan clientlarda takilmamak icin)
                 if not _RELOGIN.get('st4_wait'):
                     _RELOGIN['st4_wait'] = now
-                    _relog_live('login ekrani bekleniyor (TIP1: OK sonrasi gecis, max 6sn)')
+                    _relog_live('login ekrani bekleniyor (TIP1: OK sonrasi gecis, max 6sn) [%s]' % _d4)
                 if now - _RELOGIN['st4_wait'] < 6.0:
                     return
                 _relog_live('login ekrani 6sn icinde gorunmedi - yine de deneniyor')
@@ -8689,6 +9259,12 @@ except:
 
 _write('pylib_load',
        'PLUSMAXGOD_PyScript v%s yuklendi (ANA THREAD)' % PYLIB_VERSION + chr(10) +
+       'v5.6: MATRIS v6 KANIT-TABANLI (2. saha raporu: v5.5 de TIP2a dedi, TIP1 dogruydu)' + chr(10) +
+       '  KOK NEDEN: v5.5 parent-zinciri (parentWindow/GetParent) clientta yoktu +' + chr(10) +
+       '  zincir-kurulamazsa gorunur varsayani. ARTIK: -1 bilinmiyor + KATMAN A' + chr(10) +
+       '  (board attr ham bayragi: serverBoard=1/connectBoard=0) + KATMAN B' + chr(10) +
+       '  (packten intrologin Open() + UIScript board topolojisi - ground truth).' + chr(10) +
+       '  TIP2a yalnizca ayni-board kanitiyla; kanitsiz TIP2x (iki-fazli adaptif).' + chr(10) +
        'v5.5: MATRIS-FIX (saha kaniti: TIP2a yanlis tespit - gercek TIP1\'di)' + chr(10) +
        '  KOK NEDEN 1: _is_shown yalnizca KENDI IsShow bayragini okuyordu;' + chr(10) +
        '  gizli board cocuklari gorunur saniyordu -> ARTIK EFEKTIF gorunurluk' + chr(10) +
