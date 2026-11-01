@@ -1,7 +1,25 @@
 # -*- coding: utf-8 -*-
 """
 ===========================================================================
- PLUSMAXGOD_PyScript.py - MaxExecutor Ana-Thread Komut Kutuphanesi (v5.1)
+ PLUSMAXGOD_PyScript.py - MaxExecutor Ana-Thread Komut Kutuphanesi (v5.4)
+ v5.4 DEGISIKLIKLER (oturum 24 - kullanici tanimli TIP matrisi):
+   * Kullanici iki temel tip tanimladi:
+       TIP1 : server secme ekrani AYRI bir ekran + OK butonu VAR
+              (k.adı/sifre login ekrani ayri gelir)
+       TIP2 : server secme + k.adı + sifre AYNI ekranda (TIP2a, 2 alan)
+              veya + id (TIP2b, 3 alan)
+   * _detect_matrix artik GORUNURLUK de olcer (ui.Window.IsShow):
+       - editline gorunur + serverList gorunur  -> TIP2a/TIP2b (birlesik)
+       - serverList gorunur, editline gizli/yok -> TIP1 (OK var) / TIP1n (OK yok)
+       - editline gorunur, serverList gizli katman -> M1 resmi (login ONCE)
+   * matrix() raporuna 'MATRIS OLASILIKLARI' tablosu eklendi: TUM ihtimaller
+     (TIP1/TIP1n/TIP2a/TIP2b/M1/M2/M3/M4/+M5/BOLGE) listelenir, bu serverda
+     eslesen [X] ile isaretlenir.
+   * auto() akisi tipe gore siralanir:
+       TIP1/TIP1n : selserver(ok) -> bekle -> login
+       TIP2x      : selserver(ok=0, sadece sec) -> login (connect butonu)
+       M1 resmi   : login -> bekle (board acilir) -> selserver(ok)
+   * detect = matrix takma adi (DLL 'detect' komutu da ayni isi yapar).
  v5.1 DEGISIKLIKLER:
    * oto-pot (hp/mp otomatik iksir basma + oto-pot esyasi izlemesi)
      ozelligi ve ilgili tum komutlar TAMAMEN KALDIRILDI (kullanici istegi).
@@ -338,7 +356,7 @@ DUMP_DIR   = r'C:\MaxExec\dump'   # v4.0: py dump + PLUSQuest_live buraya
 # SURUM ISARETI - DLL v1.8 bunu okur (FIX-19). PLUSMAXGOD_PyScript.py
 # degistirmeden bu satiri silme/degistirme! Eski pylib (v3.x) major 3
 # oldugu icin DLL v1.8 acilista KOSKOCA uyar basar.
-PYLIB_VERSION = '5.3'
+PYLIB_VERSION = '5.4'
 
 RACE_TABLE = {
     0: ('Warrior', 'E'), 1: ('Ninja', 'K'), 2: ('Sura', 'E'), 3: ('Shaman', 'K'),
@@ -800,6 +818,15 @@ def _child_by_names(pw, names):
         pass
     return None, None, None
 
+def _is_shown(obj):
+    """Eleman gorunurlugu (v5.4 TIP tespiti icin): 1=gorunur, 0=gizli,
+    -1=bilinmiyor (IsShow metodu yok/patladi). Resmi 2014 intrologin'de
+    serverboard gizli katmandir - IsShow sayesinde TIP2 ile M1 ayrt edilir."""
+    try:
+        return 1 if obj.IsShow() else 0
+    except:
+        return -1
+
 def _scan_editlines(pw):
     """LoginWindow'daki TUM editline'lar: [(attr, nesne), ...] (GetText olanlar)."""
     found = []
@@ -1226,34 +1253,80 @@ def uiprobe():
         else:
             lines.append('  TEK-SERVER modu: selserver 0 <ch> ok=0 dene, sonra login <id> <pwd> [3.alan]')
         lines.append('  TEK KOMUT: auto <id> <pwd> [3.alan] (matrisi algilar, dogru akisi uygular)')
-        lines.append('  ETIKET: matrix (M1-M5 siniflandirma raporu) | gizemli alanlarda: uiprobe ciktisini sunucu degisince tekrar al')
+        # --- v5.4: TIP etiketi (kullanici tanimi: TIP1/TIP2)
+        try:
+            _d = _detect_matrix(pw)
+            lines.append('  TIP ETIKETI: %s | MATRIS: %s (rapor: matrix veya detect)' %
+                         (_d['tip'], _d['code']))
+        except:
+            pass
+        lines.append('  ETIKET: matrix (TIP+M siniflandirma raporu) | gizemli alanlarda: uiprobe ciktisini sunucu degisince tekrar al')
         _write('uiprobe', '\n'.join(lines) + '\n')
     except Exception, e:
         _write('uiprobe', 'HATA ' + _fmt_error(e) + '\n')
 
 # ---------------------------------------------------------------------------
-# 3b-2) MATRIX + AUTO (v5.3 YENI - kullanici istegi: "serverin hangi yapi
-#       matrisinde oldugunu algilayip soyleyebilir mi? hem algilayip hem ona
-#       gore komut gonderebilir mi?")
-#   matrix() : login ekranini M1..M5 etiketiyle siniflandirir + sinyal tablosu
-#              + onerilen komut akisi -> results\last_matrix.txt
-#   auto()   : matrisi algilar ve DOGRU akisi TEK KOMUTLA uygular
-#              (server secimi gerekiyorsa yapar, sonra login) -> last_auto.txt
-# Siniflandirma kurallari RESEARCH.md'deki 5 mimariyle birebir:
+# 3b-2) MATRIX + AUTO (v5.3, v5.4 TIP katmani - kullanici istegi: "serverin
+#       hangi yapi matrisinde oldugunu algilayip soyleyebilir mi? hem algilayip
+#       hem de ona gore komut gonderebilir mi?" + oturum 24 TIP tanimi:
+#       "tip1 swde once server secme ekrani var ve ok butonu var, tip2 serverde
+#       once server secme ekrani + k.adı + sifre [+ id] ayni ekranda")
+#   matrix() : ekranı TIP + M etiketiyle siniflandirir + TUM olasilik tablosu
+#              + sinyaller + onerilen akis -> results\last_matrix.txt
+#              TIP1 server-secme-ayri+OK | TIP1n OK'suz | TIP2a/b birlesik ekran
+#              | M1 resmi (login once) | M2 Marty | M3 ozel | M4 coklu-hesap
+#              | +M5 PIN | BOLGE coklu-bolge | ? bilinmiyor
+#   auto()   : matrisi algilar ve TIP'e GORE SIRALANMIS akisi uygular
+#              TIP1: selserver(ok) -> login | TIP2: selserver(ok=0) -> login
+#              M1: login -> board acilir -> selserver(ok) -> last_auto.txt
+#   detect   : matrix() takma adi (DLL 'detect' komutu ayni yeri cagirir)
+# Teknik M kurallari RESEARCH.md'deki 5 mimariyle birebir:
 #   M4 coklu-hesap  : autoLogin() metodu veya id_editline_s/pwd_editlines container
 #   M2 Marty        : serverList YOK + (channelButton dict VEYA pw.SetChannel)
 #   M1 resmi 2014   : serverList + (channelList VEYA OK butonu)
 #   M1v varyant     : serverList var, CH listesi/OK farkli
 #   M3 ozel/eski    : UI editline var ama listbox yok (paket yolu yedek)
 #   +M5 bayragi     : PIN 3. alan (her matrisle birlesebilir - proje-metin)
+# v5.4 ayrimi GORUNURLUKTAN gelir (ui.Window.IsShow): resmi 2014 intrologin'de
+# serverboard GIZLI katmandir (login once); TIP2 birlesik ekranda listbox
+# ACIK gorunur; TIP1'de editline ya yoktur ya da gizlidir.
 # ---------------------------------------------------------------------------
-_MATRIX = {'code': '?', 'label': '', 'flags': [], 't': 0.0}
+_MATRIX = {'tip': '?', 'code': '?', 'label': '', 'flags': [], 't': 0.0}
+
+def _auto_board_followup(log, srv, ch, ok):
+    """Login sonrasi serverboard acildi mi? Acildiysa sec+OK (M1/TIP2x
+    takilma onlemi). Donus: True=board bulundu ve selserver cagrildi."""
+    try:
+        d2 = _detect_matrix(_pw_by_type('LoginWindow'))
+        if d2['sig'].get('vis_serverList') == 1 or d2['tip'] in ('TIP1', 'TIP1n'):
+            ok_auto = ok
+            if ok_auto is None:
+                ok_auto = 1 if d2['sig'].get('okButton') else 0
+            selserver(srv, ch, 1 if ok_auto else 0)
+            log.append('TAKIP: login sonrasi board acildi -> selserver(%d, %d, ok=%s)' %
+                       (int(srv), int(ch), str(bool(ok_auto))))
+            return True
+        return False
+    except Exception, e:
+        log.append('TAKIP hatasi (%s)' % _fmt_error(e))
+        return False
 
 def _detect_matrix(pw):
-    """Login ekranini 5 mimariye siniflandirir. Donen:
-    {'code', 'label', 'flags', 'sig'} - code: M1/M1v/M2/M3/M4/'?'."""
+    """Login/server ekranini TIP (kullanici tanimi) + M kodu (teknik katman)
+    ile siniflandirir. Donen: {'tip', 'code', 'label', 'flags', 'sig'}.
+    TIP tanimlari (kullanici istegi, oturum 24):
+      TIP1  : server secme ekrani AYRI + OK butonu VAR (login ekrani ayri gelir)
+      TIP1n : server secme ekrani AYRI, OK butonu YOK (otomatik gecis)
+      TIP2a : server secme + k.adı + sifre AYNI ekranda (2 alan)
+      TIP2b : server secme + k.adı + sifre + id AYNI ekranda (3 alan)
+      TIP2x : birlesik MUHTEMEL (gorunurluk olunamadi - teyit gerekir)
+      M1    : resmi 2014 - login ONCE ayri ekranda, serverboard SONRA (gizli)
+      M2    : Marty gomulu - server listesi yok, CH butonlari, OK yok
+      M3    : ozel/eski - sadece login alanlari, listbox yok
+      M4    : coklu-hesap container (id_editline_s + autoLogin)
+      '+M5' : PIN/guard 3. alan bayragi | 'BOLGE': coklu bolge (bayrak)"""
     if pw is None:
-        return {'code': '?', 'label': 'LoginWindow yok (login ekraninda degilsin)',
+        return {'tip': '?', 'code': '?', 'label': 'Pencere yok (login ekraninda degilsin)',
                 'flags': ['sahne-yok'], 'sig': {}}
     sn, sl, sy = _child_by_names(pw, _SERVERLIST_NAMES)
     cn, cl, cy = _child_by_names(pw, _CHLIST_NAMES)
@@ -1293,11 +1366,27 @@ def _detect_matrix(pw):
             pin += 1
         if 'guard' in la or 'otp' in la or la.endswith('code'):
             guard += 1
+    # --- v5.4: GORUNURLUK olcumu (TIP1/TIP2/M1 ayrimi buradan gelir)
+    v_sl = _is_shown(sl) if sl is not None else 0
+    v_rl = _is_shown(rl) if rl is not None else 0
+    v_cl = _is_shown(cl) if cl is not None else 0
+    v_ok = _is_shown(ob) if ob is not None else 0
+    n_vis_els = 0
+    for a, v in els:
+        if _is_shown(v) == 1:
+            n_vis_els += 1
+    vis_list = (v_sl == 1) or (v_rl == 1)
+    vis_els = n_vis_els >= 1
+    unk_vis = (not vis_list) and ((sl is not None and v_sl == -1) or
+                                  (rl is not None and v_rl == -1))
     sig = {'serverList': sl is not None, 'channelList': cl is not None,
            'regionList': rl is not None, 'okButton': ob is not None,
            'channelButton': cb is not None, 'SetChannel': has_setch,
            'pw.Connect': has_conn, 'autoLogin': has_al,
-           'container': cont, 'editline': len(els), 'third': len(third_t)}
+           'container': cont, 'editline': len(els), 'third': len(third_t),
+           'vis_serverList': v_sl, 'vis_regionList': v_rl,
+           'vis_channelList': v_cl, 'vis_okButton': v_ok,
+           'vis_editline': n_vis_els}
     flags = []
     if rl is not None:
         rcnt = 0
@@ -1313,40 +1402,89 @@ def _detect_matrix(pw):
         flags.append('guard-code-2FA')
     if cont:
         flags.append('coklu-hesap-container')
+    if unk_vis:
+        flags.append('gorunurluk-belirsiz')
+    # --- TEKNIK M kodu (RESEARCH.md 5 mimarisi - eski auto uyumlulugu)
     if has_al or cont:
-        code = 'M4'; label = 'COKLU-HESAP container (id_editline_s + autoLogin(index) - reign2/merlis tarzi)'
+        code = 'M4'
     elif (cb is not None or has_setch) and sl is None:
-        code = 'M2'; label = 'Marty gomulu (server listesi YOK, CH butonlari, OK yok, login+CH birlesik)'
+        code = 'M2'
     elif sl is not None and (cl is not None or ob is not None):
-        code = 'M1'; label = 'Resmi 2014 standart (serverList+channelList listbox + OK butonu)'
+        code = 'M1'
     elif sl is not None:
-        code = 'M1v'; label = 'Resmi 2014 varyanti (serverList var, CH listesi/OK farkli)'
+        code = 'M1v'
     elif id_t is not None and pwd_t is not None:
-        code = 'M3'; label = 'Ozel/eski katman (UI editline var, listbox yok - login paket yolu yedekli)'
+        code = 'M3'
     else:
-        code = '?'; label = 'Bilinmiyor - uiprobe ciktisini gonder'
-    return {'code': code, 'label': label, 'flags': flags, 'sig': sig}
+        code = '?'
+    # --- TIP kodu (kullanici katmani; TIP'a girmeyenler M kodunu alir)
+    # NOT: TIP2/TIP1 branch'leri M3'ten ONCE gelir - cunku regionList-only
+    # clientlarda code M3'e dusse bile ekran BIRLESIK'tir (TIP2a, oturum 24 testi)
+    if code == 'M4':
+        tip = 'M4'
+        label = 'COKLU-HESAP container (id_editline_s + autoLogin(index) - reign2/merlis tarzi)'
+    elif code == 'M2':
+        tip = 'M2'
+        label = 'Marty gomulu (server listesi YOK, CH butonlari, OK yok, login+CH birlesik)'
+    elif vis_list and vis_els:
+        if third_t or len(els) >= 3:
+            tip = 'TIP2b'
+            label = 'BIRLESIK ekran: server secme + k.adı + sifre + id (3 alan, ayni pencere)'
+        else:
+            tip = 'TIP2a'
+            label = 'BIRLESIK ekran: server secme + k.adı + sifre (2 alan, ayni pencere)'
+    elif vis_list and not vis_els:
+        if ob is not None and v_ok != 0:
+            tip = 'TIP1'
+            label = 'Server secme ekrani AYRI + OK butonu VAR (login ekrani ayri gelir)'
+        else:
+            tip = 'TIP1n'
+            label = 'Server secme ekrani AYRI, OK butonu YOK (otomatik gecis / CH butonlari)'
+    elif code == 'M3':
+        tip = 'M3'
+        label = 'Ozel/eski katman (UI editline var, listbox yok - login paket yolu yedekli)'
+    elif vis_els and (sl is not None or rl is not None):
+        if unk_vis:
+            tip = 'TIP2x'
+            label = 'Muhtemel BIRLESIK ekran veya resmi akis (gorunurluk olunamadi) - teyit: matrix\'i board gorunurken tekrar calistir'
+        else:
+            tip = 'M1'
+            label = 'Resmi 2014 standart (login ONCE; serverboard baglantidan SONRA acilir - gizli katman)'
+    elif sl is not None or rl is not None:
+        if id_t is not None and pwd_t is not None:
+            tip = 'TIP2x'
+            label = 'Muhtemel BIRLESIK ekran (gorunurluk olunamadi) - teyit: matrix\'i board gorunurken tekrar calistir'
+        else:
+            tip = 'TIP1n'
+            label = 'Server secme listesi var, login alani yok (gorunurluk olunamadi)'
+    else:
+        tip = '?'
+        label = 'Bilinmiyor - uiprobe ciktisini gonder'
+    return {'tip': tip, 'code': code, 'label': label, 'flags': flags, 'sig': sig}
 
 def matrix():
-    """Login ekraninin mimarisini M1-M5 etiketiyle raporlar (last_matrix.txt).
-    Sonuc _MATRIX'te de saklanir (auto bu etiketi raporlar)."""
+    """Login/server ekraninin mimarisini TIP + M etiketiyle raporlar
+    (last_matrix.txt). TUM olasiliklar tabloyla listelenir, eslesen [X] ile
+    isaretlenir. Sonuc _MATRIX'te de saklanir (auto/relogin kullanir)."""
     try:
         pw = _pw_by_type('LoginWindow')
         lines = ['SCENE=%s' % _scene_name()]
         if pw is None:
-            lines.append('MATRIS: ? - LoginWindow bulunamadi (login ekraninda degilsin)')
+            lines.append('TIP: ? | MATRIS: ? - LoginWindow bulunamadi (login ekraninda degilsin)')
             lines.append('Not: paket yolu login yine de denenebilir: login <id> <pwd>')
             _write('matrix', '\n'.join(lines) + '\n')
             return
         d = _detect_matrix(pw)
-        _MATRIX['code'] = d['code']; _MATRIX['label'] = d['label']
-        _MATRIX['flags'] = list(d['flags']); _MATRIX['t'] = time.time()
-        lines.append('MATRIS: %s - %s' % (d['code'], d['label']))
+        _MATRIX['tip'] = d['tip']; _MATRIX['code'] = d['code']
+        _MATRIX['label'] = d['label']; _MATRIX['flags'] = list(d['flags'])
+        _MATRIX['t'] = time.time()
+        lines.append('TIP    : %s' % d['tip'])
+        lines.append('MATRIS : %s - %s' % (d['code'], d['label']))
         if d['flags']:
             lines.append('BAYRAKLAR: %s' % ', '.join(d['flags']))
-        lines.append('--- SINYALLER ---')
+        lines.append('--- SINYALLER (varlik + gorunurluk) ---')
         for k in sorted(d['sig'].keys()):
-            lines.append('  %-14s: %s' % (k, d['sig'][k]))
+            lines.append('  %-16s: %s' % (k, d['sig'][k]))
         id_t, pwd_t, third_t, els = _classify_editlines(pw)
         lines.append('--- ALANLAR ---')
         if id_t:
@@ -1356,30 +1494,69 @@ def matrix():
         if third_t:
             lines.append('  3.ALAN: %s  (login <id> <pwd> <3.alan>)' %
                          ', '.join(t[0] for t in third_t[:3]))
-        lines.append('--- ONERILEN AKIS ---')
-        c = d['code']
-        if c in ('M1', 'M1v'):
-            lines.append('  selserver <srv> <ch>  ->  login <id> <pwd> [3.alan]')
-            lines.append('  (OK butonu yoksa: selserver <srv> <ch> 0)')
-        elif c == 'M2':
-            lines.append('  TEK KOMUT: login <id> <pwd> [3.alan]   (server gomulu - CH buton: selserver 0 <ch>)')
-        elif c == 'M3':
+        # --- v5.4: TUM OLASILIKLAR (kullanici: "matris olasiliklarinin hepsini versin")
+        tip = d['tip']; flg = ' '.join(d['flags'])
+        tbl = [
+            ('TIP1',  'server secme ekrani AYRI + OK butonu VAR (login ayri gelir)'),
+            ('TIP1n', 'server secme ekrani AYRI, OK YOK (otomatik gecis)'),
+            ('TIP2a', 'server secme + k.adı + sifre AYNI ekranda (2 alan)'),
+            ('TIP2b', 'server secme + k.adı + sifre + id AYNI ekranda (3 alan)'),
+            ('TIP2x', 'birlesik MUHTEMEL (gorunurluk olunamadi - teyit gerek)'),
+            ('M1',    'resmi 2014: login ONCE, serverboard baglantidan SONRA (gizli katman)'),
+            ('M2',    'Marty gomulu: server listesi yok, CH butonlari, OK yok'),
+            ('M3',    'ozel/eski: sadece login alanlari, listbox yok'),
+            ('M4',    'coklu-hesap container (id_editline_s + autoLogin)'),
+        ]
+        lines.append('--- MATRIS OLASILIKLARI ([X] = bu serverda eslesen) ---')
+        for tcode, tdesc in tbl:
+            mark = '[X]' if tip == tcode else '[ ]'
+            lines.append('  %s %-5s: %s' % (mark, tcode, tdesc))
+        if 'PIN' in flg or 'guard' in flg:
+            lines.append('  [X] +M5  : PIN/guard 3. alan bayragi (her matrisle birlesebilir)')
+        else:
+            lines.append('  [ ] +M5  : PIN/guard 3. alan bayragi (her matrisle birlesebilir)')
+        if any(f.startswith('coklu-bolge') for f in d['flags']):
+            lines.append('  [X] BOLGE: coklu bolge (regionList>1, Romania vb.)')
+        else:
+            lines.append('  [ ] BOLGE: coklu bolge (regionList>1, Romania vb.)')
+        # --- TIP'e gore onerilen akis
+        lines.append('--- ONERILEN AKIS (%s) ---' % tip)
+        if tip in ('TIP1', 'TIP1n'):
+            lines.append('  1) selserver <srv> <ch>          (OK varsa otomatik basilir)')
+            lines.append('  2) login <id> <pwd> [3.alan]     (login ekrani ayri geldiginde)')
+        elif tip in ('TIP2a', 'TIP2b', 'TIP2x'):
+            lines.append('  1) selserver <srv> <ch> 0        (sadece SEC - baglanma login ile)')
+            lines.append('  2) login <id> <pwd> [3.alan]     (ayni ekranda connect)')
+        elif tip == 'M1':
+            lines.append('  1) login <id> <pwd>              (ONCE login - board gizli katmanda)')
+            lines.append('  2) selserver <srv> <ch>          (board acilinca sec + OK)')
+        elif tip == 'M2':
+            lines.append('  TEK KOMUT: login <id> <pwd> [3.alan]  (server gomulu - CH: selserver 0 <ch>)')
+        elif tip == 'M3':
             lines.append('  login <id> <pwd>   (UI + paket yolu otomatik siralanir)')
-        elif c == 'M4':
+        elif tip == 'M4':
             lines.append('  login <id> <pwd> [3.alan]  (client autoLogin(index) sunuyor olabilir)')
         else:
             lines.append('  auto <id> <pwd> - algila + uygula; detay: uiprobe')
         lines.append('TEK KOMUT COZUM: auto <id> <pwd> [3.alan]')
+        lines.append('NOT: tespit SU ANKI ekrana gore - matrix komutunu acilista ILK ekranda calistir')
         _write('matrix', '\n'.join(lines) + '\n')
     except Exception, e:
         _write('matrix', 'HATA ' + _fmt_error(e) + '\n')
 
+# v5.4: takma ad - DLL 'detect' komutu + raw kullanicilar icin ayni islev
+detect = matrix
+
 def auto(user, pwd, third=None, srv=0, ch=0, ok=None):
-    """TEK KOMUT: matrisi algila -> dogru akisi uygula (last_auto.txt).
-    M1/M1v/M3: selserver(srv,ch) + login(user,pwd,third)
-    M2: login(user,pwd,third)  [CH istersen: auto id pwd pin 0 ch]
-    M4: login(user,pwd,third)  [client autoLogin(index) raporlanir]
-    ok=None: OK butonu varsa basilir, yoksa basilmaz (otomatik karar)."""
+    """TEK KOMUT: matrisi algila -> TIP'e gore SIRALANMIS akisi uygula
+    (last_auto.txt). v5.4 akis tablosu:
+      TIP1/TIP1n : selserver(srv,ch,ok) -> bekle -> login(user,pwd,third)
+      TIP2a/b/x  : selserver(srv,ch,ok=0 sadece sec) -> login (connect butonu)
+      M1 resmi   : login(user,pwd,third) -> bekle -> board acildiysa selserver
+      M2         : ch>0 ise selserver(0,ch,0) CH butonu -> login
+      M3/M4/?    : listbox varsa selserver -> login, yoksa sadece login
+    ok=None: OK butonu varsa basilir (TIP1'de), TIP2'de basilMaz (connect
+    login butonunda) - otomatik karar."""
     try:
         user = str(user); pwd = str(pwd)
         if third is not None:
@@ -1387,10 +1564,10 @@ def auto(user, pwd, third=None, srv=0, ch=0, ok=None):
         log = ['SCENE=%s' % _scene_name()]
         pw = _pw_by_type('LoginWindow')
         d = _detect_matrix(pw)
-        code = d['code']
-        _MATRIX['code'] = code; _MATRIX['label'] = d['label']
+        tip = d['tip']; code = d['code']
+        _MATRIX['tip'] = tip; _MATRIX['code'] = code; _MATRIX['label'] = d['label']
         _MATRIX['flags'] = list(d['flags']); _MATRIX['t'] = time.time()
-        log.append('MATRIS: %s - %s' % (code, d['label']))
+        log.append('TIP: %s | MATRIS: %s - %s' % (tip, code, d['label']))
         if d['flags']:
             log.append('BAYRAKLAR: %s' % ', '.join(d['flags']))
         # kimlik kaydi (login/relogin ayni login.dat'i kullanir)
@@ -1406,28 +1583,65 @@ def auto(user, pwd, third=None, srv=0, ch=0, ok=None):
             log.append('UYARI: bu matriste 3. alan isteniyor olabilir (PIN/guard/slot) -')
             log.append('       auto <id> <pwd> <3.alan> ile ver; vermeden de denenir')
         s = d['sig']
-        # --- ADIM 1: server/ch secimi (sadece listbox'li matrislerde)
-        if code in ('M1', 'M1v', 'M3') and s.get('serverList'):
+        ok_has = bool(s.get('okButton'))
+        lstep2 = 'login(user, pwd, third)' if third is not None else 'login(user, pwd)'
+        # --- v5.4 AKIS: TIP'e gore adim sirasi degisir
+        if tip in ('TIP1', 'TIP1n'):
+            # server secme ekrani ONCE gelir: sec + (OK varsa) OK -> login ekrani
             ok_auto = ok
             if ok_auto is None:
-                ok_auto = 1 if s.get('okButton') else 0
-            log.append('ADIM 1: selserver(%d, %d, ok=%s)' % (int(srv), int(ch), str(ok_auto)))
+                ok_auto = 1 if (tip == 'TIP1' or ok_has) else 0
+            log.append('ADIM 1: selserver(%d, %d, ok=%s) [TIP1: once server secme ekranI]' %
+                       (int(srv), int(ch), str(bool(ok_auto))))
             selserver(srv, ch, 1 if ok_auto else 0)
-            time.sleep(0.5)
-        elif code == 'M2' and int(ch) > 0:
-            log.append('ADIM 1: selserver(0, %d, ok=0) [Marty CH butonu]' % int(ch))
-            selserver(0, ch, 0)
-            time.sleep(0.5)
+            time.sleep(1.2)   # OK sonrasi login ekranina gecis suresi
+            log.append('ADIM 2: %s' % lstep2)
+            login(user, pwd, third)
+        elif tip in ('TIP2a', 'TIP2b', 'TIP2x'):
+            # birlesik ekran: SADECE sec (ok=0), baglantI login butonu kurar
+            ok_auto = 0 if ok is None else ok
+            log.append('ADIM 1: selserver(%d, %d, ok=%s) [TIP2: sadece SEC, connect login ile]' %
+                       (int(srv), int(ch), str(bool(ok_auto))))
+            selserver(srv, ch, 1 if ok_auto else 0)
+            time.sleep(0.4)
+            log.append('ADIM 2: %s  [ayni ekranda connect]' % lstep2)
+            login(user, pwd, third)
+            time.sleep(2.0)
+            # TIP2x gercekte resmi akissa: board login sonrasi acilmis olabilir
+            if tip == 'TIP2x':
+                _auto_board_followup(log, srv, ch, ok)
+        elif tip == 'M1':
+            # resmi 2014: login ONCE (board gizli katman), board acilinca sec+OK
+            log.append('ADIM 1: %s  [M1 resmi: once login]' % lstep2)
+            login(user, pwd, third)
+            time.sleep(2.5)   # baglanti + serverboard acilisi
+            if not _auto_board_followup(log, srv, ch, ok):
+                log.append('ADIM 2 atlandi: serverboard acilmadi (login sonucuna bak: lasterr)')
+        elif tip == 'M2':
+            if int(ch) > 0:
+                log.append('ADIM 1: selserver(0, %d, ok=0) [Marty CH butonu]' % int(ch))
+                selserver(0, ch, 0)
+                time.sleep(0.5)
+            else:
+                log.append('ADIM 1: atlandi (M2 - server gomulu, ch verilmedi)')
+            log.append('ADIM 2: %s  [Marty: direkt login]' % lstep2)
+            login(user, pwd, third)
         else:
-            log.append('ADIM 1: atlandi (%s - server secim listesi yok/gerekmiyor)' % code)
-        # --- ADIM 2: login (kendisi uyarlamali: UI -> pw.Connect -> paket)
-        if third is not None:
-            log.append('ADIM 2: login(user, pwd, third)')
-        else:
-            log.append('ADIM 2: login(user, pwd)')
-        login(user, pwd, third)
+            # M3/M4/? - listbox varsa once sec, login her durumda
+            if s.get('serverList'):
+                ok_auto = ok
+                if ok_auto is None:
+                    ok_auto = 1 if ok_has else 0
+                log.append('ADIM 1: selserver(%d, %d, ok=%s) [%s]' %
+                           (int(srv), int(ch), str(bool(ok_auto)), tip))
+                selserver(srv, ch, 1 if ok_auto else 0)
+                time.sleep(0.5)
+            else:
+                log.append('ADIM 1: atlandi (%s - server secim listesi yok/gerekmiyor)' % tip)
+            log.append('ADIM 2: %s' % lstep2)
+            login(user, pwd, third)
         log.append('BITTI: detay -> last_login.txt | kontrol -> waitfor SelectCharacterWindow 30')
-        log.append('Karakter ekrani dusmezse: lasterr (LOGIN_FAILURE kodu yakalanir)')
+        log.append('Karakter ekrani dusmezse: lasterr (LOGIN_FAILURE yakalanir) | akis: last_auto.txt')
         _write('auto', '\n'.join(log) + '\n')
     except Exception, e:
         _write('auto', 'HATA ' + _fmt_error(e) + '\n')

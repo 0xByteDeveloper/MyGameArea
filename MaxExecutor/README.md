@@ -1,6 +1,8 @@
 # MaxExecutor — Ana-Thread Güvenli Python Executor (xgodmod4)
 
-> **v2.8 / pylib v5.3 — MATRIX + AUTO (kullanıcı istegi: "serverin hangi matriste olduğunu algılayıp söyleyebilir mi? hem algılayıp hem ona göre komut gönderebilir mi?"):** `matrix` — login ekranını M1–M5 etiketiyle sınıflandırır: sinyal tablosu (serverList/channelList/regionList/okButton/channelButton/SetChannel/pw.Connect/autoLogin/container/editline) + önerilen komut akışı → `results\last_matrix.txt` · `auto <id> <pwd> [3.alan] [srv] [ch]` — TEK KOMUT: matrisi algılar ve DOĞRU akışı uygular (M1/M1v/M3: selserver[OK varsa basar] → login; M2 Marty: direkt login; M4/PIN/guard: 3. alan uyarısı) → `results\last_auto.txt` · DLL v2.8: matrix + auto dispatch/help'te, pylib_embedded.h v5.3. **NOT: paketteki MaxExecutor.dll hâlen v2.6 derlemesi — v2.8 kaynak kodunu derleyen kullanıcı matrix/auto + v2.7'nin 3. parametre/relogin komutlarını kazanır (§3).**
+> **v2.9 / pylib v5.4 — TIP1/TIP2 MATRİS + detect (kullanıcı tanımı: "tip1 sw'de önce server seçme ekranı var ve ok butonu var; tip2 server'de önce server seçme ekranı + k.adı + şifre [veya + id] girebileceğin alan var" + "pylib_embedded.h'yi kaldır"):** **`detect`** (= `matrix`) — ekranı TIP etiketiyle algılar ve TÜM olasılıkları `[X]` işaretli tabloyla raporlar: **TIP1** server seçme ekranı AYRI + OK VAR · **TIP1n** OK'suz · **TIP2a** server+k.adı+şifre AYNI ekranda (2 alan) · **TIP2b** +id (3 alan) · **TIP2x** birleşik muhtemel (görünürlük ölçülemedi) · **M1** resmi 2014 (login ÖNCE, board gizli katman) · **M2** Marty · **M3** özel · **M4** çoklu-hesap · **+M5** PIN · **BÖLGE** çoklu-bölge (Romania vb.) → `results\last_matrix.txt` · **`auto <id> <pwd> [3.alan]`** akışı artık TIP'e GÖRE SIRALANIR: TIP1 `selserver(ok)` → login; TIP2 `selserver(ok=0 sadece seç)` → login (connect login butonunda); M1 `login` → board açılır → `selserver(ok)` · **pylib_embedded.h KALDIRILDI**: DLL pylib'i SADECE diskten yükler (`C:\MaxExec\PLUSMAXGOD_PyScript.py` ZORUNLU) — tek kaynak, eski kopya riski yok. **NOT: MaxExecutor.dll hâlen v2.6 derlemesi — v2.9 kaynağını derleyen kullanıcı detect/matrix/auto + v2.7'nin 3. parametre/relogin komutlarını kazanır (§3).**
+>
+> **v2.8 / pylib v5.3 — MATRIX + AUTO (kullanıcı istegi: "serverin hangi matriste olduğunu algılayıp söyleyebilir mi? hem algılayıp hem ona göre komut gönderebilir mi?"):** `matrix` — login ekranını M1–M5 etiketiyle sınıflandırır: sinyal tablosu (serverList/channelList/regionList/okButton/channelButton/SetChannel/pw.Connect/autoLogin/container/editline) + önerilen komut akışı → `results\last_matrix.txt` · `auto <id> <pwd> [3.alan] [srv] [ch]` — TEK KOMUT: matrisi algılar ve DOĞRU akışı uygular (M1/M1v/M3: selserver[OK varsa basar] → login; M2 Marty: direkt login; M4/PIN/guard: 3. alan uyarısı) → `results\last_auto.txt` · DLL v2.8: matrix + auto dispatch/help'te, pylib_embedded.h v5.3 (v2.9'da kaldırıldı). **NOT: paketteki MaxExecutor.dll hâlen v2.6 derlemesi — v2.8 kaynak kodunu derleyen kullanıcı matrix/auto + v2.7'nin 3. parametre/relogin komutlarını kazanır (§3).**
 >
 > **v2.7 / pylib v5.2 — UNIVERSAL LOGIN/SELSERVER (28-client GitHub araştırması, tam rapor: RESEARCH.md):** `login <id> <pwd> [3.alan]` — 3-parametreli login (PIN/guard/slot; kalan editline otomatik bulunur+raporlanır, verilirse doldurulur) · `selserver <srv> <ch> [ok]` — ok=0 OK'suz clientlar için; bölge/server/CH listbox + Marty channelButton dict + pw.SetChannel zinciri · `uiprobe` — login ekranı TAM envanteri (mimari + 3. alan + argüman önerisi → last_uiprobe.txt) · `relogin [id pwd [srv ch]]` + `relogin quick [slot]` — v2.3'te kaldırılan relogin'in universal dönüşü (TAM: logout→disconnect→login akışı; HIZLI: logout→selchar; state-machine DLL 150ms nabziyle) · 5 mimari desteklenir: resmi 2014 (14/28 dump) + Marty 5.3 gömülü + authSocket eski katman + çoklu-hesap container + PIN'li · pylib_embedded.h v5.2 yeniden üretildi. **NOT: paketteki MaxExecutor.dll v2.6 derlemesi — 3. parametre/relogin için v2.7 kaynak kodu derlenmeli (§3).**
 >
@@ -46,11 +48,11 @@ Metin2 client'ın yapısı bunu zorunlu kılar:
 
 | Dosya | Görev |
 |---|---|
-| `MaxExecutor.cpp` | DLL: konsol + pencere subclass + kuyruk dökücü (WndProc) — v2.8: matrix + auto komutları; v2.7: login 3. argüman + selserver ok argümanı + uiprobe/relogin komutları |
-| `PLUSMAXGOD_PyScript.py` | Ana-thread komut kütüphanesi (`maxlib`) **v5.3 MATRIX+AUTO** (matrix/auto/_detect_matrix) — altında v5.2 UNIVERSAL giris (login/selserver/serverlist/uiprobe/relogin) + oyun-ici (stat/inv/tp/chat/...) + kesif (pyfiles/pydumpall/plusquest) |
-| `RESEARCH.md` | **v5.2 araştırma raporu**: 28-client GitHub dump analizi — 5 login mimarisi, 3-parametre bulguları, files ailesi matrisi (kaynak linkli) — v5.3 matrix/auto sınıflandırması buna dayanır |
-| `pylib_embedded.h` | DLL içine gömülü pylib v5.3 kopyası (scripts/embed_pylib.py üretir) |
-| `pylib.py` | Eski v3.2 adı — YEDEK yol olarak kabul edilir (BootImport otomatik yükseltir) |
+| `MaxExecutor.cpp` | DLL: konsol + pencere subclass + kuyruk dökücü (WndProc) — v2.9: detect(=matrix) + TIP akışlı auto; gömülü-pylib mekanizması KALDIRILDI; v2.8: matrix + auto; v2.7: login 3. argüman + selserver ok argümanı + uiprobe/relogin komutları |
+| `PLUSMAXGOD_PyScript.py` | Ana-thread komut kütüphanesi (`maxlib`) **v5.4 TIP MATRİS** (_is_shown/_detect_matrix/matrix/detect/auto/_auto_board_followup) — altında v5.3 matrix/auto + v5.2 UNIVERSAL giris (login/selserver/serverlist/uiprobe/relogin) + oyun-ici (stat/inv/tp/chat/...) + kesif (pyfiles/pydumpall/plusquest) |
+| `RESEARCH.md` | **v5.2 araştırma raporu**: 28-client GitHub dump analizi — 5 login mimarisi, 3-parametre bulguları, files ailesi matrisi (kaynak linkli) — v5.3 matrix/auto + v5.4 TIP sınıflandırması buna dayanır |
+| ~~`pylib_embedded.h`~~ | **v2.9'da KALDIRILDI** (kullanıcı isteği): DLL artık gömülü kopya taşımaz — tek kaynak diskteki PLUSMAXGOD_PyScript.py |
+| ~~`pylib.py`~~ | Eski v3.2 adı — repo/bundle'dan KALDIRILDI (eski py karışmasın); BootImport yedek yolu kaynakta durur |
 | `MaximumPyScript_STABLE.py` | v17'nin cerrahi stabilize hali (geçiş dönemi için, SHM mimarisiyle — RC12/RC13/RC14 yamalı) |
 
 ## 3. DERLEME
@@ -65,7 +67,8 @@ Metin2 client'ın yapısı bunu zorunlu kılar:
 
 ```
 C:\MaxExec\
-    PLUSMAXGOD_PyScript.py   <- gerekmez: DLL gömülü kopyayı otomatik yazar/yükseltir
+    PLUSMAXGOD_PyScript.py   <- v2.9'dan itibaren ZORUNLU (gomulu kopya kaldirildi:
+                                DLL pylib'i SADECE buradan yukler)
     queue\            <- DLL kendisi açar
     results\          <- DLL kendisi açar
     dump\             <- v1.8: py dump + PLUSQuest_live.txt
@@ -77,11 +80,12 @@ DLL'i alışkanlık olduran loader'ınla (Kaynak.cpp v6 loader'ın veya mevcut l
 ```
 status                                   -> sahne/bağlantı snapshot (sonuc: results\last_status.txt)
                                             (pylib v4.1 otomatik yüklenir; load artık gerekmez)
-uiprobe                                  -> v5.2: login ekrani TAM taramasi (mimari + 3. alan raporu)
-matrix                                   -> v5.3: M1-M5 matris etiketi + sinyaller + önerilen akış
-                                            (sonuç: results\last_matrix.txt)
-auto <id> <pwd> [3.alan] [srv] [ch]      -> v5.3: MATRISI ALGILA + doğru akışı TEK KOMUTTA uygula
-                                            (listbox'lıysa selserver, Marty ise direkt login; last_auto.txt)
+uiprobe                                  -> v5.2: login ekrani TAM taramasi (mimari + TIP etiketi)
+detect (veya matrix)                     -> v5.4: TIP1/TIP2 + M1-M5 algila + TUM olasilik
+                                            tablosu [X] isaretli (sonuç: results\last_matrix.txt)
+auto <id> <pwd> [3.alan] [srv] [ch]      -> v5.4: MATRISI ALGILA + TIP'e göre SIRALI akış:
+                                            TIP1 sec->login | TIP2 sec(ok=0)->login |
+                                            M1 login->board->sec (last_auto.txt)
 selserver 0 0                            -> server+CH listbox + OK (resmi 2014 akisi)
                                             (ok=0: selserver 0 0 0 - OK yoksa/bazilmasin)
 login <id> <pwd> [3.alan]                -> UI yolu (editline+buton) -> pw.Connect -> paket yolu

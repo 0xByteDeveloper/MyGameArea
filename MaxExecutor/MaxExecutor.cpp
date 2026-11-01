@@ -124,6 +124,24 @@
 //            basedir.txt ile tasinabilir (BASE_DIR\dump).
 //    FIX-35: SyncEmbeddedPylib yeni dosya adini yazar (PLUSMAXGOD_PyScript.py),
 //            eskisini PLUSMAXGOD_eski_v<surum>.py olarak yedekler.
+//  v2.9 (oturum 24 - kullanici istegi: TIP1/TIP2 matrisi + "pylib_embedded.h
+//        yi kaldir - gereksiz yere klasore eski py pushlanmasin", pylib v5.4):
+//     (1) GOMULU PYLIB MEKANIZMASI KALDIRILDI: pylib_embedded.h include'u,
+//         EMBEDDED_PYLIB_* referanslari ve SyncEmbeddedPylib() tamamen cikarildi.
+//         DLL artik pylib'i SADECE diskten yukler (BASE_DIR\PLUSMAXGOD_PyScript.py)
+//         - tek kaynak, eski kopya risksiz (FIX-22 tarihe terk edildi;
+//         ReadPylibVersion el-sikismasi icin korunur).
+//     (2) detect - matrix komutunun takma adi (kullanici: "bi komut ver bize
+//         algilasin bilgi versin"); pylib v5.4 TIP katmani:
+//           TIP1  : server secme ekrani AYRI + OK butonu VAR (login ayri gelir)
+//           TIP1n : server secme ekrani AYRI, OK YOK (otomatik gecis)
+//           TIP2a : server secme + k.adi + sifre AYNI ekranda (2 alan)
+//           TIP2b : ... + id (3 alan) | TIP2x: birlesik muhtemel (gorunurluk ?)
+//           M1 resmi (login once) | M2 Marty | M3 ozel | M4 coklu-hesap
+//           +M5 PIN | BOLGE coklu-bolge | ? bilinmiyor
+//         matrix() raporu TUM olasiliklari [X] isaretli tabloyla verir.
+//     (3) auto() akisi TIP'e gore SIRALANIR: TIP1 selserver(ok)->login;
+//         TIP2 selserver(ok=0)->login; M1 login->board acilir->selserver(ok).
 //  v2.8 (kullanici istegi: MATRIS ALGILAMA + TEK KOMUT OTO-GIRIS, pylib v5.3):
 //     (1) matrix - login ekranini M1..M5 etiketiyle siniflandirir
 //         (sinyal tablosu + onerilen akis -> last_matrix.txt)
@@ -243,7 +261,8 @@
 #include <stdarg.h>
 #include <string>
 #include <vector>
-#include "pylib_embedded.h"   // FIX-22: gomulu pylib (v3.2, otomatik uretilir)
+// v2.9 NOT: pylib_embedded.h KALDIRILDI (kullanici istegi) - DLL pylib'i
+// sadece diskten yukler; tek kaynak PLUSMAXGOD_PyScript.py, gomulu kopya yok.
 
 // ---------------------------------------------------------------------------
 // Sabitler
@@ -599,7 +618,7 @@ static std::string BootImport(void)
          "        try:\n"
          "            import traceback\n"
          "            _f = open(r'" + std::string(RESULT_DIR) + "\\\\last_pylib_fail.txt', 'w')\n"
-         "            _f.write('PLUSMAXGOD_PyScript.py YUKLENEMEDI (DLL v2.8 / pylib v5.3) - TRACEBACK:\\n' + traceback.format_exc())\n"
+         "            _f.write('PLUSMAXGOD_PyScript.py YUKLENEMEDI (DLL v2.9 / pylib v5.4) - TRACEBACK:\\n' + traceback.format_exc())\n"
          "            _f.close()\n"
          "        except Exception:\n"
          "            pass\n"
@@ -616,7 +635,7 @@ static std::string BootImport(void)
          "    maxlib._MX_OLD_WARNED = True\n"
          "    try:\n"
          "        import sys\n"
-         "        sys.stderr.write('!!! PYLIB ESKI v' + str(getattr(maxlib, 'PYLIB_VERSION', '?')) + ' - DLL v2.8 PLUSMAXGOD v5.3 ister! "
+         "        sys.stderr.write('!!! PYLIB ESKI v' + str(getattr(maxlib, 'PYLIB_VERSION', '?')) + ' - DLL v2.9 PLUSMAXGOD v5.4 ister! "
          "C:\\\\MaxExec\\\\PLUSMAXGOD_PyScript.py dosyasini yenisiyle degistir (bundle zip / GitHub) !!!\\\\n')\n"
          "    except Exception:\n"
          "        pass\n";
@@ -725,15 +744,16 @@ static void CmdUiProbe(void)
 
 static void CmdMatrix(void)
 {
-    // v2.8: M1-M5 matris tespiti (pylib v5.3 - sonuc: last_matrix.txt)
+    // v2.9: TIP1/TIP2 + M1-M5 matris tespiti (pylib v5.4 - sonuc: last_matrix.txt).
+    // TUM olasiliklar [X] isaretli tablo; 'detect' takma adi ayni yeri cagirir.
     QRaw(BootImport() + "maxlib.matrix()\n");
 }
 
 static void CmdAuto(const std::string& id, const std::string& pwd, const std::string& third)
 {
-    // v2.8: TEK KOMUT - matrisi algila + dogru akisi uygula (pylib v5.3 auto).
-    //   auto <id> <pwd> [3.alan] - listbox'liysa selserver(otomatik ok) -> login;
-    //   Marty ise direkt login; PIN/guard/slot isteyen serverlarda 3. parametre.
+    // v2.9: TEK KOMUT - TIP'e gore SIRALANMIS akis (pylib v5.4 auto).
+    //   TIP1: selserver(ok)->login | TIP2: selserver(ok=0)->login (connect login'de)
+    //   M1: login->board acilir->selserver(ok) | Marty: direkt login.
     char call[768];
     if (!third.empty())
         _snprintf(call, sizeof(call), "maxlib.auto(r'%s', r'%s', r'%s')\n", id.c_str(), pwd.c_str(), third.c_str());
@@ -1157,7 +1177,7 @@ static bool InitConsole(void)
         LogLine("CONOUT$ (stderr) yeniden acilamadi");
     setvbuf(stdout, NULL, _IONBF, 0);   // buffer'siz: crash olsa bile yazar
     setvbuf(stderr, NULL, _IONBF, 0);
-    SetConsoleTitleA("MaxExecutor v2.8 PLUSMAXGOD");
+    SetConsoleTitleA("MaxExecutor v2.9 PLUSMAXGOD");
     HWND cw = GetConsoleWindow();
     if (cw)
     {
@@ -1275,7 +1295,7 @@ static std::vector<std::string> SplitArgs(const std::string& line)
 
 static void PrintHelp(void)
 {
-    OutP("\n=== MaxExecutor v2.8 PLUSMAXGOD (MATRIS+AUTO giris, UNIVERSAL login - pylib v5.3) ===\n");
+    OutP("\n=== MaxExecutor v2.9 PLUSMAXGOD (TIP1/TIP2 matris + AUTO giris - pylib v5.4) ===\n");
     OutP("  help                        : bu yardim\n");
     OutP("  status                      : anlik sahne/baglanti snapshot\n");
     OutP("  -- giris akisi (menu) --\n");
@@ -1283,8 +1303,9 @@ static void PrintHelp(void)
     OutP("  selserver <srv> <ch> [ok]   : server+CH sec, OK'a bas (ok=0: OK yoksa/bazilmasin)\n");
     OutP("  login <id> <pwd> [3.alan]   : login ekraninda UI doldurur + giris (3.alan: PIN/guard/slot)\n");
     OutP("  uiprobe                     : login ekrani TAM taramasi (mimari + 3. alan raporu - v5.2)\n");
-    OutP("  matrix                      : M1-M5 matris etiketi + sinyaller + onerilen akis (v5.3)\n");
-    OutP("  auto <id> <pwd> [3.alan]    : MATRISI ALGILA + dogru akisi TEK KOMUTTA uygula (v5.3)\n");
+    OutP("  matrix | detect             : TIP1/TIP2 + M1-M5 matrisi ALGILA + TUM olasilik\n");
+    OutP("                                tablosu ([X] isaretli) + onerilen akis (v5.4)\n");
+    OutP("  auto <id> <pwd> [3.alan]    : MATRISI ALGILA + TIP'e gore sirali akisi uygula (v5.4)\n");
     OutP("  relogin [id pwd [srv ch]]   : TAM relogin (logout->disconnect->login akisi - v5.2)\n");
     OutP("  relogin quick [slot]        : HIZI relogin (logout->selchar, baglanti korunur)\n");
     OutP("  charlist                    : 5 slot tablosunu doken rapor\n");
@@ -1420,50 +1441,10 @@ static bool ReadPylibVersion(const char* path, char outVer[32])
 }
 
 // ---------------------------------------------------------------------------
-// FIX-22: GOMULU PYLIB SENKRONU — DLL icinde tasiyan pylib kopyasini diske
-// yazar. Diskteki pylib eksikse olusturur, eskiyse gunceller (eskisini
-// pylib_eski_vX.py olarak yedekler). 'DLL yeni ama pylib eski' hatasi
-// artik otomatik iyilesir — elle dosya kopyalama zorunlulugu kalkti.
+// v2.9: SyncEmbeddedPylib KALDIRILDI (kullanici istegi: pylib_embedded.h
+// gereksiz, eski py kopyasi klasore girmesin). DLL pylib'i SADECE diskten
+// yukler: BASE_DIR\PLUSMAXGOD_PyScript.py - tek kaynak, tek guncel kopya.
 // ---------------------------------------------------------------------------
-static void SyncEmbeddedPylib(void)
-{
-    char pylibPath[MAX_PATH];
-    _snprintf(pylibPath, MAX_PATH, "%s\\PLUSMAXGOD_PyScript.py", BASE_DIR); pylibPath[MAX_PATH-1]=0;
-    char diskVer[32];
-    bool hasDisk = ReadPylibVersion(pylibPath, diskVer);
-    int diskMaj  = hasDisk ? atoi(diskVer) : 0;
-    int diskMin  = 0;
-    if (hasDisk) { const char* d = strchr(diskVer, '.'); if (d) diskMin = atoi(d+1); }
-    const char* edot = strchr(EMBEDDED_PYLIB_VERSION, '.');
-    int embMaj = atoi(EMBEDDED_PYLIB_VERSION);
-    int embMin = edot ? atoi(edot+1) : 0;
-    // v1.6: minor-farkinda karsilastirma - disk v3.0 / gomulu v3.1 ise
-    // senkron TETIKLENIR (eskiden 3>=3 geciyordu, eski dosya kalabiliyordu)
-    if (hasDisk && (diskMaj > embMaj || (diskMaj == embMaj && diskMin >= embMin)))
-        return;   // disk zaten yeni/esit - dokunma
-    if (hasDisk)
-    {
-        char bak[MAX_PATH];
-        _snprintf(bak, MAX_PATH, "%s\\PLUSMAXGOD_eski_v%s.py", BASE_DIR,
-                  diskVer[0] ? diskVer : "2x"); bak[MAX_PATH-1]=0;
-        if (CopyFileA(pylibPath, bak, FALSE))
-            LogLine("pylib sync: eski dosya yedeklendi -> %s", bak);
-    }
-    std::string emb((const char*)EMBEDDED_PYLIB_DATA, EMBEDDED_PYLIB_SIZE);
-    if (WriteFileAll(pylibPath, emb))
-    {
-        LogLine("pylib sync: gomulu PLUSMAXGOD v%s diske yazildi (eskisi: %s)",
-                EMBEDDED_PYLIB_VERSION, hasDisk ? diskVer : "yok");
-        OutP("PLUSMAXGOD_PyScript.py : GUNCELLENDI -> v%s (DLL icinden yazildi%s)\n",
-               EMBEDDED_PYLIB_VERSION,
-               hasDisk ? ", eski dosya PLUSMAXGOD_eski_*.py olarak yedeklendi" : "");
-    }
-    else
-    {
-        LogLine("pylib sync HATA: %s yazilamadi", pylibPath);
-        OutP("PLUSMAXGOD_PyScript.py : GUNCELLENEMEDI (yazma hatasi!) - elle kopyala\n");
-    }
-}
 
 static DWORD WINAPI WorkerThread(LPVOID)
 {
@@ -1475,8 +1456,8 @@ static DWORD WINAPI WorkerThread(LPVOID)
     const bool con = InitConsole();
 
     OutP("\n=============================================\n");
-    OutP("  MaxExecutor v2.8 PLUSMAXGOD - ana-thread executor\n");
-    OutP("  oyun-ici + kesif + GOD MOD v2 (pylib v5.3 cifti: matrix + auto)\n");
+    OutP("  MaxExecutor v2.9 PLUSMAXGOD - ana-thread executor\n");
+    OutP("  oyun-ici + kesif + GOD MOD v2 (pylib v5.4 cifti: TIP matris + auto)\n");
     OutP("  canli cikti: C:\\MaxExec\\live.txt izlenir -> [LIVE] akar\n");
     OutP("=============================================\n");
     if (!con)
@@ -1512,10 +1493,8 @@ static DWORD WINAPI WorkerThread(LPVOID)
         std::string pf;
         if (EnqueueCommand(probe, pf)) LogLine("probe kuyruga yazildi: %s", pf.c_str());
 
-        // FIX-14: AUTO-LOAD + FIX-19: SURUM EL SIKISMASI + FIX-22: GOMULU SENKRON
-        // (Saha testi 5 dersi: DLL yeni ama pylib eski olabiliyordu - v1.5
-        //  artik gomulu kopyayi diske yazar, el sikismasi da dogrular.)
-        SyncEmbeddedPylib();
+        // FIX-14: AUTO-LOAD + FIX-19: SURUM EL SIKISMASI
+        // (v2.9: FIX-22 gomulu senkron KALDIRILDI - pylib tek kaynak diskte.)
         char pylibPath[MAX_PATH];
         _snprintf(pylibPath, MAX_PATH, "%s\\PLUSMAXGOD_PyScript.py", BASE_DIR); pylibPath[MAX_PATH-1]=0;
         DWORD pa = GetFileAttributesA(pylibPath);
@@ -1538,12 +1517,12 @@ static DWORD WINAPI WorkerThread(LPVOID)
                 char rp[MAX_PATH];
                 _snprintf(rp, MAX_PATH, "%s\\last_warning.txt", RESULT_DIR); rp[MAX_PATH-1]=0;
                 WriteFileAll(rp, std::string("! PYLIB ESI SURUM: v") + vShow +
-                    "  (DLL v2.8 PLUSMAXGOD v5.3 ister)\n"
+                    "  (DLL v2.9 PLUSMAXGOD v5.4 ister)\n"
                     "Yeni PLUSMAXGOD_PyScript.py'yi " + std::string(BASE_DIR) + " icine kopyala (bundle zip / GitHub).\n"
                     "ESKI pylib ILE: stat/pos/inv/equip/skill/near/chat/goto/tp/pyfiles/pydumpall/plusquest CALISMAZ.\n");
-                LogLine("UYARI: pylib ESI v%s - PLUSMAXGOD v5.3 gerekli! (%s)", vShow, pylibPath);
+                LogLine("UYARI: pylib ESI v%s - PLUSMAXGOD v5.4 gerekli! (%s)", vShow, pylibPath);
                 OutP("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-                OutP("!! PYLIB ESI: diskteki PLUSMAXGOD_PyScript.py = v%s  (gereken: v5.3)\n", vShow);
+                OutP("!! PYLIB ESI: diskteki PLUSMAXGOD_PyScript.py = v%s  (gereken: v5.4)\n", vShow);
                 OutP("!! Yeni PLUSMAXGOD_PyScript.py'yi %s icine kopyala (bundle zip)\n", BASE_DIR);
                 OutP("!! Eski pylib ile v4.0 komutlari CALISMAZ (stat/inv/tp/pyfiles..)\n");
                 OutP("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
@@ -1609,14 +1588,15 @@ static DWORD WINAPI WorkerThread(LPVOID)
             // v2.7: login ekrani tani komutu (sonuc: last_uiprobe.txt)
             CmdUiProbe();
         }
-        else if (cmd == "matrix")
+        else if (cmd == "matrix" || cmd == "detect")
         {
-            // v2.8: M1-M5 matris tespiti (sonuc: last_matrix.txt)
+            // v2.9: TIP1/TIP2 + M1-M5 matris tespiti (sonuc: last_matrix.txt)
+            // 'detect' = 'matrix' takma adi (kullanici istegi: algila + bilgi ver)
             CmdMatrix();
         }
         else if (cmd == "auto")
         {
-            // v2.8: algila + uygula (tek komutta selserver+login akisi)
+            // v2.9: algila + TIP'e gore sirali akis (tek komutta selserver+login)
             if (a.size() >= 4) CmdAuto(a[1], a[2], a[3]);
             else if (a.size() >= 3) CmdAuto(a[1], a[2], "");
             else OutP("kullanim: auto <id> <sifre> [3.alan]   (matrisi algilar: listbox'liysa selserver, degilse direkt login - detay: last_auto.txt | sadece rapor: matrix | tam envanter: uiprobe)\n");
