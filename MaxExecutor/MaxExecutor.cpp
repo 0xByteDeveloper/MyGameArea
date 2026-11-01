@@ -702,7 +702,7 @@ static std::string BootImport(void)
          "        try:\n"
          "            import traceback\n"
          "            _f = open(r'" + std::string(RESULT_DIR) + "\\\\last_pylib_fail.txt', 'w')\n"
-         "            _f.write('PLUSMAXGOD_PyScript.py YUKLENEMEDI (DLL v2.9 / pylib v5.6) - TRACEBACK:\\n' + traceback.format_exc())\n"
+         "            _f.write('PLUSMAXGOD_PyScript.py YUKLENEMEDI (DLL v2.9 / pylib v5.7) - TRACEBACK:\\n' + traceback.format_exc())\n"
          "            _f.close()\n"
          "        except Exception:\n"
          "            pass\n"
@@ -719,7 +719,7 @@ static std::string BootImport(void)
          "    maxlib._MX_OLD_WARNED = True\n"
          "    try:\n"
          "        import sys\n"
-         "        sys.stderr.write('!!! PYLIB ESKI v' + str(getattr(maxlib, 'PYLIB_VERSION', '?')) + ' - DLL v2.9 PLUSMAXGOD v5.6 ister! "
+         "        sys.stderr.write('!!! PYLIB ESKI v' + str(getattr(maxlib, 'PYLIB_VERSION', '?')) + ' - DLL v2.9 PLUSMAXGOD v5.7 ister! "
          "C:\\\\MaxExec\\\\PLUSMAXGOD_PyScript.py dosyasini yenisiyle degistir (bundle zip / GitHub) !!!\\\\n')\n"
          "    except Exception:\n"
          "        pass\n";
@@ -1379,7 +1379,7 @@ static std::vector<std::string> SplitArgs(const std::string& line)
 
 static void PrintHelp(void)
 {
-    OutP("\n=== MaxExecutor v2.9.1 PLUSMAXGOD (TIP1/TIP2 matris + AUTO giris - pylib v5.6) ===\n");
+    OutP("\n=== MaxExecutor v2.9.1 PLUSMAXGOD (TIP1/TIP2 matris + AUTO giris - pylib v5.7) ===\n");
     OutP("  help                        : bu yardim\n");
     OutP("  status                      : anlik sahne/baglanti snapshot\n");
     OutP("  -- giris akisi (menu) --\n");
@@ -1388,8 +1388,10 @@ static void PrintHelp(void)
     OutP("  login <id> <pwd> [3.alan]   : login ekraninda UI doldurur + giris (3.alan: PIN/guard/slot)\n");
     OutP("  uiprobe                     : login ekrani TAM taramasi (mimari + 3. alan raporu - v5.2)\n");
     OutP("  matrix | detect             : TIP1/TIP2 + M1-M5 matrisi ALGILA + TUM olasilik\n");
-    OutP("                                tablosu ([X] isaretli) + KANIT + onerilen akis (v5.6)\n");
-    OutP("  auto <id> <pwd> [3.alan]    : MATRISI ALGILA + TIP'e gore sirali akisi uygula (v5.6)\n");
+    OutP("                                tablosu ([X] isaretli) + KANIT + onerilen akis (v5.7)\n");
+    OutP("  auto <id> <pwd> [3.alan]    : MATRISI ALGILA + TIP'e gore sirali akisi uygula (v5.7)\n");
+    OutP("  (v5.7) ALT-TIP harfi login yapisini tasir: TIP1-A=2-param(k.adı+sifre),\n");
+    OutP("         TIP1-B=3-param(+PIN/PID/guard), TIP1-S=tek-alan, TIP1-X=belirsiz\n");
     OutP("  (v5.6) TIP2a yalnizca UIScript ayni-board kanitiyla; kanitsiz -> guvenli TIP2x\n");
     OutP("  relogin [id pwd [srv ch]]   : TAM relogin (logout->disconnect->login akisi - v5.2)\n");
     OutP("  relogin quick [slot]        : HIZI relogin (logout->selchar, baglanti korunur)\n");

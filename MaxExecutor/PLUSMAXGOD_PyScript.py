@@ -1,7 +1,33 @@
 # -*- coding: utf-8 -*-
 """
 ===========================================================================
- PLUSMAXGOD_PyScript.py - MaxExecutor Ana-Thread Komut Kutuphanesi (v5.6)
+ PLUSMAXGOD_PyScript.py - MaxExecutor Ana-Thread Komut Kutuphanesi (v5.7)
+ v5.7 DEGISIKLIKLER (ALT-TIP: login parametre yapisinin harfi - saha talebi:
+ "TIP1 isaretli ama k.adı+sifre mi, k.adı+sifre+pid mi? 2-parametreli mi
+  3-parametreli mi bunu da belirtmeli - tip1-A / tip2-B gibisinden"):
+   * YENI _login_param_yapisi(): login ekraninin PARAMETRE yapisini oler
+     ve harf verir:
+       TIP1-A : 2-param (k.adı + şifre)                  <- klasik
+       TIP1-B : 3-param (k.adı + şifre + PIN/PID/guard)
+       TIP1-S : tek-alan (sadece id - sifresiz giris olabilir)
+       TIP1-X : belirsiz (login alani agacta YOK -> login ekrani
+                acilinca _auto_tick KESINLESTIRIR, gercek harf yazilir)
+     KANIT: editline sayisi + rol adlandirmasi (id/pwd/3.alan) + pin/guard adi.
+     wndMgr Hide() cocuklara yayilmaz kurali burada LEHIMIZE isler: login
+     board gizliyken bile editline'lar agactaysa SAYILARI dogrudur (bayrak
+     degil sayi yertutucu) - NightTown saha ciktisi: editline=2, third=0
+     -> TIP1-A (2-param: k.adı + şifre).
+   * TIP2 ailesi de duzenli harfle RAPORLANIR (ALT-TIP satiri):
+       TIP2a -> TIP2-A (2-param) | TIP2b -> TIP2-B (3-param) | TIP2x -> TIP2-X
+     IC TOKEN'LAR DEGISMEDI: ic kisimda 'TIP2a'/'TIP2b'/'TIP2x' aynen kalir;
+     auto/relogin/karar agaci %100 uyumlu, yalnizca RAPOR harf gosterir.
+   * detect ciktisina ALT-TIP + PARAM satirlari eklendi:
+       ALT-TIP: TIP1-A  (2-param: k.adı + şifre)
+       PARAM  : 2 [editline=2, 3.alan=0, id=idEditLine, pwd=pwdEditLine]
+   * KANIT zincirine 'PARAM login-yapisi: ...' satiri eklendi.
+   * _auto_tick (faz 1/3): login ekrani acildigi AN login-yapisi YENIDEN
+     olculup [AUTO] raporuna yazilir (TIP1-X baslangicta belirsizdiyse
+     gercek harf burada kesinlesir) + _MATRIX['alt'] guncellenir.
  v5.6 DEGISIKLIKLER (MATRIS v6 KANIT-TABANLI - saha kaniti 2. rapor:
  v5.5 detect YINE TIP2a dedi, gercek ekran TIP1'di. Kanit sinyalleri:
    ayri_board=-1 | eff_idEditLine=1 | offscreen_els=0 | vis_editline=2):
@@ -390,7 +416,7 @@ DUMP_DIR   = r'C:\MaxExec\dump'   # v4.0: py dump + PLUSQuest_live buraya
 # SURUM ISARETI - DLL v1.8 bunu okur (FIX-19). PLUSMAXGOD_PyScript.py
 # degistirmeden bu satiri silme/degistirme! Eski pylib (v3.x) major 3
 # oldugu icin DLL v1.8 acilista KOSKOCA uyar basar.
-PYLIB_VERSION = '5.6.1'
+PYLIB_VERSION = '5.7'
 
 RACE_TABLE = {
     0: ('Warrior', 'E'), 1: ('Ninja', 'K'), 2: ('Sura', 'E'), 3: ('Shaman', 'K'),
@@ -1518,6 +1544,40 @@ def _classify_editlines(pw):
     third = [(a, v) for a, v in els if id(v) not in used]
     return id_t, pwd_t, third, els
 
+def _login_param_yapisi(pw):
+    """v5.7 ALT-TIP kaniti: login ekraninin PARAMETRE yapisini oler.
+    Donus: (n, desc, harf, kanit)
+      n    : 0=bilinmiyor | 1=tek-alan | 2=k.adı+sifre | 3=+PIN/PID/guard
+      harf : 'A'(2-param) | 'B'(3-param) | 'S'(tek) | 'X'(bilinmiyor)
+    KANIT: editline sayisi + rol adlandirmasi (id/pwd/3.alan) + pin/guard adi.
+    wndMgr Hide() cocuklara yayilmaz -> login board GIZLIYKEN bile editline
+    SAYISI dogrudur (bayrak yalnizca gorunurluk icin yanilticiydi).
+    Saha: NightTown editline=2, third=0 -> (2, '2-param...', 'A', ...)."""
+    try:
+        id_t, pwd_t, third_t, els = _classify_editlines(pw)
+    except:
+        return 0, '? (login alani taranamadi)', 'X', 'editline-tarama-hatasi'
+    n = len(els)
+    tn = '0'
+    if third_t:
+        try:
+            tn = ','.join(a.split(':')[-1] for a, _v in third_t[:3])
+        except:
+            tn = str(len(third_t))
+    kanit = 'editline=%d, 3.alan=%s, id=%s, pwd=%s' % (
+        n, tn,
+        id_t[0].split(':')[-1] if id_t else '-',
+        pwd_t[0].split(':')[-1] if pwd_t else '-')
+    # SAYI birincil kanittir: 2 alan = A (isimlendirme karisik olsa bile);
+    # 3+ alan = B; 1 alan = S; 0 alan = X (login ekrani acilinca kesinlesir)
+    if n >= 3:
+        return 3, '3-param: k.adı + şifre + PIN/PID/guard', 'B', kanit
+    if n == 2:
+        return 2, '2-param: k.adı + şifre', 'A', kanit
+    if n == 1:
+        return 1, 'tek-alan: sadece id (sifresiz giris olabilir - login ekraninda dogrulanir)', 'S', kanit
+    return 0, '? : login alanlari agacta YOK (login ekrani acilinca kesinlesir)', 'X', kanit
+
 def _set_editline(el, text):
     """EditLine.SetText guvenli cagri (bazi clientlarda SetTextF/ime farklari)."""
     try:
@@ -1915,7 +1975,7 @@ def uiprobe():
 # serverboard GIZLI katmandir (login once); TIP2 birlesik ekranda listbox
 # ACIK gorunur; TIP1'de editline ya yoktur ya da gizlidir.
 # ---------------------------------------------------------------------------
-_MATRIX = {'tip': '?', 'code': '?', 'label': '', 'flags': [], 't': 0.0}
+_MATRIX = {'tip': '?', 'alt': '', 'param': 0, 'code': '?', 'label': '', 'flags': [], 't': 0.0}
 
 def _auto_board_followup(log, srv, ch, ok):
     """Login sonrasi serverboard acildi mi? Acildiysa sec+OK (M1/TIP2x
@@ -1947,6 +2007,10 @@ def _detect_matrix(pw):
       TIP2a : server secme + k.adı + sifre AYNI ekranda (2 alan)
       TIP2b : server secme + k.adı + sifre + id AYNI ekranda (3 alan)
       TIP2x : birlesik MUHTEMEL (gorunurluk olunamadi - teyit gerekir)
+      ALT-TIP (v5.7): TIP1 ailesine HARF eklenir: -A=2-param(k.adı+sifre),
+      -B=3-param(+PIN/PID/guard), -S=tek-alan, -X=belirsiz (login ekraninda
+      kesinlesir). TIP2a/b raporda TIP2-A/TIP2-B gosterilir (ayni anlam);
+      ic token degismez (auto/relogin uyumlulugu).
       M1    : resmi 2014 - login ONCE ayri ekranda, serverboard SONRA (gizli)
       M2    : Marty gomulu - server listesi yok, CH butonlari, OK yok
       M3    : ozel/eski - sadece login alanlari, listbox yok
@@ -2080,6 +2144,15 @@ def _detect_matrix(pw):
             sig[_ln] = int(_lo.GetItemCount()) if _lo is not None else -2
         except:
             sig[_ln] = -1
+    # --- v5.7 ALT-TIP: LOGIN PARAMETRE YAPISI (kullanici talebi:
+    # "2 parametreli mi 3 parametreli mi bunu da belirtmeli - tip1-A/tip2-B")
+    try:
+        p_n, p_desc, p_harf, p_kanit = _login_param_yapisi(pw)
+    except:
+        p_n, p_desc, p_harf, p_kanit = 0, '? (param olcum hatasi)', 'X', 'param-olcum-hatasi'
+    sig['param'] = p_n
+    sig['login_yapisi'] = p_desc
+    sig['param_kanit'] = p_kanit
     flags = []
     if rl is not None:
         rcnt = 0
@@ -2122,6 +2195,8 @@ def _detect_matrix(pw):
     if se.get('yol'):
         kanit.append('KATMAN B topoloji: %s -> %s (login-board=%s, server-board=%s)' %
                      (se['yol'], sig['topoloji'], se.get('lboard'), se.get('sboard')))
+    # v5.7: parametre yapisi kaniti (x2 saha sorusunun kalici cevabi)
+    kanit.append('PARAM login-yapisi: %s [%s]' % (p_desc, p_kanit))
     if not kanit:
         kanit.append('KANIT YOK: board bayragi + kaynak okunamadi -> guvenli TIP2x')
     if se.get('same') in (0, 1) or verdict in ('server', 'login'):
@@ -2238,7 +2313,23 @@ def _detect_matrix(pw):
     if tip is None:
         tip = 'TIP2x'
         label = 'Belirsiz (karar agaci bos) - iki-fazli adaptif auto'
-    return {'tip': tip, 'code': code, 'label': label, 'flags': flags, 'sig': sig,
+    # --- v5.7 ALT-TIP: aile harfi (IC TOKEN ayni kalir; harf yalnizca RAPORDA)
+    # TIP1 ailesi: -A(2-param) / -B(3-param) / -S(tek-alan) / -X(bilinmiyor)
+    # TIP2 ailesi: harf zaten alan sayisini tasir (a=2, b=3) -> duzenli gosterim
+    if tip in ('TIP1', 'TIP1n'):
+        alt = '%s-%s' % (tip, p_harf)
+        if p_harf == 'X':
+            label = label + ' [login-yapisi: login ekrani acilinca kesinlesir]'
+    elif tip == 'TIP2a':
+        alt = 'TIP2-A'
+    elif tip == 'TIP2b':
+        alt = 'TIP2-B'
+    elif tip == 'TIP2x':
+        alt = 'TIP2-X'
+    else:
+        alt = tip
+    return {'tip': tip, 'alt': alt, 'param': p_n, 'param_desc': p_desc,
+            'code': code, 'label': label, 'flags': flags, 'sig': sig,
             'kanit': kanit, 'guven': guven}
 
 def matrix():
@@ -2256,13 +2347,20 @@ def matrix():
         d = _detect_matrix(pw)
         _MATRIX['tip'] = d['tip']; _MATRIX['code'] = d['code']
         _MATRIX['label'] = d['label']; _MATRIX['flags'] = list(d['flags'])
+        _MATRIX['alt'] = d.get('alt', d['tip']); _MATRIX['param'] = d.get('param', 0)
         _MATRIX['t'] = time.time()
         lines.append('TIP    : %s' % d['tip'])
+        # v5.7: ALT-TIP + PARAM - login ekraninin parametre yapisini tasiyan harf
+        p_desc = d.get('param_desc', '?')
+        p_n = d.get('param', 0)
+        lines.append('ALT-TIP: %s  (%s)' % (d.get('alt', d['tip']), p_desc))
+        lines.append('PARAM  : %s [%s]' % (p_n if p_n else '?',
+                                           d.get('sig', {}).get('param_kanit', '?')))
         lines.append('MATRIS : %s - %s' % (d['code'], d['label']))
-        lines.append('GUVEN  : %s (v5.6 kanit-tabanli: TIP2a yalnizca ayni-board kanitiyla)' % d.get('guven', '?'))
+        lines.append('GUVEN  : %s (v5.7 kanit-tabanli: TIP2a yalnizca ayni-board kanitiyla)' % d.get('guven', '?'))
         if d['flags']:
             lines.append('BAYRAKLAR: %s' % ', '.join(d['flags']))
-        lines.append('--- KANIT (v5.6 katmanlari) ---')
+        lines.append('--- KANIT (v5.7 katmanlari + param-yapisi) ---')
         for k in d.get('kanit', []):
             lines.append('  %s' % k)
         lines.append('--- SINYALLER (varlik + gorunurluk) ---')
@@ -2280,11 +2378,11 @@ def matrix():
         # --- v5.4: TUM OLASILIKLAR (kullanici: "matris olasiliklarinin hepsini versin")
         tip = d['tip']; flg = ' '.join(d['flags'])
         tbl = [
-            ('TIP1',  'server secme ekrani AYRI + OK butonu VAR (login ayri gelir)'),
-            ('TIP1n', 'server secme ekrani AYRI, OK YOK (otomatik gecis)'),
-            ('TIP2a', 'server secme + k.adı + sifre AYNI ekranda (2 alan)'),
-            ('TIP2b', 'server secme + k.adı + sifre + id AYNI ekranda (3 alan)'),
-            ('TIP2x', 'belirsiz (auto iki-fazli dener: TIP2 yolu -> TIP1 yolu)'),
+            ('TIP1',  'server secme ekrani AYRI + OK VAR (login ayri gelir) - harf: -A/2-param, -B/3-param, -S/tek, -X/bilinmiyor'),
+            ('TIP1n', 'server secme ekrani AYRI, OK YOK (otomatik gecis) - ayni harf sistemi'),
+            ('TIP2a', 'server secme + k.adı + sifre AYNI ekranda (2 alan) = TIP2-A'),
+            ('TIP2b', 'server secme + k.adı + sifre + id AYNI ekranda (3 alan) = TIP2-B'),
+            ('TIP2x', 'belirsiz (auto iki-fazli dener: TIP2 yolu -> TIP1 yolu) = TIP2-X'),
             ('M1',    'resmi 2014: login ONCE, serverboard baglantidan SONRA (gizli katman)'),
             ('M2',    'Marty gomulu: server listesi yok, CH butonlari, OK yok'),
             ('M3',    'ozel/eski: sadece login alanlari, listbox yok'),
@@ -2302,11 +2400,14 @@ def matrix():
             lines.append('  [X] BOLGE: coklu bolge (regionList>1, Romania vb.)')
         else:
             lines.append('  [ ] BOLGE: coklu bolge (regionList>1, Romania vb.)')
+        # v5.7: aktif ALT-TIP harfi (parametre yapisinin kesin kaniti)
+        if d.get('alt') and d['alt'] != d['tip']:
+            lines.append('  [X] ALT-TIP: %s (%s)' % (d['alt'], p_desc))
         # --- TIP'e gore onerilen akis
         lines.append('--- ONERILEN AKIS (%s) ---' % tip)
         if tip in ('TIP1', 'TIP1n'):
             lines.append('  1) selserver <srv> <ch>          (OK varsa basilir)')
-            lines.append('  2) login <id> <pwd> [3.alan]     (login ekrani OK sonrasi gelir)')
+            lines.append('  2) login <id> <pwd> [3.alan]     (login ekrani OK sonrasi gelir; yapi: %s)' % p_desc)
             lines.append('  TEK KOMUT: auto <id> <pwd> - OK sonrasi login ekrani OTOMATIK')
             lines.append('  beklenir (DLL nabziyla) ve login atilir - elle bisey yapma')
         elif tip in ('TIP2a', 'TIP2b', 'TIP2x'):
@@ -2329,6 +2430,9 @@ def matrix():
         lines.append('      board bayragi + kaynak Open() kanitsizsa guvenli TIP2x (iki-fazli auto).')
         lines.append('      v5.5 kok-nedeni: parent-zinciri kurulamayan clientta gorunurluk')
         lines.append('      1 (gorunur) donuyordu; artik -1 (bilinmiyor) + KATMAN A/B kanitlari.')
+        lines.append('v5.7: ALT-TIP harfi login parametre yapisini tasir: TIP1-A=2-param')
+        lines.append('      (k.adı+sifre), TIP1-B=3-param (+PIN/PID/guard), TIP1-S=tek-alan,')
+        lines.append('      TIP1-X=belirsiz (login ekrani acilinca auto KESINLESTIRIR).')
         _write('matrix', '\n'.join(lines) + '\n')
     except Exception, e:
         _write('matrix', 'HATA ' + _fmt_error(e) + '\n')
@@ -2457,6 +2561,17 @@ def _auto_tick():
                     _auto_live('TIP2x->TIP1 yolu: login ekrani acildi (%s)' % det)
                 else:
                     _auto_live('login ekrani acildi (%s)' % det)
+                # v5.7: login param yapisini KESINLESTIR (TIP1-X ise gercek harf)
+                try:
+                    _pn, _pd, _ph, _pk = _login_param_yapisi(_pw_by_type('LoginWindow'))
+                    if str(_AUTO.get('tip', '')).startswith('TIP1'):
+                        _auto_live('login-yapisi: %s (ALT-TIP: TIP1-%s) [%s]' % (_pd, _ph, _pk))
+                        _MATRIX['alt'] = 'TIP1-%s' % _ph
+                        _MATRIX['param'] = _pn
+                    else:
+                        _auto_live('login-yapisi: %s [%s]' % (_pd, _pk))
+                except:
+                    pass
                 try:
                     login(_AUTO['user'], _AUTO['pwd'], _AUTO['third'] or None)
                     _auto_live('login atildi - sonuc: waitfor SelectCharacterWindow 30 | lasterr')
@@ -2555,7 +2670,11 @@ def auto(user, pwd, third=None, srv=0, ch=0, ok=None):
         tip = d['tip']; code = d['code']
         _MATRIX['tip'] = tip; _MATRIX['code'] = code; _MATRIX['label'] = d['label']
         _MATRIX['flags'] = list(d['flags']); _MATRIX['t'] = time.time()
+        _MATRIX['alt'] = d.get('alt', tip); _MATRIX['param'] = d.get('param', 0)
         log.append('TIP: %s | MATRIS: %s - %s' % (tip, code, d['label']))
+        if d.get('alt') and d['alt'] != tip:
+            log.append('ALT-TIP: %s (%s) [param=%s]' %
+                       (d['alt'], d.get('param_desc', '?'), d.get('param', 0)))
         log.append('GUVEN: %s | KANIT: %s' % (d.get('guven', '?'), '; '.join(d.get('kanit', []))))
         if d['flags']:
             log.append('BAYRAKLAR: %s' % ', '.join(d['flags']))
@@ -9275,6 +9394,11 @@ except:
 
 _write('pylib_load',
        'PLUSMAXGOD_PyScript v%s yuklendi (ANA THREAD)' % PYLIB_VERSION + chr(10) +
+       'v5.7: ALT-TIP - login parametre yapisinin harfi (kullanici talebi)' + chr(10) +
+       '  TIP1-A=2-param (k.adı+sifre) | TIP1-B=3-param (+PIN/PID/guard) |' + chr(10) +
+       '  TIP1-S=tek-alan (sadece id) | TIP1-X=belirsiz -> login ekrani' + chr(10) +
+       '  acilinca auto KESINLESTIRIR. TIP2a/b -> TIP2-A/TIP2-B gosterim;' + chr(10) +
+       '  ic tokenlar aynen korunur (auto/relogin %100 uyumlu).' + chr(10) +
        'v5.6: MATRIS v6 KANIT-TABANLI (2. saha raporu: v5.5 de TIP2a dedi, TIP1 dogruydu)' + chr(10) +
        '  KOK NEDEN: v5.5 parent-zinciri (parentWindow/GetParent) clientta yoktu +' + chr(10) +
        '  zincir-kurulamazsa gorunur varsayani. ARTIK: -1 bilinmiyor + KATMAN A' + chr(10) +
