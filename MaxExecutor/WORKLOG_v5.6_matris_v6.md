@@ -126,3 +126,30 @@ kanıtını kullanır. `relogin` st-4 aynı yardımcıyı kullanır.
 4. `detect` çıktısı (last_matrix.txt) ve `last_auto.txt` her sonuçla paylaşılmalı —
    kanıt satırları bir sonraki iyileştirmenin girdisi.
 ```
+
+---
+
+## 7. EK — v5.6.1 (3. saha raporu sonrası mini yama, aynı gün)
+
+**Saha sonucu:** v5.6 sahadaki kullanıcının client'ında **TIP1 + GUVEN=YUKSEK** üretti —
+KATMAN A kanıtı birebir beklendiği gibi: `serverBoard=1, connectBoard=0, loginBoard=0`
+(MS5.8 deseni doğrulandı). Kullanıcının 3 sorusu (x1 tespit yöntemi, x2 login alan
+bilgisi, x2.1 listbox kontrolü) bu raporla netleşti.
+
+**Yakalanan ek kusur:** KANIT çıktısında `KATMAN B kaynak: root/intrologin.py (None)
+-> Open() ilk-ekran=?` — kök neden: `_pack_read` açamayınca `(None, 'acilamadi: ...')`
+döndürüyor, `_source_evidence`'daki `if txt:` bu **hata string'ini içerik sanıp ilk
+adayda duruyordu**; diğer 11 UIScript/intrologin adayı hiç denenmiyordu.
+
+**v5.6.1 fix'leri (dar kapsamlı):**
+1. `_source_evidence` + `_uiscript_topology`: `meth is None or txt.startswith('acilamadi:')`
+   kontrolü → döngü gerçek adayları taramaya devam eder; 'not' alanı
+   `acici=...; N aday denendi` raporlar.
+2. detect sinyallerine **listbox adet raporu** (x2.1'in cevabı artık detect içinde):
+   `serverList_adet`, `channelList_adet`, `regionList_adet` (GetItemCount; -1=okunamadı,
+   -2=yok). İçerik dump'ı hâlâ `serverlist` komutunda.
+3. `PYLIB_VERSION = '5.6.1'` (DLL major-5 kontrolü etkilenmez).
+
+**Doğrulama:** lib2to3 PY2 parse OK; test paketi **20/20** (yeni: hata-string fix'i
+pozitif+negatif senaryoları — ilk aday 'acilamadi' iken 2. adaydan kaynak alınır /
+tümü açılamazsa kaynak None kalır).

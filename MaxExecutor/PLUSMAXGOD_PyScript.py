@@ -390,7 +390,7 @@ DUMP_DIR   = r'C:\MaxExec\dump'   # v4.0: py dump + PLUSQuest_live buraya
 # SURUM ISARETI - DLL v1.8 bunu okur (FIX-19). PLUSMAXGOD_PyScript.py
 # degistirmeden bu satiri silme/degistirme! Eski pylib (v3.x) major 3
 # oldugu icin DLL v1.8 acilista KOSKOCA uyar basar.
-PYLIB_VERSION = '5.6'
+PYLIB_VERSION = '5.6.1'
 
 RACE_TABLE = {
     0: ('Warrior', 'E'), 1: ('Ninja', 'K'), 2: ('Sura', 'E'), 3: ('Shaman', 'K'),
@@ -1386,7 +1386,8 @@ def _uiscript_topology(lits):
                     meth, txt = _pack_read(c)
                 except:
                     continue
-                if not txt:
+                # v5.6.1-FIX: hata stringi ('acilamadi: ...') icerik sanilmasin
+                if meth is None or not txt or txt.startswith('acilamadi:'):
                     continue
                 topo = None
                 d = _eval_uiscript(txt)
@@ -1409,20 +1410,27 @@ def _source_evidence(force=False):
          'kaynak': None, 'yol': None, 'not': ''}
     src = None
     syol = None
+    denenen = 0
     for c in _INTROLOGIN_CANDS:
         try:
             meth, txt = _pack_read(c)
         except:
             continue
-        if txt:
-            src = txt
-            syol = '%s (%s)' % (c, str(meth))
-            break
+        denenen += 1
+        # v5.6.1-FIX: _pack_read acamazsa (None, 'acilamadi: ...') dondurur -
+        # eski 'if txt:' HATA STRINGINI icerik sanip ilk adayda duruyordu;
+        # diger 11 aday hic denenmiyordu (saha kaniti: kaynak (None) ilk-ekran=?).
+        if meth is None or not txt or txt.startswith('acilamadi:'):
+            continue
+        src = txt
+        syol = '%s (%s)' % (c, str(meth))
+        break
+    d['not'] = '%d aday denendi' % denenen
     if src:
         fs = _src_first_screen(src)
         d['open'] = fs['open']
         d['kaynak'] = syol
-        d['not'] = 'acici=%s' % (','.join(fs['server_acici'] + fs['login_acici']) or '-')
+        d['not'] = 'acici=%s; %s' % (','.join(fs['server_acici'] + fs['login_acici']) or '-', d['not'])
         lits = _py_literals(src)
         lits.sort(key=lambda s: 0 if 'window' in s.lower() else 1)
         topo = _uiscript_topology(lits)
@@ -2064,6 +2072,14 @@ def _detect_matrix(pw):
            'ekran_bayragi': verdict,
            'kaynak_open': se.get('open', '?'),
            'topoloji': {1: 'ayni-board', 0: 'farkli-board'}.get(se.get('same', -1), 'belirsiz')}
+    # v5.6.1: LISTBOX ICERIK SAYILARI (x2.1 saha sorusu - detect'in kendisinde
+    # serverList + channelList adedi; icerik dump'i 'serverlist' komutunda)
+    for _ln, _lo in (('serverList_adet', sl), ('channelList_adet', cl),
+                     ('regionList_adet', rl)):
+        try:
+            sig[_ln] = int(_lo.GetItemCount()) if _lo is not None else -2
+        except:
+            sig[_ln] = -1
     flags = []
     if rl is not None:
         rcnt = 0
